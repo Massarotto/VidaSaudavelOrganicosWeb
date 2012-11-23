@@ -1,0 +1,73 @@
+#{extends 'layout.html' /}
+#{set 'title'}
+&{'application.subtilte'} Relatório de Pedidos Aguardando Entrega
+#{/set}
+
+<link rel="stylesheet" type="text/css" media="screen" href="&{'application.static.content'}/stylesheets/play-pagination.css">
+	<div align="right" style="margin-right: 2%;">
+		<span class="fontGreen2">&{'application.form.export'}:</span>
+		<a href="/relatorios/export/msexcel/entrega" target="_blank" class="a1">&{'application.form.report.format.excel'}</a>
+		<span>|</span>
+		<a href="/relatorios/export/pdf/entrega" target="_blank" class="a1">&{'application.form.report.format.pdf'}</a>
+	</div>
+<div class="boxConsultaDefault">
+	<table width="100%" cellpadding="1" cellspacing="0" border="0" class="fontGreen2">
+		<tr class="tr1">
+			<td align="center" width="5%">Id</td>
+			<td align="left">&{'form.admin.customer'}</td>
+			<td align="center" width="18%">&{'form.admin.mypage.date'}</td>
+			<td align="center" width="11%">&{'form.label.valorVenda'}</td>
+			<td align="center" width="20%">&{'form.label.status'}</td>
+			<td align="center" width="13%">&nbsp</td>
+		</tr>
+		<tr>
+			<td colspan="6">
+				<div style="position:relative; height: 340px; overflow: auto;">
+					<table width="100%" border="0">
+					#{if (vPedidos==null)}
+					<tr>
+						<td colspan="6" align="center">
+							<span class="fontGreen2">&{'message.norecordfound'}</span>
+						</td>
+					</tr>
+					#{/if}
+					#{else}
+					#{paginate.list items:vPedidos, as:'pedido'}
+					<tr>
+						<td width="5%" align="center">
+							${pedido.id}
+						</td>
+						<td align="left">${pedido.cliente.nome}</td>
+						<td width="18%" align="center">${new Date(pedido.dataPedido.getTime()).format('dd/MM/yyyy HH:mm')}</td>
+						<td width="11%" align="center">${pedido.valorPedido.formatCurrency('BRL').raw()}</td>
+						<td width="20%" align="center">${pedido.codigoEstadoPedido.getEstado()}</td>
+						<td width="13%" align="center">
+							<a href="/ajaxProdutos?height=520&width=750&id=${pedido.id}" class="thickbox fontBrown">
+								&{'form.order.btnViewProducts'}
+							</a>
+						</td>
+					</tr>
+					#{/paginate.list}
+					#{/else}
+					</table>
+				</div>
+			</td
+		</tr>
+		<tr class="tr1">
+			<td colspan="2" align="center">#{paginate.summary items:vPedidos/}</td>
+			<td colspan="3" align="center">#{paginate.controls items:vPedidos /}</td>
+			<td colspan="3" align="right">
+				<span>&{'form.label.total'}: </span>
+				<span>
+				#{if (valorTotalPedidos==null)}
+					R$ 0,00
+				#{/if}
+				#{else}
+					${valorTotalPedidos.formatCurrency('BRL').raw()}
+				#{/else}
+				&nbsp;</span>
+			</td>
+		</tr>
+	</table>
+</div>
+<br />

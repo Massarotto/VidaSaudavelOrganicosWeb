@@ -1,0 +1,54 @@
+#{extends 'Pedidos/menuPedidoCliente.html' /}
+<link rel="stylesheet" type="text/css" media="screen" href="&{'application.static.content'}/stylesheets/play-pagination.css">
+#{ifErrors} 
+	#{errors}
+		<li><span class="fontRed">${error}</span></li>
+	#{/errors} 
+#{/ifErrors}
+<div class="boxConsultaDefault">
+	<div>&{'form.order.debitos'}&nbsp;<b>${debito.formatCurrency('BRL').raw()}</b></div>
+	<table width="100%" cellpadding="1" cellspacing="0" border="0" class="fontGreen2">
+		<tr class="tr1">
+			<td align="center" width="15%">
+				<span>&{'form.order.number'}</span>
+			</td>
+			<td align="center" width="16%">Data</td>
+			<td align="center" width="9%">
+				<span>Valor</span>
+			</td>
+			<td align="center" width="9%">Desconto(%)</td>
+			<td align="right" width="11%">Valor Desconto</td>
+			<td align="center" width="15%">
+				<span>Status</span>
+			</td>
+			<td align="center" width="15%">
+				<span>&{'form.order.date.delivery'}</span>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="8">
+				<div style="position:relative; height: 340px; overflow: auto;">
+					<table width="100%" border="0">
+					#{list items:pedidos, as:'_ped'}
+					<tr>
+						<td width="15%" align="center">
+							<span title="&{'form.order.observacao'}: ${_ped.observacao}">${_ped.id}</span>
+						</td>
+						<td width="18%" align="center">${new Date(_ped.dataPedido.getTime()).format('dd/MM/yyyy HH:mm')}</td>
+						<td width="9%" align="center">${_ped.valorPedido.formatCurrency('BRL').raw()}</td>
+						<td width="9%" align="center">
+							<span title="${pedido.desconto?.valorDesconto.formatCurrency('BRL').raw()}">${_ped.desconto?.porcentagem}</span>
+						</td>
+						<td width="9%" align="center">${_ped.getValorComDesconto().formatCurrency('BRL').raw()}</td>
+						<td width="15%" align="center">
+							${_ped.codigoEstadoPedido}
+						</td>
+						<td width="15%" align="center">${_ped.dataEntrega!=null ? new Date(_ped.dataEntrega.getTime()).format('dd/MM/yyyy HH:mm') : _ped.dataEntrega}</td>
+					</tr>
+					#{/list}
+					</table>
+				</div>
+			</td
+		</tr>
+	</table>
+</div>

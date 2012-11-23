@@ -1,0 +1,93 @@
+#{extends 'layout.html' /}
+#{set 'title'}
+&{'application.subtilte'} ${produto.nome}
+#{/set}
+
+<div class="defaultContentSize">
+	<br />
+	<div align="right" style="background-color: #DDDDDD; width: 95%">
+		<span class="fontBlackNormal">&{'message.secao.em'}&nbsp;${flash.success.raw()}</span>
+	</div>
+	<table width="90%" cellpadding="4" cellspacing="4" border="0" align="center">
+		<tr>
+			<td colspan="2">
+				&nbsp;
+			</td>
+		</tr>
+		#{if (produto.ehCesta==true)}
+		<tr>
+			<td>
+				<table width="100%" border="0">
+					<tr>
+						<td width="43%">
+							<img src="&{'application.static.content'}&{'application.path.public.images'}${produto.imagemProduto}" 
+								alt="${produto.imagemProduto}"
+								width="&{'application.path.images.width'}"
+								height="&{'application.path.images.height'}" 
+								class="imgDetail" />
+						</td>
+						<td align="center">
+							<span class="fontBoldBrown">${produto.nome}</span><br /><br />
+							<span class="fontGreen3">${produto.valorVenda.formatCurrency('BRL').raw()}</span>
+							<input type="hidden" id="quantidade[${produto.id}]" name="quantidade[${produto.id}]" value="1" />&nbsp;
+							#{if (produto.produtoEstoque==null || produto.produtoEstoque.quantidade>0)}
+								<img src="&{'application.static.content'}&{'application.path.public.images'}&{'application.path.carrinho'}" 
+									style="cursor: pointer;" alt="&{'form.imgBasket.alt'}" title="&{'form.imgBasket.alt'}"
+									onclick="javascript:adicionarProdutoCarrinho(${produto.id}, document.getElementById('quantidade[${produto.id}]'), '${produto.valorVenda}')" />
+							#{/if}
+							#{else}
+								INDISPONÍVEL
+							#{/else}
+						</td>	
+					</tr>
+				</table>
+			</td>
+			<td width="45%">
+				&nbsp;<span class="fontGreen1">${produto.detalhe.raw()}</span>
+			</td>
+		</tr>
+		#{/if}
+		#{if (produto.ehCesta==false)}
+		<tr>
+			<td width="40%" align="center">
+				<img src="&{'application.static.content'}&{'application.path.public.images'}${produto.imagemProduto}"
+					width="&{'application.path.images.width'}"
+					height="&{'application.path.images.height'}" 
+					alt="${produto.imagemProduto}" class="imgDetail" />
+			</td>
+			<td>
+				<span class="fontBoldBrown">${produto.nome}</span><br /><br />
+				<span class="fontGreen3">${produto.valorVenda.formatCurrency('BRL').raw()}</span>
+				<input type="hidden" id="quantidade[${produto.id}]" name="quantidade[${produto.id}]" value="1" />&nbsp;
+				#{if (produto.produtoEstoque==null || produto.produtoEstoque.quantidade>0)}
+					<img src="&{'application.static.content'}&{'application.path.public.images'}&{'application.path.carrinho'}" 
+						style="cursor: pointer;" alt="&{'form.imgBasket.alt'}" title="&{'form.imgBasket.alt'}"
+						onclick="javascript:adicionarProdutoCarrinho(${produto.id}, document.getElementById('quantidade[${produto.id}]'), '${produto.valorVenda}')" />
+				#{/if}
+				#{else}
+					INDISPONÍVEL
+				#{/else}
+				<br /><br />
+				<span class="fontGreen2"><b>&{'form.label.detail'}: </b></span><span class="fontBlackNormal">${produto.detalhe.raw()}</span>
+			</td>
+		</tr>
+		<tr>
+			<td align="center">
+				<span class="fontBlackNormal"><i>Imagem meramente ilustrativa.</i></span>
+			</td>
+			<td>&nbsp;</td>
+		</tr>
+		#{/if}
+		<tr>
+			<td colspan="2">
+				&nbsp;
+			</td>
+		</tr>
+	</table>
+</div>
+<div align="right">
+	#{a @Home.index(), class:"fontBrown"}&{'form.button.back'}#{/a}
+</div>
+<br />
+
+

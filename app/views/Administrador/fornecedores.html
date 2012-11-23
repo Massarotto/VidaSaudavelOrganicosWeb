@@ -1,0 +1,41 @@
+#{extends 'layout.html' /}
+#{set 'title'}
+&{'application.subtilte'} &{'form.fornecedores.title'}
+#{/set}
+<div>
+	<br />
+	<div class="txt_titulo_institucional"><strong>&{'form.fornecedores.title'}</strong></div>
+	<br />
+	<div id="oQueSaoContent" style="padding-left: 1%;padding-right: 1%;">
+		<a href="&{'form.fornecedores.1.link'}" target="_blank" class="defaultLink">
+			<img src="&{'application.static.content'}&{'form.fornecedores.1.img'}" border="0" />
+		</a>
+		<span>&nbsp;&nbsp;&nbsp;</span>
+		<a href="&{'form.fornecedores.2.link'}" target="_blank" class="defaultLink">
+			<img src="&{'application.static.content'}&{'form.fornecedores.2.img'}" border="0" />
+		</a>
+		<a href="&{'form.fornecedores.7.link'}" target="_blank" class="defaultLink">
+			<img src="&{'application.static.content'}&{'form.fornecedores.7.img'}" border="0" />
+		</a>
+		<span>&nbsp;</span>
+		<a href="&{'form.fornecedores.3.link'}" target="_blank" class="defaultLink">
+			<img src="&{'application.static.content'}&{'form.fornecedores.3.img'}" border="0" />
+		</a>
+		<a href="&{'form.fornecedores.4.link'}" target="_blank" class="defaultLink">
+			<img src="&{'application.static.content'}&{'form.fornecedores.4.img'}" border="0" />
+		</a>
+		<span>&nbsp;&nbsp;&nbsp;</span>
+		<a href="&{'form.fornecedores.5.link'}" target="_blank" class="defaultLink">
+			<img src="&{'application.static.content'}&{'form.fornecedores.5.img'}" border="0" />
+		</a>
+		<span>&nbsp;&nbsp;&nbsp;</span>
+		<a href="&{'form.fornecedores.6.link'}" target="_blank" class="defaultLink">
+			<img src="&{'application.static.content'}&{'form.fornecedores.6.img'}" border="0" />
+		</a>
+	</div>
+	<br />
+</div>
+<div align="right">
+	#{a @Home.index(), class:"fontBrown"}&{'form.button.back'}#{/a}
+</div>
+<br />

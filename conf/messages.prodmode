@@ -1,0 +1,219 @@
+# You can specialize this file for each language.
+# For example, for French create a messages.fr file
+#
+validation.object=
+validation.failed=Ocorreram alguns erros ao tentar processar sua requisição: 
+
+application.tilte=Vida Saudável, a sua loja de produtos orgânicos, integrais e naturais...
+#application.path.upload.images=c:/Apache/htdocs/images
+application.path.upload.images=/home/vidasaudavelorganicos/domains/static.vidasaudavelorganicos.com.br/public_html/images/
+application.path.termoCompromisso=/html/termo_compromisso.html
+application.path.images.width=126
+application.path.images.height=142
+application.path.public.images=/images/
+application.path.carrinho=comprar.jpg
+application.path.comprar=btn_comprar.jpg
+application.message.basket.empty=O Carrinho está vazio ou sua sessão expirou!
+application.message.notAuthenticated=Por favor, para prosseguir entre com seu usuário e senha.
+
+#Tratamento de Exceção
+application.message.error=Desculpe, ocorreu um erro indesperado ao tentar processar sua requisição.
+
+#Conteúdo Estático
+application.static.content=http://www.static.vidasaudavelorganicos.com.br
+#application.static.content=http://localhost
+
+application.layout.foot.playText=<span class='fontBoldWhite1'><i>Powered by</i><span> 
+application.layout.foot.playImg=<img src='/images/logo_play.png' width='50' height='27' />
+
+application.layout.foot.design.sithes=Design <i><a href='http://www.sithes.com' class='ancora' target='_blank'>Sithes</a></i>
+
+application.captcha.title=Digite os caractéres que você vê nessa imagem
+application.captcha.error=Por favor, preencha exatamente o que vê na imagem 
+
+form.edit=Editar
+form.excluir=Excluir
+form.atualizar=Atualizar
+form.comprar=Comprar
+
+form.campo.obrigatorio=* Campo(s) obrigatório(s)
+
+message.products.notfound=Nenhum pedido encontrado.
+message.welcome.user=Bem Vindo, 
+message.home.doLogin=Bem vindo, faça o<a href='/login' class='a1'>login</a> ou <a href='/cliente' class='a1'>cadastre-se</a>.
+message.customer.edit.data=Editar Cadastro
+message.customer.myPage=Ver minha página
+message.secao.em=Você está em:
+
+message.required.cliente.nome=O Nome é obrigatório
+message.required.cliente.cpf=O CPF é obrigatório
+message.required.cliente.rg=O RG é obrigatório
+message.required.cliente.email=O e-mail é obrigatório
+message.required.cliente.dataNascimento=A data de nascimento é obrigatória
+message.required.cliente.sexo=Preencha o campo sexo
+message.required.cliente.estadoCivil=Preencha seu estado civil
+message.cpf.existente=O CPF informado já está cadastrado para outro cliente
+
+#Mensagens de Produto
+message.required.product.nome=O Nome do Produto é obrigatório
+message.required.product.descricao=A Desricação é obrigatória
+message.required.product.codigo=O Código do Produto é obrigatório
+message.required.product.valorPago=O valor pago pelo produto é obrigatório
+message.required.product.valorVenda=O Valor de Venda é obrigatório
+message.required.product.imagem=Selecione uma imagem
+message.notfound.product=Nenhum produto encontrado.
+
+#Mensagens de Seção
+message.required.secao.descricao=Por favor, preencha o nome da Seção
+message.required.secao.ativo=Por favor, ative ou desative a Seção
+
+form.product.type.image=<i>(*.jpeg)</i>
+
+message.required.endereco.logradouro=O Logradouro é obrigatório
+message.required.endereco.numero=O Número é obrigatório
+message.validation.endereco.numero=Digite um número válido
+message.required.endereco.bairro=O Bairro é obrigatório
+message.required.endereco.cidade=O Cidade é obrigatório
+message.required.endereco.uf=A UF é obrigatória
+message.required.endereco.cep=O CEP é obrigatório
+message.minsize.endereco.cep=O CEP deve conter 8 números
+message.required.endereco.tipo=Selecione o tipo do endereço
+
+message.required.phone.prefixo=O prefixo do Telefone é obrigatório
+message.required.phone.numero=O campo Telefone é obrigatório
+
+message.required.login.username=Digite o seu login
+message.required.login.password=Digite a sua senha
+
+message.user.password.minsize=A senha deve conter 8 caractéres no mínimo.
+message.user.login.minsize=O Login deve conter 6 caractéres no mínimo.
+
+message.send.mail=A senha foi enviada para o seu email com sucesso!
+
+#Basket
+message.product.required=Por favor, selecione algum produto!
+form.mybasket=MEU CARRINHO
+
+form.validation.password.notEquals=As senhas digitadas não são iguais
+form.validation.email.exists=O e-mail digitado já está cadastrado para outro usuário
+
+form.customer.nome=Nome
+form.customer.cpf=CPF
+form.customer.rg=RG
+form.customer.sexo=Sexo
+form.customer.estadoCivil=Estado Civil
+form.customer.dataNascimento=Data de Nascimento
+form.customer.mask.dataNascimento=(ex.: 19/08/1955)
+form.customer.grupo=Grupo
+
+form.user.title=Como gostaria de ser chamado?
+
+form.phone=Telefone
+form.phone.type=Tipo
+
+form.address.logradouro=Logradouro
+form.address.complemento=Complemento
+form.address.bairro=Bairro
+form.address.cidade=Cidade
+form.address.uf=UF
+form.address.cep=CEP
+
+form.customer.success=Cadastro inserido com sucesso!
+form.customer.update.success=Cadastro atualizado com sucesso!
+form.secao.success=Seção %s com sucesso!
+
+form.login.title.isCustomer=JÁ SOU CLIENTE
+form.login.user=Login
+form.login.password=Senha
+form.login.leave=Sair
+form.login.title.newCustomer=NOVO CLIENTE
+form.login.title.sendMail=ENVIAR SENHA
+form.email=E-mail
+
+form.login.logon.failed=Usuário ou senha não encontrado
+form.login.forget.password=<a href='/lembrarSenha' class='a2'>Esqueci minha senha</a>
+
+#PRODUTO
+form.title.cadastrar.produto=Cadastrar Produto
+form.title.editar.produto=Editar Produto
+form.label.nome=Nome
+form.label.descricao=Descrição
+form.label.codigoProduto=Código do Produto
+form.label.valorPago=Valor Pago
+form.label.valorVenda=Valor de Venda
+form.label.imagem=Imagem
+form.label.status=Status
+form.label.imagem.tooltip=Visualizar
+form.label.view=Ver
+form.label.detail=Detalhe
+form.imgBasket.alt=Adicionar ao carrinho
+
+form.label.valorUnitario=Valor Unitário
+form.label.quantidade=Quantidade
+form.label.subtotal=Sub-Total
+form.label.total=Total
+form.label.frete=Frete
+form.label.valorCompra=Valor do Pedido
+
+form.button.next=Continuar
+form.button.cadastro=Cadastrar
+form.button.enviar=Enviar
+form.button.back=Voltar
+
+form.title.cadastro.pessoafisica=Cadastro Pessoa Física
+form.title.edit.pessoafisica=Editar Cadastro
+form.title.endereco=Dados de Endereço
+form.title.numero=Número
+
+message.error.email.notfound=E-mail não encontrado
+
+#Administrador Menu
+form.admin.title=Administrador
+form.admin.produto=Produto
+form.admin.consulta=Consultar
+form.admin.secao=Seção
+form.admin.secao.description=Nome da Seção
+form.admin.secao.cadastrar=Cadastrar Seção
+form.admin.secao.edit=Editar Seção
+form.admin.secao.pai=Seção Pai
+form.admin.clearCache=Limpar Cache
+form.admin.produto.cadastro.success=Produto %s com sucesso!
+form.admin.pedido=Pedido
+form.admin.customer=Cliente
+form.admin.layout=Layout
+form.admin.banner.home=Banner
+
+form.admin.mypage.home=Minha Página
+form.admin.mypage.imgMeusDados=<img src="http://localhost/images/mydata.gif" />
+form.admin.mypage.meusDados=Meu Cadastro
+form.admin.mypage.alterarDados=Alterar Dados
+
+form.admin.mypage.imgMeusPedidos=<img src="http://localhost/images/orders.gif" />
+form.admin.mypage.meusPedidos=Meus Pedidos
+form.admin.mypage.date=Data
+form.admin.button.clear=Limpar
+
+#Pagamento
+form.payment.title=Selecione a forma de pagamento
+form.date.delivery=Data de Entrega
+
+#Pedido
+form.order.edit=Editar Pedido
+form.order.number=Número do Pedido
+form.order.value=Valor do Pedido
+form.order.code=Código
+form.order.date=Data do Pedido
+form.order.date.delivery=Data de Entrega
+form.order.customer=Cliente
+form.order.btnViewProducts=Ver Produtos
+form.order.orderSuccess=Pedido %s finalizado com sucesso!
+
+form.order.mypage.newOrder=Comprar Novamente 
+
+form.order.termoCompromisso=Li e aceito o <a href='/ajaxTermoCompromisso?height=500&width=650' onclick='javascript:checkTermoCompromisso()' title='Termo de Compromisso' class='thickbox'>Termo de Compromisso</a>
+
+validation.required=O campo %s é obrigatório
+
+validation.data.success=Dados atualizados com sucesso!
+
+message.norecordfound=Nenhum registro encontrado.

@@ -1,0 +1,132 @@
+04 Out 2012 10:46:34,325 INFO  ~ Starting C:\Projetos\VidaSaudavel\VidaSaudavelWeb\.
+04 Out 2012 10:46:34,358 WARN  ~ Declaring modules in application.conf is deprecated. Use dependencies.yml instead (module.paginate)
+04 Out 2012 10:46:34,360 INFO  ~ Module paginate is available (C:\play\play-1.2.1\modules\paginate-head)
+04 Out 2012 10:46:36,144 WARN  ~ You're running Play! in DEV mode
+04 Out 2012 10:46:41,574 INFO  ~ Connected to jdbc:mysql://localhost/vidasaudavelorganicos?useUnicode=yes&characterEncoding=UTF-8&connectionCollation=utf8_general_ci
+04 Out 2012 10:46:42,964 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Pedido]; using defaults.
+04 Out 2012 10:46:43,161 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Pagamento]; using defaults.
+04 Out 2012 10:46:43,169 WARN  ~ Could not find a specific ehcache configuration for cache named [models.BairroEntrega]; using defaults.
+04 Out 2012 10:46:43,175 WARN  ~ Could not find a specific ehcache configuration for cache named [models.CarrinhoItem]; using defaults.
+04 Out 2012 10:46:43,184 WARN  ~ Could not find a specific ehcache configuration for cache named [models.CarrinhoProduto]; using defaults.
+04 Out 2012 10:46:43,190 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Resposta]; using defaults.
+04 Out 2012 10:46:43,196 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Secao]; using defaults.
+04 Out 2012 10:46:43,201 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Usuario]; using defaults.
+04 Out 2012 10:46:43,205 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Frete]; using defaults.
+04 Out 2012 10:46:43,209 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Telefone]; using defaults.
+04 Out 2012 10:46:43,215 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Fornecedor]; using defaults.
+04 Out 2012 10:46:43,223 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Produto]; using defaults.
+04 Out 2012 10:46:43,229 WARN  ~ Could not find a specific ehcache configuration for cache named [models.PedidoItem]; using defaults.
+04 Out 2012 10:46:43,234 WARN  ~ Could not find a specific ehcache configuration for cache named [models.ProdutoEstoque]; using defaults.
+04 Out 2012 10:46:43,241 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Cliente]; using defaults.
+04 Out 2012 10:46:43,252 WARN  ~ Could not find a specific ehcache configuration for cache named [models.RespostaUsuarioQuestionario]; using defaults.
+04 Out 2012 10:46:43,261 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Desconto]; using defaults.
+04 Out 2012 10:46:43,334 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Pergunta]; using defaults.
+04 Out 2012 10:46:43,338 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Questionario]; using defaults.
+04 Out 2012 10:46:43,342 WARN  ~ Could not find a specific ehcache configuration for cache named [models.Grupo]; using defaults.
+04 Out 2012 10:46:43,344 WARN  ~ read-only cache configured for mutable entity [models.Grupo]
+04 Out 2012 10:46:43,346 WARN  ~ Could not find a specific ehcache configuration for cache named [models.PerguntaResposta]; using defaults.
+04 Out 2012 10:46:43,511 WARN  ~ Could not find a specific ehcache configuration for cache named [org.hibernate.cache.UpdateTimestampsCache]; using defaults.
+04 Out 2012 10:46:43,516 WARN  ~ Could not find a specific ehcache configuration for cache named [org.hibernate.cache.StandardQueryCache]; using defaults.
+04 Out 2012 10:46:43,653 WARN  ~ Messages file missing for locale en
+04 Out 2012 10:46:43,653 WARN  ~ Messages file missing for locale pt_BR
+04 Out 2012 10:46:43,657 INFO  ~ Application 'VidaSaudavelWeb' is now started !
+04 Out 2012 10:46:51,237 INFO  ~ #### Iniciar pedido de pagamento para o cliente: Joselito no gateway PayPal ####
+04 Out 2012 10:46:52,626 INFO  ~ ### Request a ser enviado: <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:SetExpressCheckoutReq xmlns:ns2="urn:ebay:api:PayPalAPI" xmlns="urn:ebay:apis:eBLBaseComponents" xmlns:ns3="urn:ebay:apis:EnhancedDataTypes">
+    <ns2:SetExpressCheckoutRequest>
+        <Version>94.0</Version>
+        <SetExpressCheckoutRequestDetails>
+            <OrderTotal currencyID="BRL">100.0</OrderTotal>
+            <ReturnURL>http://www.vsorganicos.com.br/result</ReturnURL>
+            <CancelURL>http://www.vsorganicos.com.br/result</CancelURL>
+            <InvoiceID>9999999</InvoiceID>
+            <ReqConfirmShipping>0</ReqConfirmShipping>
+            <NoShipping>1</NoShipping>
+            <LocaleCode>BR</LocaleCode>
+            <PaymentAction>Sale</PaymentAction>
+            <CallbackVersion>94.0</CallbackVersion>
+        </SetExpressCheckoutRequestDetails>
+    </ns2:SetExpressCheckoutRequest>
+</ns2:SetExpressCheckoutReq>
+
+04 Out 2012 10:46:55,131 INFO  ~ #### Fim do pedido de pagamento para o cliente: Joselito no gateway PayPal ####
+04 Out 2012 10:46:59,025 INFO  ~ Resposta PayPal: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns:ns1="og" lang="en" xmlns="http://www.w3.org/1999/xhtml" ns1:xmlns="http://ogp.me/ns#"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
+         Script info: script: webscr, cmd: _express-checkout, template: p/wel/sandbox-outside, date: Sep 26, 2012 19:40:42 PDT; country: US, language: en_US, xslt server: 
+		web version: 95.0-3842185 branch: bbd0122e5bad6f766db33de2838e6e29a6bc0adc
+		content version: -
+		pexml version: 95.0-3847826
+		page XSL: Merchant/default/en_US/homepage/SandBox-outside.xsl
+       hostname : 2wBZgCwsJh.UE731wAPiWsXCMNmtOTQYabVv6Oa-Biw
+         rlogid : JLNizcji07UXhw1%2fwgBuUJzFfIFXMesPsWcoaIzp7jjtmgfotHRm5A%3d%3d_13a2c077670
+-->
+<title>Welcome - PayPal</title>
+<!--googleoff: all-->
+<meta name="description" content="PayPal is the safer, easier way to pay online without revealing your credit card number.">
+<!--googleon: all-->
+<meta http-equiv="X-UA-Compatible" content="IE=9"><link media="screen" rel="stylesheet" type="text/css" href="https://www.sandbox.paypal.com/WEBSCR-640-20120914-1/css/core/xptdev.css"><link media="screen" rel="stylesheet" type="text/css" href="https://www.sandbox.paypal.com/WEBSCR-640-20120914-1/css/core/global.css">
+<!--[if IE 8]><link media="screen" rel="stylesheet" type="text/css" href="https://www.sandbox.paypal.com/WEBSCR-640-20120914-1/css/browsers/ie8.css"><![endif]-->
+
+<!--[if IE 7]><link media="screen" rel="stylesheet" type="text/css" href="https://www.sandbox.paypal.com/WEBSCR-640-20120914-1/css/browsers/ie7.css"><![endif]-->
+
+<!--[if lte IE 6]><link media="screen" rel="stylesheet" type="text/css" href="https://www.sandbox.paypal.com/WEBSCR-640-20120914-1/css/browsers/ie6.css"><![endif]-->
+<link rel="stylesheet" type="text/css" href="https://www.sandbox.paypal.com/css/sandbox.css"><link media="print" rel="stylesheet" type="text/css" href="https://www.sandbox.paypal.com/WEBSCR-640-20120914-1/css/core/print.css"><style type="text/css" id="antiClickjack">body{display:none !important;}</style><script type="text/javascript">
+				if (self === top) {
+					var antiClickjack = document.getElementById("antiClickjack");
+					antiClickjack.parentNode.removeChild(antiClickjack);
+				} else {
+					top.location = self.location;
+				}
+			</script><script type="text/javascript" src="https://www.sandbox.paypal.com/WEBSCR-640-20120914-1/js/lib/min/global.js"></script><script type="text/javascript">PAYPAL.util.lazyLoadRoot = 'https://www.sandbox.paypal.com/WEBSCR-640-20120914-1';</script><link rel="shortcut icon" href="https://www.sandbox.paypal.com/en_US/i/icon/pp_favicon_x.ico"><link rel="apple-touch-icon" href="https://www.sandbox.paypal.com/en_US/i/pui/apple-touch-icon.png"></head><body class="xptSandbox"><noscript><style type="text/css">body{display:block !important;}</style><p class="nonjsAlert">NOTE: Many features on the PayPal Web site require Javascript and cookies. You can enable both via your browser's preference settings.</p></noscript><div class="" id="page"><div id="content"><div id="headline"><h2 class="accessAid">Welcome</h2>
+</div><div id="messageBox"></div><div id="main"><div class="layout1"><p><img src="https://www.sandbox.paypal.com/en_US/i/logo/logo_sandbox_clr_289x39.gif" border="0" alt=""></p><p align="center"><strong>Please login to use the <a href="https://developer.paypal.com/">PayPal Sandbox</a> features.</strong></p></div></div></div><div role="navigation" id="navFull"><ul><li class="active"><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_home-general&amp;nav=0" class="scTrack:SRD:Nav:L5">Home</a><ul><li class="active"><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=xpt/Marketing/general/what-is-paypal-outside&amp;nav=0.0" class="scTrack:SRD:Nav:W8">Get to Know PayPal</a><ul><li><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=xpt/Marketing/general/why-paypal-outside&amp;nav=0.0.0" class="scTrack:SRD:Nav:YX">Why PayPal</a></li><li><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=xpt/Marketing/general/how-to-use-paypal-outside&amp;nav=0.0.1" class="scTrack:SRD:Nav:YY">How To Use PayPal</a></li><li><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=xpt/Marketing/general/how-to-set-up-a-paypal-account-outside&amp;nav=0.0.2" class="scTrack:SRD:Nav:YZ">How to Setup an Account</a></li><li><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_display-fees-outside&amp;nav=0.0.3" class="scTrack:SRD:Nav:y80">How Much It Costs</a></li><li><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=xpt/Marketing/general/PayPalAccountTypes-outside&amp;nav=0.0.4" class="scTrack:SRD:Nav:Z8">Account Types</a></li></ul></li><li><a href="https://personal.paypal.com/cgi-bin/marketingweb?cmd=_render-content&amp;content_ID=marketing_us/pay_online&amp;nav=0.1" class="scTrack:SRD:Nav:W3">Pay Online</a><ul><li><a href="https://personal.paypal.com/cgi-bin/marketingweb?cmd=_render-content&amp;content_ID=marketing_us/paypal_credit_card&amp;nav=0.1.0" class="scTrack:SRD:Nav:W4">PayPal Extras MasterCard</a></li><li><a href="https://personal.paypal.com/us/cgi-bin/?&amp;cmd=_render-content&amp;content_ID=marketing_us/mobile_payments#payonline&amp;nav=0.1.1" class="scTrack:SRD:Nav:L6">Shop Via Mobile</a></li></ul></li><li><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_send-money-transfer&amp;send_method=domestic&amp;nav=0.2" class="scTrack:SRD:Nav:N9">Send Money</a><ul><li><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_send-money-transfer&amp;send_method=domestic&amp;nav=0.2.0" class="scTrack:SRD:Nav:O1">Send Money Online</a></li><li><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_send-money-transfer&amp;send_method=intl&amp;nav=0.2.1" class="scTrack:SRD:Nav:O2">Internationally</a></li><li><a href="https://student.paypal.com/us/cgi-bin/marketingweb?cmd=_render-content&amp;content_ID=marketing_us/student_accounts&amp;nav=0.2.2" class="scTrack:SRD:Nav:MR">To Your Teen</a></li><li><a href="https://personal.paypal.com/us/cgi-bin/?&amp;cmd=_render-content&amp;content_ID=marketing_us/mobile_payments#sendmoney&amp;nav=0.2.3" class="scTrack:SRD:Nav:Y4">Via Your Mobile</a></li></ul></li><li><a href="https://personal.paypal.com/cgi-bin/marketingweb?cmd=_render-content&amp;content_ID=marketing_us/receive_money&amp;nav=0.3" class="scTrack:SRD:Nav:Y5">Get Paid</a><ul><li><a href="https://personal.paypal.com/cgi-bin/marketingweb?cmd=_render-content&amp;content_ID=marketing_us/request_money&amp;nav=0.3.0" class="scTrack:SRD:Nav:Y6">Request Money</a></li><li><a href="https://personal.paypal.com/us/cgi-bin/?cmd=_render-content&amp;content_ID=marketing_us/sell_on_ebay&amp;tab=autotab_0&amp;nav=0.3.1" class="scTrack:SRD:Nav:Y7">Sell on eBay</a></li><li><a href="https://personal.paypal.com/us/cgi-bin/?cmd=_render-content&amp;content_ID=marketing_us/sell_on_ebay&amp;tab=autotab_1&amp;nav=0.3.2" class="scTrack:SRD:Nav:P6">Sell with Classifieds</a></li><li><a href="https://merchant.paypal.com/cgi-bin/marketingweb?cmd=_render-content&amp;content_ID=merchant/wp_standard&amp;nav=0.3.3" class="scTrack:SRD:Nav:BM76">Sell on Your Website</a></li><li><a href="https://personal.paypal.com/cgi-bin/marketingweb?cmd=_render-content&amp;content_ID=marketing_us/fundraise&amp;nav=0.3.4" class="scTrack:SRD:Nav:P7">Fundraise</a></li></ul></li><li><a href="https://personal.paypal.com/cgi-bin/marketingweb?cmd=_render-content&amp;content_ID=marketing_us/products_services&amp;nav=0.4" class="scTrack:SRD:Nav:P8">Products &amp; Services</a></li></ul></li><li><a href="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_home-customer&amp;nav=1" class="scTrack:SRD:Nav:L8">Personal</a></li><li><a href="https://www.sandbox.paypal.com/webapps/mpp/merchant?nav=2" class="scTrack:SRD:Nav:x60">Business</a></li></ul></div><script type="text/javascript">if(typeof PAYPAL != 'undefined'){ PAYPAL.core.Navigation.init(); }</script></div><script type="text/javascript" src="https://www.sandbox.paypal.com/WEBSCR-640-20120914-1/js/lib/min/widgets.js"></script><script type="text/javascript" src="https://www.sandbox.paypal.com/WEBSCR-640-20120914-1/js/pp_naturalsearch.js"></script><script type="text/javascript">mp_landing();</script>
+<!-- SiteCatalyst Code
+Copyright 1997-2005 Omniture, Inc.
+More info available at http://www.omniture.com -->
+<script type="text/javascript" src="https://www.sandbox.paypal.com/WEBSCR-640-20120914-1/js/site_catalyst/pp_jscode_paypalsandboxdev.js"></script>
+<script type="text/javascript">
+s.prop1="p/wel/sandbox-outside";
+s.prop20="1349358417";
+s.prop35="out";
+s.prop40="20efe563db5b2";
+s.prop50="en_US";
+s.eVar31="p/wel/sandbox-outside::_express-checkout";
+s.eVar50="JLNizcji07UXhw1%2fwgBuUJzFfIFXMesPsWcoaIzp7jjtmgfotHRm5A%3d%3d_13a2c077670";
+s.pageName="p/wel/sandbox-outside::_express-checkout";
+s.prop56="no";
+s.prop18="";
+s.prop16="";
+s.prop34="PayPalCredit:Servicing:CO:NoTransactions";
+</script>
+<script type="text/javascript"><!--
+/************* DO NOT ALTER ANYTHING BELOW THIS LINE ! **************/
+function scOnload(){var s_code=s.t();if(s_code)document.write(s_code);}
+if(window.addEventListener){
+window.addEventListener('load',scOnload,false);
+}else if(window.attachEvent){
+window.attachEvent('onload', scOnload);
+};
+if(navigator.appVersion.indexOf('MSIE')>=0)document.write(unescape('%3C')+'\!-'+'-')
+//-->
+</script><noscript><img
+src="//paypal.112.2O7.net/b/ss/paypalsandboxdev/1/H.6--NS/0?pageName=NonJavaScript"
+height="1" width="1" border="0" alt="" /></noscript>
+<!--/DO NOT REMOVE/-->
+
+<!-- End SiteCatalyst Code -->
+<script type="text/javascript">var betaUser = "false"; 			
+						YUE.addListener(window, "load", function() {								
+							PAYPAL.util.lazyLoad("/js/Customer/min/baynote.js", function() {
+								var searchFormsIDs = ["searchForm", "searchformnew", "searchform"];									
+								YUE.addListener(searchFormsIDs, 'submit', function() {baynote_handleSubmit(this);});			
+								            
+                                var bn_timeout = setTimeout(function() {
+									if (typeof baynote_validateSearchBox == 'function') {
+										baynote_validateSearchBox();
+										clearTimeout(bn_timeout);
+									}
+								}, 200);
+							});
+						});
+						</script></body></html>
+
