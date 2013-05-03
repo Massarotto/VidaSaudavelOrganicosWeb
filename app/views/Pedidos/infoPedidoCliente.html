@@ -2,10 +2,22 @@
 <script src="&{'application.static.content'}/javascripts/jquery-ui-1.8.17.custom.min.js" type="text/javascript" charset="utf-8"></script>
 
 #{form @Pedidos.atualizar(), method:'POST', id:'editPedidoForm'}
-<table width="100%" cellpadding="4" cellspacing="4" border="0" class="fontGreen2">
+<table width="100%" cellpadding="4" cellspacing="2" border="0" class="fontGreen2">
 	<tr>
 		<td colspan="2" align="center">
+			<input type="hidden" name="pedido.desconto.id" id="pedido.desconto.id" value="${pedido.desconto?.id}" />
+			<input type="hidden" name="pedido.frete.id" id="pedido.frete.id" value="${pedido.frete?.id}" />
 			<span class="fontGreen3">&{'form.order.edit'}</span>
+		</td>
+	</tr>
+	<tr>
+		<td width="40%" align="right">
+			<span>&{'form.admin.customer'}</span>
+		</td>
+		<td align="left">
+			<span class="fontBlackMainHome">
+				<a href="/cliente/${pedido.cliente.id}">${pedido.cliente.nome}</a>
+			</span>
 		</td>
 	</tr>
 	<tr>
@@ -37,6 +49,12 @@
 					size="20" value="${pedido.desconto?.valorDesconto}" /></td>
 	</tr>
 	<tr>
+			<td width="40%" align="right">&{'form.label.frete'}</td>
+			<td align="left">
+				<input type="text" maxlength="10" class="textBox1" name="pedido.frete.valor" id="pedido.frete.valor" 
+						size="20" value="${pedido.frete?.valor}" />*</td>
+	</tr>
+	<tr>
 		<td align="right">&{'form.order.code'}&nbsp;</td>
 		<td align="left">
 			<span>${pedido.codigoPedido}</span>
@@ -59,7 +77,7 @@
 	<tr>
 		<td align="right">&{'form.order.date.delivery'}&nbsp;</td>
 		<td align="left">
-			<input type="text" class="datePicker" name="pedido.dataEntrega" id="pedido.dataEntrega" size="16" value="${pedido.dataEntrega?.format('dd/MM/yyyy hh:mm')}" />*
+			<input type="text" class="datePicker" name="pedido.dataEntrega" id="pedido.dataEntrega" size="16" value="${pedido.dataEntrega?.format('dd/MM/yyyy HH:mm')}" />*
 		</td>
 	</tr>
 	<tr>

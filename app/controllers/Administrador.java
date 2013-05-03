@@ -4,20 +4,16 @@
 package controllers;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 
 import models.BairroEntrega;
 import models.Frete;
-import models.Produto;
 import play.Logger;
 import play.cache.Cache;
 import play.data.validation.Valid;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
-import play.libs.Images;
 import play.mvc.Before;
-import play.mvc.Controller;
 
 /**
  * @author guerrafe
@@ -25,7 +21,7 @@ import play.mvc.Controller;
  */
 public class Administrador extends BaseController {
 	
-	@Before(unless={"oQueSaoOrganicos", "politicaEntrega", "quemSomos", "fornecedores", "parceiros"})
+	@Before(unless={"oQueSaoOrganicos", "politicaEntrega", "quemSomos", "fornecedores", "parceiros", "naMidia", "servicos"})
 	static void isAuthenticated() {
 		Logger.debug("####### Validar se usuário está autenticado...#######");
 		
@@ -147,9 +143,19 @@ public class Administrador extends BaseController {
 	}
 
 	public static void politicaEntrega() {
-		List<BairroEntrega> bairrosAtendidos = BairroEntrega.find("order by nome ASC").fetch();
+		List<BairroEntrega> bairrosAtendidos = BairroEntrega.find("ativo = ? order by nome ASC", Boolean.TRUE).fetch();
 		
 		render(bairrosAtendidos);
+	}
+	
+	@Transactional(readOnly=false)
+	public static void changeStatus(Long id) {
+		BairroEntrega bairroEntrega = BairroEntrega.findById(id);
+		bairroEntrega.setAtivo(!bairroEntrega.getAtivo());
+		
+		bairroEntrega.save();
+		
+		showBairrosEntrega();
 	}
 	
 	public static void quemSomos() {
@@ -165,6 +171,14 @@ public class Administrador extends BaseController {
 	}
 	
 	public static void parceiros() {
+		render();
+	}
+	
+	public static void naMidia() {
+		render();
+	}
+	
+	public static void servicos() {
 		render();
 	}
 }

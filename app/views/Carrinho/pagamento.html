@@ -162,7 +162,7 @@
 						<td>
 							<img src="&{'application.static.content'}&{'application.path.public.images'}paypal_logo.gif" alt="paypal logo" />
 							<div id="valorPayPal" style="width: 65%; float: right; position: relative; margin-top: 8px;">
-								<span class="fontGreen3">${carrinho.valorTotalCompra.formatCurrency('BRL').raw()}</span>
+								<span class="fontGreen3">${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}</span>
 							</div>
 						</td>
 					</tr>
@@ -180,7 +180,7 @@
 							<span class="fontBlackMainHome">${pagamento.getFormaPagamento('DINHEIRO').descricao}</span>
 							#{if (carrinho.valorTotalCompra > valorMinPagPayPal)}
 							<div id="valorDinheiroCheque" style="width: 65%; float: right; position: relative;">
-								<span class="fontGreen3">${valorComDesconto.formatCurrency('BRL').raw()} &{'form.politicaEntrega.desconto', '5%'}</span>
+								<span class="fontGreen3">${(valorComDesconto+ frete.valor).formatCurrency('BRL').raw()} &{'form.politicaEntrega.desconto', '5%'}</span>
 							</div>
 							#{/if}
 						</td>

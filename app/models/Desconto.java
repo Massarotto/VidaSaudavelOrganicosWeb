@@ -33,7 +33,9 @@ import play.db.jpa.Model;
 @Cacheable
 @Table(name="DESCONTO")
 public class Desconto extends Model {
-	
+
+	private static final long serialVersionUID = 2230720664447243872L;
+
 	public final static BigDecimal CEM_PORCENTO = new BigDecimal("100.0");
 	
 	@Required
@@ -55,7 +57,7 @@ public class Desconto extends Model {
 	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.REFRESH)
 	private Usuario usuario;
 	
-	@OneToOne(mappedBy="desconto")
+	@OneToOne(mappedBy="desconto", cascade=CascadeType.ALL)
 	private Pedido pedido;
 	
 	public Desconto() {
@@ -73,7 +75,7 @@ public class Desconto extends Model {
 	 */
 	public BigDecimal getPorcentagem() {
 		if(this.porcentagem==null)
-			this.porcentagem = new BigDecimal(0);
+			this.porcentagem = BigDecimal.ZERO;
 		
 		return porcentagem;
 	}
@@ -82,6 +84,9 @@ public class Desconto extends Model {
 	 * @param porcentagem the porcentagem to set
 	 */
 	public void setPorcentagem(BigDecimal porcentagem) {
+		if(porcentagem.equals(BigDecimal.ZERO))
+			this.valorDesconto = BigDecimal.ZERO;
+		
 		this.porcentagem = porcentagem;
 	}
 
@@ -141,6 +146,9 @@ public class Desconto extends Model {
 	 * @param valorDesconto the valorDesconto to set
 	 */
 	public void setValorDesconto(BigDecimal valorDesconto) {
+		if(valorDesconto.equals(BigDecimal.ZERO))
+			this.porcentagem = BigDecimal.ZERO;
+		
 		this.valorDesconto = valorDesconto;
 	}
 	

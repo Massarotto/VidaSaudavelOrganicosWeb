@@ -14,6 +14,8 @@ import models.Produto;
  */
 public class ProdutoComparator implements Comparator<Produto>, Serializable {
 	
+	private static final long serialVersionUID = 1503152973023315092L;
+	
 	private boolean crescente = true;
 	
 	public ProdutoComparator(boolean decrescente) {

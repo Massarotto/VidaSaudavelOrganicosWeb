@@ -24,6 +24,8 @@ import play.db.jpa.Model;
 @Table(name="BAIRRO_ENTREGA")
 public class BairroEntrega extends Model {
 	
+	private static final long serialVersionUID = -7756730216617962360L;
+
 	@Required(message="message.required.endereco.bairro")
 	@Column(name="NOME", length=150, nullable=false)
 	private String nome;

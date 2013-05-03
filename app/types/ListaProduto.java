@@ -26,6 +26,8 @@ import models.Produto;
 @XmlRootElement(name="ListaProduto")
 public class ListaProduto extends ArrayList<Produto> {
 
+	private static final long serialVersionUID = 4169724716010279939L;
+	
 	@XmlElement(name="Produto", required=true, nillable=true)
 	private List<Produto> produtos;
 	

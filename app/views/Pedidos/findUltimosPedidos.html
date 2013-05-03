@@ -9,15 +9,16 @@
 	<div>&{'form.order.debitos'}&nbsp;<b>${debito.formatCurrency('BRL').raw()}</b></div>
 	<table width="100%" cellpadding="1" cellspacing="0" border="0" class="fontGreen2">
 		<tr class="tr1">
-			<td align="center" width="15%">
-				<span>&{'form.order.number'}</span>
+			<td align="center" width="9%">
+				<span>&{'form.admin.pedido'}</span>
 			</td>
-			<td align="center" width="16%">Data</td>
+			<td align="center" width="11%">Data</td>
 			<td align="center" width="9%">
 				<span>Valor</span>
 			</td>
-			<td align="center" width="9%">Desconto(%)</td>
-			<td align="right" width="11%">Valor Desconto</td>
+			<td align="center" width="9%">Desconto</td>
+			<td align="center" width="7%">&{'form.label.frete'}</td>
+			<td align="right" width="11%">Valor Total</td>
 			<td align="center" width="15%">
 				<span>Status</span>
 			</td>
@@ -26,22 +27,25 @@
 			</td>
 		</tr>
 		<tr>
-			<td colspan="8">
+			<td colspan="9">
 				<div style="position:relative; height: 340px; overflow: auto;">
 					<table width="100%" border="0">
 					#{list items:pedidos, as:'_ped'}
 					<tr>
-						<td width="15%" align="center">
+						<td width="8%" align="center">
 							<span title="&{'form.order.observacao'}: ${_ped.observacao}">${_ped.id}</span>
 						</td>
-						<td width="18%" align="center">${new Date(_ped.dataPedido.getTime()).format('dd/MM/yyyy HH:mm')}</td>
+						<td width="12%" align="center">${new Date(_ped.dataPedido.getTime()).format('dd/MM/yyyy')}</td>
 						<td width="9%" align="center">${_ped.valorPedido.formatCurrency('BRL').raw()}</td>
 						<td width="9%" align="center">
-							<span title="${pedido.desconto?.valorDesconto.formatCurrency('BRL').raw()}">${_ped.desconto?.porcentagem}</span>
+							<span title="${_ped.desconto?.porcentagem}%">${_ped.desconto?.valorDesconto.formatCurrency('BRL').raw()}</span>
 						</td>
-						<td width="9%" align="center">${_ped.getValorComDesconto().formatCurrency('BRL').raw()}</td>
+						<td width="10%" align="center">
+							<span>${(pedido.frete==null || pedido.frete.valor==null) ? 'R$ 0' : pedido.frete.valor.formatCurrency('BRL').raw()}</span>
+						</td>
+						<td width="9%" align="center">${_ped.getValorTotal().formatCurrency('BRL').raw()}</td>
 						<td width="15%" align="center">
-							${_ped.codigoEstadoPedido}
+							${_ped.codigoEstadoPedido.estado}
 						</td>
 						<td width="15%" align="center">${_ped.dataEntrega!=null ? new Date(_ped.dataEntrega.getTime()).format('dd/MM/yyyy HH:mm') : _ped.dataEntrega}</td>
 					</tr>

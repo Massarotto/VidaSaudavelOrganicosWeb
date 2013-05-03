@@ -6,12 +6,12 @@ validation.failed=Ocorreram alguns erros ao tentar processar sua requisição:
 
 application.tilte=Vida Saudável Orgânicos, a sua loja de produtos orgânicos, integrais e naturais...
 application.subtilte=Vida Saudável Orgânicos |
-application.path.upload.images=c:/Apache/htdocs/images
-application.path.report=c:/Apache/htdocs/relatorios/
-application.path.upload.archives=c:/Apache/htdocs/arquivos/
-#application.path.report=/home/vidasaudavelorganicos/domains/static.vidasaudavelorganicos.com.br/public_html/relatorios/
-#application.path.upload.images=/home/vidasaudavelorganicos/domains/static.vidasaudavelorganicos.com.br/public_html/images/
-#application.path.upload.archives=/home/vidasaudavelorganicos/domains/static.vidasaudavelorganicos.com.br/public_html/arquivos/
+#application.path.upload.images=c:/Apache/htdocs/images
+#application.path.report=c:/Apache/htdocs/relatorios/
+#application.path.upload.archives=c:/Apache/htdocs/arquivos/
+application.path.report=/home/vidasaudavelorganicos/domains/static.vidasaudavelorganicos.com.br/public_html/relatorios/
+application.path.upload.images=/home/vidasaudavelorganicos/domains/static.vidasaudavelorganicos.com.br/public_html/images/
+application.path.upload.archives=/home/vidasaudavelorganicos/domains/static.vidasaudavelorganicos.com.br/public_html/arquivos/
 application.path.termoCompromisso=/html/termo_compromisso.html
 application.path.images.width=420
 application.path.images.height=384
@@ -180,7 +180,7 @@ form.label.frete=Frete
 form.label.valorCompra=Valor do Pedido
 
 #Valor Compra sem Frete
-application.frete.valor=150.00
+application.frete.valor=15000.00
 application.order.minValue=40.00
 message.validation.order.minValue=Não foi possível prosseguir: o valor mínímo da compra é de R$ 40,00.
 
@@ -260,6 +260,7 @@ form.order.removerEntrega=Remover Entrega
 form.order.alterar.metodoPagamento=Forma de Pagamento
 form.order.last=Últimos Pedidos
 form.order.debitos=Débitos pendentes:
+form.order.notaFiscal=Nota Fiscal
 
 #Questionário
 form.questionario.title=Questionário
@@ -299,13 +300,14 @@ message.form.login.senhas=Por favor, verifique se a senha antiga e a nova coinci
 message.ativar.inativar.todos=Deseja realmente continuar com essa operação?
 
 #Institucional
-form.intitucional.link=<a href='/quemSomos'>Quem Somos</a><span> | </span><a href='/o-que-sao-organicos'>O que são <strong>Orgânicos</strong>?</a><span> | </span><a href='/politica-de-entrega'>Política de Entrega</a><span> | </span><a href='/faleconosco'>Fale Conosco</a> | </span><a href='/fornecedores'>Fornecedores</a> | </span><a href='/parceiros'>Parceiros</a> 
+form.intitucional.link=<a href='/quem-somos'>Quem Somos</a><span> | </span><a href='/o-que-sao-organicos'>O que são <strong>Orgânicos</strong>?</a><span> | </span><a href='/politica-de-entrega'>Política de Entrega</a><span> | </span><a href='/faleconosco'>Fale Conosco</a> | </span><a href='/fornecedores'>Fornecedores</a> | </span><a href='/servicos'>Serviços</a> 
+form.intitucional.foot.link=<a href='/quem-somos'>Quem Somos</a><span> | </span><a href='/o-que-sao-organicos'>O que são <strong>Orgânicos</strong>?</a><span> | </span><a href='/politica-de-entrega'>Política de Entrega</a><span> | </span><a href='/faleconosco'>Fale Conosco</a> | </span><a href='/fornecedores'>Fornecedores</a> | </span><a href='/parceiros'>Parceiros</a><span> | </span><a href='/na-midia'>Na Mídia</a><span> | </span><a href='/servicos'>Serviços</a>
 form.faleConosco.title=Fale Conosco
 form.faleConosco.text=<p><h3>Seu contato é muito importante para nós.</h3><br /><h4>Envie suas críticas, sugestões ou deixe-nos uma mensagem para que possamos melhorar nossos serviços.</h4></p>
 form.faleConosco.phoneNumber=<p>Se preferir entrar em contato por telefone: <strong>(11) 4324-8074</strong> / <strong>(11) 97379-6938(Vivo)</strong>
 form.faleConosco.message=Mensagem
 message.faleConosco.success=Seu contato foi registrado com sucesso! Em breve ele será respondido.
-form.final.order.faleConosco=Para que possamos melhorar nossos serviços, gostaríamos nos enviasse sua opinião, crítica ou sugestão clicando <a href='/faleconosco?nome=%s&email=%s'>aqui</a>.
+form.final.order.faleConosco=Para que possamos melhorar nossos serviços, gostaríamos nos enviasse sua opinião, crítica ou sugestão <a href='/faleconosco?nome=%s&email=%s'><u>clicando aqui</u></a>.
 form.final.order.delivery=<p>Atenção, as informações pertinentes ao seu pedido, foram enviadas por e-mail.<span style='visibility: hidden;'><a href='/ajaxResponderQuestionario?height=260&width=470' id='responderQuestionario' class='thickbox'>|</a><span></p>
 form.oquesao.title=O que são Orgânicos?
 form.quemsomos.title=Quem Somos
@@ -345,9 +347,9 @@ form.oquesao.vantagens.topic9.title=<p><h4>Mais praticidade</h4></p>
 form.oquesao.vantagens.topic9=<p>Você pode ter todas essas vantagens na sua casa; sem perder a comodidade e sem precisar pegar o carro para ir ao mercado. Os produtos saem da terra e chegam fresquinhos em seu lar, entre 24 e 36 horas.</p>
 
 form.politicaEntrega.order.title=<p><h3>Pedidos</h3></p>
-form.politicaEntrega.order=<p>Ao acessar a loja virtual da <strong>Vida Saudável Orgânicos</strong> pela primeira vez, você pode fazer seu cadastro antes de iniciar suas compras, ou no momento em que concluí-las. Se você já é nosso cliente, basta fazer seu<strong><a href='/login' class='a1'>login</a></strong> utilizando o e-mail e senha cadastrados.</p>
+form.politicaEntrega.order=<p>Ao acessar a loja virtual da <strong>Vida Saudável Orgânicos</strong> pela primeira vez, você pode fazer seu cadastro antes de iniciar suas compras, ou no momento em que concluí-las. Se você já é nosso cliente, basta fazer seu <a href='/login'>login</a> utilizando o e-mail e senha cadastrados.</p>
 form.politicaEntrega.entrega.title=<p><h3>Entrega</h3></p>
-form.politicaEntrega.entrega=<p>Os pedidos fechados até Domingo, serão entregues na Terça-feira seguinte.</p><p>Já os pedidos que forem feitos após o Domingo, serão entregues somente na próxima semana, na Terça-Feira.</p><br /><p>O valor mínimo da compra é de <strong>R$ 40,00</strong> e será cobrada uma taxa de entrega de <strong>R$6,00</strong>.<br />Compras acima de <strong>R$ 150,00</strong> não terão taxa de entrega, e caso a opção de pagamento for <strong>Dinheiro</strong> ou <strong>Cheque</strong>, terão <b>%s</b> de desconto no valor do pedido.</p><br /><p><b><u>Importante</u>:</b> No ato da entrega poderá haver a falta de algum produto, em função de condições climáticas ou outros fatores, como por exemplo, imprevistos no transporte.</p>
+form.politicaEntrega.entrega=<p>Os pedidos fechados até Domingo, <b>23:00hs</b>, serão entregues na Terça-feira seguinte.</p><p>Já os pedidos que forem feitos após o Domingo, serão entregues somente na próxima semana, na Terça-Feira.</p><br /><p>O valor mínimo da compra é de <strong>R$ 40,00</strong> e será cobrada uma taxa de entrega de <strong>R$6,00</strong>.<br />Compras acima de <strong>R$ 150,00</strong> e com opção de pagamento <strong>Dinheiro</strong> ou <strong>Cheque</strong>, terão <b>%s</b> de desconto no valor do pedido.</p><br /><p><b><u>Importante</u>:</b> No ato da entrega poderá haver a falta de algum produto, em função de condições climáticas ou outros fatores, como por exemplo, imprevistos no transporte.</p>
 form.politicaEntrega.bairros.title=<p><h3><a href='#bairros' class='txt_titulo_06'>Bairros Atendidos</a></h3></p>
 form.politicaEntrega.bairros=Bairros Atendidos
 form.politicaEntrega.pagamento.title=Forma de Pagamento
@@ -403,6 +405,20 @@ form.parceiros.path.notConfigured=O diretório de arquivos não está configurad
 form.parceiros.upload.archive.maxLength=1048576
 form.parceiros.error.archive.maxLength=O arquivo é maior que o máximo permitido (1Mb). 
 
+#Na mídia
+form.midia.title=Vida Saudável Orgânicos na Mídia
+
+form.midia.folha.1=Planejar o cardápio da semana ajuda a economizar tempo e dinheiro - Folha de S. Paulo, 21 de Outubro de 2012
+form.midia.folha.1.image=/images/na-midia-folha-sao-paulo.jpeg
+form.midia.folha.1.link=http://www1.folha.uol.com.br/saopaulo/1172118-planejar-o-cardapio-da-semana-ajuda-a-economizar-tempo-e-dinheiro-veja-dicas.shtml
+
+form.midia.forum.1=Uma Porção de Saúde - Fórum de Sustentabilidade - Ano 2, nº 2 - 2012
+form.midia.forum.1.image=/images/na-midia-revista-sustentabilidade.jpeg
+
+form.midia.diariosp.1=Orgânico gera oportunidades - Diário de São Paulo, 2 de Setembro de 2012
+form.midia.diariosp.1.image=/images/na-midia-jornal-diario-sp.jpg
+
+
 message.required.fornecedor.nome=Por favor, digite o Nome do Fornecedor
 message.minsize.fornecedor.cnpj=Por favor, o campo CNPJ deve conter 11 dígitos no mínimo
 message.minsize.value.desconto=Por favor, digite somente valores positivos
@@ -434,7 +450,34 @@ application.email.admin=felipe@vidasaudavelorganicos.com.br,alexandre@vidasaudav
 application.btnFacebook=btn_facebook.gif
 application.btnFacebook.width=23
 application.btnFacebook.height=23
-application.link.facebook=http://www.facebook.com/VidaSaudavelOrganicos
+application.link.facebook=http://www.facebook.com/VidaSaudavelOrganicosDelivery
+
+#Cestas
+form.cesta.title=Cesta
+form.cesta.assign.title=Assinaturas
+form.cesta.personal=Minha Cesta
+form.cesta.available=Disponível
+form.cesta.active=Ativo
+form.cesta.principal=Primeira Opção
+form.cesta.second=Segunda Opção
+form.cesta.info=Informações
+form.cesta.assign=Assinar Cesta
+form.cesta.interval=Periodicidade
+form.cesta.properties=Preencha as opções abaixo
+form.cesta.startDate=Início
+form.cesta.hasAssign=Você já possui uma assinatura ativa, é necessário inativar a existente para assinar uma nova.
+form.cesta.delivery=Entrega
+form.cesta.nextDelivery=Próxima Entrega
+form.cesta.success=Assinatura realizada com sucesso!
+form.cesta.order.delivery=<p>Atenção, as informações pertinentes à assinatura da cesta, foram enviadas por e-mail.</p>
+form.cesta.email=Caro(a) Cliente,<br /><br />Obrigado por realizar a assinatura de sua cesta.<br /><br />Att,<br /><b><a href='http://www.vidasaudavelorganicos.com.br'>Vida Saud&aacute;vel Org&acirc;nicos</a></b>
+form.cesta.create.order=Gerar Pedidos
+form.cesta.create.order.message=Os pedidos para as assinaturas de cestas estão sendo processados.
+
+#Serviços
+form.services.title=Serviços
+form.services.obs.2=** As alterações e o cancelamento da entrega mais próxima deverão ocorrer antes das 23hs do Domingo.
+form.services.obs.1=* Disponível para clientes com no mínimo três pedidos já realizados
 
 #Overwrite Play! Messages
 validation.email=E-mail informado não é válido
@@ -444,17 +487,20 @@ validation.min=O valor não pode ser menor que %2$d
 application.form.find=Pesquisar
 
 #PayPal Pagamento
-#application.service.url.paypal=https://api-3t.paypal.com/2.0/
-#application.signature.url.paypal=A9q43KRRJGlL787n1Gp.bP7Q3RUDAHMLCQBI.Q.xErqq7V3ccHdya-B1
-#application.username.url.paypal=contato_api1.vidasaudavelorganicos.com.br
-#application.password.url.paypal=DSCZW2RDB469SBSL
-application.service.url.paypal=https://api-3t.sandbox.paypal.com/2.0/
-application.signature.url.paypal=AitIwFu-3.DXRLYSY0rw6nvBxXFpAeTZQuoQ6k8SQ4wcqFNPtI2ahon5
-application.username.url.paypal=vender_1349716917_biz_api1.gmail.com
-application.password.url.paypal=1349716939
-application.checkout.url.paypal=https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=
-application.return.url.paypal=http://localhost:8001/pedido/paypal/finalizar
-application.cancel.url.paypal=http://localhost:8001/pedido/paypal/cancelar
+application.service.url.paypal=https://api-3t.paypal.com/2.0/
+application.signature.url.paypal=A9q43KRRJGlL787n1Gp.bP7Q3RUDAHMLCQBI.Q.xErqq7V3ccHdya-B1
+application.username.url.paypal=contato_api1.vidasaudavelorganicos.com.br
+application.password.url.paypal=DSCZW2RDB469SBSL
+application.checkout.url.paypal=https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=
+application.return.url.paypal=http://www.vidasaudavelorganicos.com.br/pedido/paypal/finalizar
+application.cancel.url.paypal=http://www.vidasaudavelorganicos.com.br/pedido/paypal/cancelar
+#application.service.url.paypal=https://api-3t.sandbox.paypal.com/2.0/
+#application.signature.url.paypal=AitIwFu-3.DXRLYSY0rw6nvBxXFpAeTZQuoQ6k8SQ4wcqFNPtI2ahon5
+#application.username.url.paypal=vender_1349716917_biz_api1.gmail.com
+#application.password.url.paypal=1349716939
+#application.checkout.url.paypal=https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=
+#application.return.url.paypal=http://localhost:8001/pedido/paypal/finalizar
+#application.cancel.url.paypal=http://localhost:8001/pedido/paypal/cancelar
 application.minValue.paypal=150.00
 application.error.paymentMethod=Por favor, selecione a forma de pagamento.
 application.pedido.paypal.desconto=5.00
@@ -476,4 +522,4 @@ play-paginate.summary.from=do total de
 play-paginate.summary.entries=registros.
 
 #404
-application.page.notfound=A página que você estava procurando, não existe!
+application.page.notfound=A página que você estava procurando não existe!

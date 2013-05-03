@@ -19,6 +19,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import business.produto.layout.LayoutArquivo;
 
+import play.data.validation.Email;
 import play.data.validation.MinSize;
 import play.data.validation.Required;
 import play.db.jpa.Model;
@@ -32,12 +33,15 @@ import play.db.jpa.Model;
 @Table(name="FORNECEDOR")
 @Entity
 public class Fornecedor extends Model {
-	
+
+	private static final long serialVersionUID = 343556748359547283L;
+
 	@Required(message="message.required.fornecedor.nome")
 	@Column(name="NOME", length=180, nullable=false)
 	private String nome;
 	
 	@MinSize(value=11, message="message.minsize.fornecedor.cnpj")
+	@Required(message="message.minsize.fornecedor.cnpj")
 	@Column(name="CNPJ", length=14, nullable=true)
 	private String cnpj;
 	
@@ -51,7 +55,12 @@ public class Fornecedor extends Model {
 	private LayoutArquivo layoutArquivo;
 	
 	@Column(name="EMAIL_CONTATO", nullable=true, length=300)
+	@Required(message="message.required.cliente.email")
+	@Email(message="E-mail inválido!")
 	private String emailContato;
+	
+	@OneToMany(fetch=FetchType.EAGER, cascade=CascadeType.ALL, mappedBy="fornecedor")
+	private List<Telefone> telefones = new ArrayList<Telefone>();
 	
 	/**
 	 * @return the nome
@@ -148,4 +157,27 @@ public class Fornecedor extends Model {
 		this.emailContato = emailContato;
 	}
 
+	/**
+	 * @return the telefones
+	 */
+	public List<Telefone> getTelefones() {
+		return telefones;
+	}
+
+	/**
+	 * @param telefones the telefones to set
+	 */
+	public void setTelefones(List<Telefone> telefones) {
+		this.telefones = telefones;
+	}
+
+	public boolean addTelefone(Telefone t) {
+		if(t==null)
+			return false;
+		
+		t.setFornecedor(this);
+		
+		return getTelefones().add(t);
+	}
+	
 }

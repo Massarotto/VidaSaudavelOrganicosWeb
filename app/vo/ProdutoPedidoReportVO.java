@@ -9,9 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import controllers.Carrinho;
-
-import models.Frete;
+import models.Pedido;
 import models.PedidoItem;
 import models.Produto;
 
@@ -21,6 +19,8 @@ import models.Produto;
  */
 public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPedidoReportVO> {
 
+	private static final long serialVersionUID = -3980579539977698958L;
+	
 	private Long id;
 	private String descricao;
 	private BigDecimal valor;
@@ -212,7 +212,9 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 	}
 	
 	public static List<ProdutoPedidoReportVO> fillProdutos(Collection<Produto> produtos, BigDecimal valorPedido, 
-														BigDecimal desconto, String observacao) {
+														BigDecimal desconto, 
+														String observacao,
+														BigDecimal frete) {
 		List<ProdutoPedidoReportVO> result = new ArrayList<ProdutoPedidoReportVO>();
 		ProdutoPedidoReportVO entity = null;
 		Long idAnterior = null;
@@ -226,14 +228,14 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 					entity = new ProdutoPedidoReportVO();
 				
 					entity.setCodigoProduto(produto.getCodigoProduto());
-					entity.setValorPedido(valorPedido);
+					entity.setValorPedido(valorPedido.add(frete));
 					entity.setId(produto.id);
 					entity.setQuantidade(1);
 					entity.setDescricao(produto.getDescricao());
 					entity.setFornecedor(produto.getFornecedor().getNome());
 					entity.setValor(new BigDecimal(produto.getValorVenda()));
 					entity.setDesconto(desconto);
-					entity.setFrete(Carrinho.calcularFrete(valorPedido));
+					entity.setFrete(frete);
 					
 					//Observação
 					entity.setObservacao(observacao);
@@ -265,7 +267,7 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 				
 				entity.setValor(new BigDecimal(produto.getProdutos().get(0).getValorVenda()));
 				entity.setDesconto(desconto);
-				entity.setFrete(Carrinho.calcularFrete(valorPedido));
+				entity.setFrete(Pedido.calcularFrete(valorPedido));
 				
 				//Observação
 				entity.setObservacao(produto.getPedido().getObservacao());

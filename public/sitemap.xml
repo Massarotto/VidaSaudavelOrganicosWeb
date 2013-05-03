@@ -17,7 +17,7 @@
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>http://www.vidasaudavelorganicos.com.br/quemSomos</loc>
+  <loc>http://www.vidasaudavelorganicos.com.br/quem-somos</loc>
   <changefreq>weekly</changefreq>
   <priority>0.80</priority>
 </url>
@@ -30,6 +30,11 @@
   <loc>http://www.vidasaudavelorganicos.com.br/faleconosco</loc>
   <changefreq>weekly</changefreq>
   <priority>0.40</priority>
+</url>
+<url>
+  <loc>http://www.vidasaudavelorganicos.com.br/servicos</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.10</priority>
 </url>
 <!-- Produtos -->
 <url>

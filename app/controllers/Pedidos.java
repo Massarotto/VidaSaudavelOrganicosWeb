@@ -11,21 +11,20 @@ import java.util.List;
 
 import javax.persistence.Query;
 
-import org.apache.commons.lang.StringUtils;
-
-import business.estoque.EstoqueControl;
-import business.pagamento.service.PayPalService;
-
-import models.CarrinhoProduto;
 import models.CarrinhoItem;
+import models.CarrinhoProduto;
 import models.Cliente;
+import models.Desconto;
 import models.FormaPagamento;
 import models.Pagamento;
 import models.Pedido;
+import models.Pedido.PedidoEstado;
 import models.PedidoItem;
 import models.Produto;
 import models.Usuario;
-import models.Pedido.PedidoEstado;
+
+import org.apache.commons.lang.StringUtils;
+
 import play.Logger;
 import play.cache.Cache;
 import play.data.validation.Required;
@@ -35,9 +34,10 @@ import play.db.jpa.Transactional;
 import play.i18n.Messages;
 import play.modules.paginate.ValuePaginator;
 import play.mvc.Before;
+import business.estoque.EstoqueControl;
+import business.pagamento.service.PayPalService;
 import ebay.api.paypalapi.DoExpressCheckoutPaymentResponseType;
 import ebay.api.paypalapi.GetExpressCheckoutDetailsResponseType;
-import ebay.apis.eblbasecomponents.AckCodeType;
 import form.ProdutoQuantidadeForm;
 
 /**
@@ -72,14 +72,18 @@ public class Pedidos extends BaseController {
 	}
 
 	public static void showAll() {
-		Logger.debug("########## Vai consultar todos os pedidos... ###########", "");
+		Logger.debug("########## Vai consultar todos os pedidos...###########", "");
 		
 		PedidoEstado[] status = PedidoEstado.values();
 		
-		List<Pedido> _pedidos = Pedido.find("order by dataPedido desc, codigoEstadoPedido desc").fetch();
+		//List<Pedido> _pedidos = Pedido.find("order by dataPedido desc, codigoEstadoPedido desc").fetch();
+		Query query = JPA.em().createQuery("from Pedido order by dataPedido desc, codigoEstadoPedido desc");
+		List<Pedido> _pedidos = query.getResultList();
+		
 		ValuePaginator<Pedido> vPedidos = new ValuePaginator<Pedido>(_pedidos);
 		vPedidos.setPageSize(50);
 		
+		Logger.debug("########## Fim consulta de todos os pedidos...###########", "");
 		render(vPedidos, status);
 	}
 	
@@ -102,18 +106,25 @@ public class Pedidos extends BaseController {
 		if(pedido.getDataEntrega()!=null && pedido.getDataPedido().after(pedido.getDataEntrega()))
 			validation.addError("dataEntrega", "form.order.dateDelivery.wrong", "");
 		
+		if(pedido.getFrete().getValor()==null)
+			validation.addError("frete", "validation.required", "Frete");
+		
 		if(validation.hasErrors()) {
 			Logger.debug("######## Não foi possível salvar o pedido: %s  #########", validation.errors());
 			params.flash();
 			validation.keep();
 			
-			edit(pedido.id, null);
+			infoPedidoCliente(pedido.id);
 			
 		}else {
 			if(pedido.getCodigoEstadoPedido().equals(PedidoEstado.CANCELADO) 
 					&& !PedidoEstado.CANCELADO.equals(pedido.getUltimoStatusEstadoPedido())) {
 				Logger.info("#### Início - Atualizar o estoque com os produtos do pedido: %s ####", pedido.id);
-				CarrinhoProduto carrinho = CarrinhoProduto.findById(Long.parseLong(pedido.getCodigoPedido()));
+				
+				CarrinhoProduto carrinho = null; 
+				
+				if(!pedido.getEhPedidoDeCesta())
+					carrinho = CarrinhoProduto.findById(Long.parseLong(pedido.getCodigoPedido()));
 				
 				if(carrinho!=null) {
 					EstoqueControl.reporEstoque(pedido.getItens(), session.get("usuarioAutenticado"));
@@ -129,9 +140,12 @@ public class Pedidos extends BaseController {
 			pedido.getDesconto().setPedido(pedido);
 			pedido.getDesconto().setUsuario(usuario);
 			pedido.getDesconto().setDataDesconto(new Date());
-
+			
 			pedido.calcularDesconto();
 			
+			Desconto desconto = pedido.getDesconto();
+			desconto.merge();
+
 			pedido.save();
 		}
 		Logger.debug("######### Pedido salvo com sucesso: %s #########", pedido.id);
@@ -191,7 +205,7 @@ public class Pedidos extends BaseController {
 		Pedido pedido = Pedido.findById(id);
 		
 		Logger.info("###### Pedido: %s: - Valor: %s ######", pedido.id, pedido.getValorPedido());
-		BigDecimal vlrFrete = Carrinho.calcularFrete(pedido.getValorPedido());
+		BigDecimal vlrFrete = Pedido.calcularFrete(pedido.getValorPedido());
 		
 		for(ProdutoQuantidadeForm itemProdutoQuantidade : produtoQuantidade) {
 			laco_raiz:	
@@ -225,9 +239,6 @@ public class Pedidos extends BaseController {
 				}
 			}	
 		}
-		pedido.getDesconto().setValorDesconto(new BigDecimal(0));
-		
-		valorPedidoAlterado = valorPedidoAlterado.add(vlrFrete);
 		pedido.setValorPedido(valorPedidoAlterado);
 		Logger.info("###### Novo valor do frete %s para o pedido: %s. Total: %s  ######", vlrFrete, id, valorPedidoAlterado);
 		pedido.setDataAlteracao(new Date());
@@ -485,7 +496,7 @@ public class Pedidos extends BaseController {
 		for(Pedido _ped : pedidosAbertos) {
 			Logger.info("##### Encontrado pedido %s aberto para o cliente % - valor: %s #####", _ped.id, _ped.getCliente().getNome(), _ped.getValorComDesconto());
 			
-			debito = debito.add(_ped.getValorComDesconto()).setScale(BigDecimal.ROUND_HALF_UP);
+			debito = debito.add(_ped.getValorTotal()).setScale(BigDecimal.ROUND_HALF_UP);
 		}
 		render(pedidos, debito, pedido);
 	}

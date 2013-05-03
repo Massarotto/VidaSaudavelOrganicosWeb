@@ -2,6 +2,7 @@
 #{set 'title'}
 &{'application.subtilte'} Respostas Question&aacute;rio ${questionario.titulo}
 #{/set}
+<link rel="stylesheet" type="text/css" media="screen" href="&{'application.static.content'}/stylesheets/play-pagination.css">
 
 <div class="defaultContentSize">
 	<table width="100%" cellpadding="4" cellspacing="4" border="0" class="fontGreen2">
@@ -37,7 +38,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						#{list items:questionario.respostasQuestionarios, as:'resposta'}
+						#{paginate.list items:questionario.respostasQuestionarios, as:'resposta'}
 						<tr>
 							<td>${resposta.usuario.cliente.nome}</td>
 							<td>${resposta.respostas.descricao}</td>
@@ -45,9 +46,13 @@
 								${new Date(resposta.dataResposta.getTime()).format('dd/MM/yyyy')} 
 							</td>
 						</tr>
-						#{/list}
+						#{/paginate.list}
+						<tr class="tr1">
+							<td colspan="1" align="center">#{paginate.summary items:questionario.respostasQuestionarios /}</td>
+							<td colspan="2" align="center">#{paginate.controls items:questionario.respostasQuestionarios /}</td>
+						</tr>
 					</tbody>
-				</table>		
+				</table>	
 			</td>
 		</tr>
 	</table>

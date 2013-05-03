@@ -16,13 +16,13 @@
     
     <cache 
     		name="org.hibernate.cache.StandardQueryCache"
-    		maxElementsInMemory="1000"
+    		maxElementsInMemory="5000"
            	eternal="false"
             timeToIdleSeconds="120"
             timeToLiveSeconds="3600"
             overflowToDisk="true"
             maxElementsOnDisk="10000"
-            diskPersistent="false"
+            diskPersistent="true"
             diskExpiryThreadIntervalSeconds="120"
             memoryStoreEvictionPolicy="LRU"
     />

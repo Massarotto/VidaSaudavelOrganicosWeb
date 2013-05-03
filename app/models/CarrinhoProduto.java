@@ -36,6 +36,8 @@ import play.db.jpa.Model;
 @Table(name="CARRINHO_PRODUTO")
 public class CarrinhoProduto extends Model {
 	
+	private static final long serialVersionUID = 81763876502891L;
+
 	@Required
 	@Column(name="VALOR_TOTAL_COMPRA", nullable=true, precision=8, scale=2)
 	private BigDecimal valorTotalCompra;

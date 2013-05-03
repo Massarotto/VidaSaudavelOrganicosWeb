@@ -40,6 +40,12 @@
 						size="20" value="${pedido.desconto?.valorDesconto}" /></td>
 		</tr>
 		<tr>
+			<td width="40%" align="right">&{'form.label.frete'}</td>
+			<td align="left">
+				<input type="text" maxlength="10" class="textBox1" name="pedido.frete.valor" id="pedido.frete.valor" 
+						size="20" value="${pedido.frete?.valor}" />*</td>
+		</tr>
+		<tr>
 			<td align="right">&{'form.order.code'}&nbsp;</td>
 			<td align="left">
 				<span>${pedido.codigoPedido}</span>
@@ -56,13 +62,13 @@
 			<td align="right">&{'form.order.date'}&nbsp;</td>
 			<td align="left">
 				<input type="text" class="textBox1" name="pedido.dataPedido" id="pedido.dataPedido" size="20" 
-						readonly="readonly" value="${pedido.dataPedido.format('dd/MM/yyyy hh:mm')}" />*
+						readonly="readonly" value="${pedido.dataPedido.format('dd/MM/yyyy HH:mm')}" />*
 			</td>
 		</tr>
 		<tr>
 			<td align="right">&{'form.order.date.delivery'}&nbsp;</td>
 			<td align="left">
-				<input type="text" class="datePicker" name="pedido.dataEntrega" id="pedido.dataEntrega" size="16" value="${pedido.dataEntrega?.format('dd/MM/yyyy hh:mm')}" />*
+				<input type="text" class="datePicker" name="pedido.dataEntrega" id="pedido.dataEntrega" size="16" value="${pedido.dataEntrega?.format('dd/MM/yyyy HH:mm')}" />*
 			</td>
 		</tr>
 		<tr>

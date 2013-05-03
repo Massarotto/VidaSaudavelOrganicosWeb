@@ -9,13 +9,13 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Cacheable;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.br.BrazilianAnalyzer;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -65,7 +64,9 @@ import play.db.jpa.Model;
 @Table(name="PRODUTO")
 @Indexed(index="Produto")
 public class Produto extends Model implements Comparable<Produto> {
-	
+
+	private static final long serialVersionUID = -3392437480740820408L;
+
 	public Produto() {
 	}
 	
@@ -194,6 +195,14 @@ public class Produto extends Model implements Comparable<Produto> {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="DATA_ALTERACAO", nullable=true)
 	private Date dataAlteracao;
+	
+	@XmlTransient
+	@OneToMany(fetch=FetchType.LAZY, mappedBy="produto")
+	private List<CestaProduto> listCestaProdutos = null;
+	
+	@XmlTransient
+	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="produto")
+	private List<CestaAssinaturaProduto> listCestaAssinaturaProduto;
 	
 	/**
 	 * @return the nome
@@ -490,5 +499,51 @@ public class Produto extends Model implements Comparable<Produto> {
 		}
 		return result;
 	}
+
+	public List<CestaProduto> getListCestaProdutos() {
+		if(this.listCestaProdutos==null)
+			this.listCestaProdutos = new ArrayList<CestaProduto>();
+		
+		return listCestaProdutos;
+	}
+
+	public void setListCestaProdutos(List<CestaProduto> listCestaProdutos) {
+		this.listCestaProdutos = listCestaProdutos;
+	}
+
+	/**
+	 * @return the listCestaAssinaturaProduto
+	 */
+	public List<CestaAssinaturaProduto> getListCestaAssinaturaProduto() {
+		if(this.listCestaAssinaturaProduto==null)
+			this.listCestaAssinaturaProduto = new ArrayList<CestaAssinaturaProduto>();
+		
+		return listCestaAssinaturaProduto;
+	}
+
+	/**
+	 * @param listCestaAssinaturaProduto the listCestaAssinaturaProduto to set
+	 */
+	public void setListCestaAssinaturaProduto(
+			List<CestaAssinaturaProduto> listCestaAssinaturaProduto) {
+		this.listCestaAssinaturaProduto = listCestaAssinaturaProduto;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Transient
+	@Override
+	public String toString() {
+		StringBuffer result = new StringBuffer();
+		result.append(this.nome);
+		result.append(" (");
+		result.append(this.secao==null ? "" : this.secao.getDescricao());
+		result.append(")");
+		
+		return result.toString();
+
+	}
+
 	
 }

@@ -3,21 +3,16 @@ package vo;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import controllers.Relatorios;
-
-import util.PedidoFornecedorComparator;
-
-import models.Frete;
 import models.Pedido;
-import models.PedidoItem;
-import models.Produto;
+import controllers.Relatorios;
 
 public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<PedidoProdutoEntregaReportVO> {
 
+	private static final long serialVersionUID = -2916677616049482213L;
+	
 	private Long id;
 	private String nome;
 	private String logradouro;
@@ -30,6 +25,8 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 	private Date dataPedido;
 	private String prefixoTelefone;
 	private String telefone;
+	private String prefixoCelular;
+	private String telefoneCelular;
 	
 	private String observacao;
 	
@@ -258,11 +255,23 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 				entity.setCep(pedido.getCliente().getEnderecos().get(0).getCep());
 				entity.setPrefixoTelefone(pedido.getCliente().getTelefones().get(0).getPrefixo());
 				entity.setTelefone(pedido.getCliente().getTelefones().get(0).getNumero());
+				
+				//2º telefone
+				if(pedido.getCliente().getTelefones().size()>1) {
+					entity.setPrefixoCelular(pedido.getCliente().getTelefones().get(1).getPrefixo());
+					entity.setTelefoneCelular(pedido.getCliente().getTelefones().get(1).getNumero());
+					
+				}else {
+					entity.setPrefixoCelular("");
+					entity.setTelefoneCelular("");
+				}
+
 				entity.setObservacao(pedido.getObservacao());
 				entity.setProdutos( ProdutoPedidoReportVO.fillProdutos(Relatorios.findProdutosAguardandoEntrega(pedido.id), 
 																	pedido.getValorPedido(), 
 																	pedido.getDesconto().getValorDesconto(),
-																	pedido.getObservacao()));
+																	pedido.getObservacao(),
+																	pedido.getFrete()==null ? BigDecimal.ZERO : pedido.getFrete().getValor()));
 
 				result.add(entity);
 			}
@@ -341,6 +350,34 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 	 */
 	public void setObservacao(String observacao) {
 		this.observacao = observacao;
+	}
+
+	/**
+	 * @return the telefoneCelular
+	 */
+	public String getTelefoneCelular() {
+		return telefoneCelular;
+	}
+
+	/**
+	 * @param telefoneCelular the telefoneCelular to set
+	 */
+	public void setTelefoneCelular(String telefoneCelular) {
+		this.telefoneCelular = telefoneCelular;
+	}
+
+	/**
+	 * @return the prefixoCelular
+	 */
+	public String getPrefixoCelular() {
+		return prefixoCelular;
+	}
+
+	/**
+	 * @param prefixoCelular the prefixoCelular to set
+	 */
+	public void setPrefixoCelular(String prefixoCelular) {
+		this.prefixoCelular = prefixoCelular;
 	}
 
 }

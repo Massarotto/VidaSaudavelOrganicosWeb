@@ -35,7 +35,8 @@
 			#{if (pedido.podeAlterarMetodoPagamento())}
 			<a href="@{Pedidos.alterarMetodoPagamento(pedido.id)}"><span class="menuAdm">&{'form.order.alterar.metodoPagamento'}</span></a>
 			#{/if}
-			<a href="@{Pedidos.findUltimosPedidos(pedido.id, pedido.cliente.id, 15)}"><span class="menuAdm">&{'form.order.last'}</span></a>	
+			<a href="@{Pedidos.findUltimosPedidos(pedido.id, pedido.cliente.id, 15)}"><span class="menuAdm">&{'form.order.last'}</span></a>
+			<a href="@{Relatorios.gerarNotaFiscal(pedido.id)}"><span class="menuAdm">&{'form.order.notaFiscal'}</span></a>
 		#{/if}
 	</div>
 	<div style="width: 100%; height 1px; background-color: #DDDDDD;">

@@ -29,7 +29,9 @@ import play.db.jpa.Model;
 @Entity
 @Table(name="TELEFONE")
 public class Telefone extends Model implements Serializable {
-	
+
+	private static final long serialVersionUID = -9354565624562451L;
+
 	public enum TelefoneTipo {
 		RESIDENCIAL(1, "Residencial"),
 		CELULAR(2, "Celular"),
@@ -96,6 +98,9 @@ public class Telefone extends Model implements Serializable {
 	@ManyToOne(cascade=CascadeType.REFRESH, fetch=FetchType.EAGER)
 	private Cliente cliente;
 	
+	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+	private Fornecedor fornecedor;
+	
 	/**
 	 * @return the prefixo
 	 */
@@ -152,6 +157,20 @@ public class Telefone extends Model implements Serializable {
 		this.cliente = cliente;
 	}
 	
+	/**
+	 * @return the fornecedor
+	 */
+	public Fornecedor getFornecedor() {
+		return fornecedor;
+	}
+
+	/**
+	 * @param fornecedor the fornecedor to set
+	 */
+	public void setFornecedor(Fornecedor fornecedor) {
+		this.fornecedor = fornecedor;
+	}
+
 	@Transient
 	public static TelefoneTipo findById(Integer id) {
 		TelefoneTipo result = null;

@@ -33,6 +33,8 @@ import play.db.jpa.Model;
 @Table(name="PRODUTO_ESTOQUE")
 public class ProdutoEstoque extends Model {
 	
+	private static final long serialVersionUID = -1444835031615910043L;
+
 	@Column(name="QUANTIDADE", length=3, nullable=false)
 	private Integer quantidade;
 	

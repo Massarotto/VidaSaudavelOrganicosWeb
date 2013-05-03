@@ -3,37 +3,23 @@
  */
 package controllers;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.omg.CORBA.REBIND;
-
-import com.grepcepws.entity.xsd.Cep;
-
-import business.cliente.service.EnderecoService;
-
-import exception.SystemException;
-import form.TelefoneForm;
-
 import models.Cliente;
 import models.Endereco;
-import models.Grupo;
-import models.Produto;
-import models.Telefone;
-import models.Usuario;
 import models.Endereco.UF;
+import models.Grupo;
+import models.Telefone;
 import models.Telefone.TelefoneTipo;
+import models.Usuario;
+
+import org.apache.commons.lang.StringUtils;
 
 import play.Logger;
 import play.cache.Cache;
 import play.data.binding.As;
-import play.data.validation.Email;
 import play.data.validation.Error;
-import play.data.validation.Min;
 import play.data.validation.MinSize;
 import play.data.validation.Required;
 import play.data.validation.Valid;
@@ -42,9 +28,13 @@ import play.i18n.Messages;
 import play.libs.Codec;
 import play.modules.paginate.ValuePaginator;
 import play.mvc.Before;
-import play.mvc.Catch;
-import play.mvc.Controller;
 import relatorios.parse.UsuarioParse;
+import business.cliente.service.EnderecoService;
+
+import com.grepcepws.entity.xsd.Cep;
+
+import exception.SystemException;
+import form.TelefoneForm;
 
 /**
  * @author guerrafe

@@ -4,6 +4,7 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Cacheable;
@@ -30,6 +31,8 @@ import play.db.jpa.Model;
 @Table(name="PEDIDO_ITEM")
 public class PedidoItem extends Model {
 	
+	private static final long serialVersionUID = -4222581253032065797L;
+
 	@ManyToOne(fetch=FetchType.EAGER)
 	private Pedido pedido;
 	
@@ -116,6 +119,36 @@ public class PedidoItem extends Model {
 	 */
 	public void setExcluido(Boolean excluido) {
 		this.excluido = excluido;
+	}
+	
+	/**
+	 * @param produtos
+	 * @return
+	 */
+	public static List<PedidoItem> buildItemPedido(List<CestaAssinaturaProduto> produtos, Pedido pedido) {
+		List<PedidoItem> result = new ArrayList<PedidoItem>();
+		
+		if(!produtos.isEmpty()) {
+			Collections.sort(produtos);
+			
+			for(CestaAssinaturaProduto _prod : produtos) {
+				PedidoItem item = newPedidoItem(pedido, Boolean.FALSE);
+				
+				item.getProdutos().add(_prod.getProduto());
+				item.setQuantidade(_prod.getQuantidade());
+				
+				result.add(item);
+			}
+		}
+		return result;
+	}
+	
+	public static PedidoItem newPedidoItem(Pedido pedido, Boolean excluido) {
+		PedidoItem pedidoItem = new PedidoItem();
+		pedidoItem.setExcluido(excluido);
+		pedidoItem.setPedido(pedido);
+		
+		return pedidoItem;
 	}
 	
 }

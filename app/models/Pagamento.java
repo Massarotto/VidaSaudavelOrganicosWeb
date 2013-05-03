@@ -30,6 +30,8 @@ import play.db.jpa.Model;
 @Table(name="PAGAMENTO")
 public class Pagamento extends Model {
 
+	private static final long serialVersionUID = 5357681761469474333L;
+
 	@Required
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="DATA_PAGAMENTO", nullable=true)
@@ -50,6 +52,9 @@ public class Pagamento extends Model {
 	
 	@OneToOne(mappedBy="pagamento")
 	private Pedido pedido = null;
+	
+	@OneToOne(mappedBy="pagamento")
+	private CestaAssinatura assinatura;
 	
 	public Pagamento() {
 	}
@@ -140,6 +145,20 @@ public class Pagamento extends Model {
 	 */
 	public void setErrors(String errors) {
 		this.errors = errors;
+	}
+
+	/**
+	 * @return the assinatura
+	 */
+	public CestaAssinatura getAssinatura() {
+		return assinatura;
+	}
+
+	/**
+	 * @param assinatura the assinatura to set
+	 */
+	public void setAssinatura(CestaAssinatura assinatura) {
+		this.assinatura = assinatura;
 	}
 
 }

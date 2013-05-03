@@ -22,7 +22,6 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import play.data.validation.Max;
 import play.data.validation.MaxSize;
 import play.data.validation.Required;
 import play.db.jpa.Model;
@@ -37,6 +36,8 @@ import play.db.jpa.Model;
 @Table(name="QUESTIONARIO")
 public class Questionario extends Model implements Serializable {
 	
+	private static final long serialVersionUID = -1677508748616836930L;
+
 	@Required
 	@MaxSize(value=100)
 	@Column(name="TITULO", length=100, nullable=false)

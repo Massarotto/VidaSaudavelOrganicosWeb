@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,16 +14,14 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import org.apache.commons.beanutils.BeanUtils;
+import models.Fornecedor;
+import models.Produto;
+
 import org.hibernate.CacheMode;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
 
-import controllers.Mail;
-
-import models.Fornecedor;
-import models.Produto;
 import play.Logger;
 import play.db.jpa.JPA;
 import play.db.jpa.Transactional;
@@ -32,6 +29,7 @@ import play.i18n.Messages;
 import business.produto.layout.LayoutArquivo;
 import business.produto.layout.parse.ILayoutParse;
 import business.produto.layout.parse.factory.LayoutFactory;
+import controllers.Mail;
 
 /**
  * @author Felipe G. de Oliveira
@@ -40,6 +38,8 @@ import business.produto.layout.parse.factory.LayoutFactory;
  */
 public class ProdutoControl implements Serializable {
 
+	private static final long serialVersionUID = 17867564352456789L;
+	
 	private ILayoutParse layoutParse;
 	
 	public ProdutoControl() {
@@ -113,7 +113,7 @@ public class ProdutoControl implements Serializable {
 		
 		for(Produto prod : produtos) {
 			count++;
-			Produto produto = Produto.find("codigoProduto = ? AND fornecedor.id = ?", prod.getCodigoProduto(), idFornecedor).first();
+			Produto produto = Produto.find("codigoProduto = ? AND fornecedor.id = ?", prod.getCodigoProduto().trim(), idFornecedor).first();
 			
 			if(produto!=null) {
 				produto.setAtivo(Boolean.TRUE);
@@ -159,8 +159,7 @@ public class ProdutoControl implements Serializable {
 		StringBuffer buffer = null;
 		Fornecedor fornecedor = null;
 		String caminhoArquivos = null;
-		String subject = null;
-		String message = null;
+		String message = "Todos os produtos foram encontrados!";
 		
 		try {
 			if(produtos!=null && !produtos.isEmpty()) {
@@ -202,6 +201,11 @@ public class ProdutoControl implements Serializable {
 												report.getAbsolutePath(), 
 												message, 
 												"alexandre@vidasaudavelorganicos.com.br");
+			}else {
+				Mail.sendProdutosNaoEncontrados("Relatório de Produtos não Encontrados", Mail.EMAIL_ADMIN, 
+						null, 
+						message, 
+						"alexandre@vidasaudavelorganicos.com.br");
 			}
 			
 		}catch(Exception e) {

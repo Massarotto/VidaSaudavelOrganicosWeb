@@ -35,7 +35,7 @@ public class ProdutoReportParse implements Serializable {
 					line.append(produto.getNome()).append(";");
 					line.append(produto.getDescricao()).append(";");
 					line.append(produto.getFornecedor().getNome()).append(";");
-					line.append(produto.getSecao().getDescricao()).append(";");
+					line.append(produto.getSecao()==null ? "" : produto.getSecao().getDescricao()).append(";");
 					line.append(produto.getCodigoProduto()).append(";");
 					line.append(produto.getAtivo() ? "ATIVO" : "INATIVO").append(";");
 					line.append(produto.getValorPago()).append(";");

@@ -151,6 +151,31 @@ public class Relatorios extends BaseController {
 		}
 	}
 	
+	public static void gerarNotaFiscal(Long idPedido) {
+		Map parametros = new HashMap();
+		List<Pedido> pedidos = new ArrayList<Pedido>();
+		Pedido pedido = null;
+		
+		try {
+			StringBuilder pathStaticContent = new StringBuilder(Messages.get("application.path.report", ""));
+			pathStaticContent.append(RELATORIO_PEDIDOS_ABERTO_VENDAS);
+		
+			parametros.put("REPORT_TITLE", REPORT_TITLE);
+			parametros.put("SUBREPORT_DIR", SUBREPORT_DIR);
+			
+			pedido = Pedido.findById(idPedido);
+			pedidos.add(pedido);
+			
+			List<PedidoProdutoEntregaReportVO> dados = PedidoProdutoEntregaReportVO.fillListReport(pedidos);
+			
+			renderBinary(BaseJasperReport.generatePdfReport(pathStaticContent.toString(), "NOTA_FISCAL_PEDIDO", parametros, dados), "NotaFiscalPedido.pdf");
+			
+		}catch(Exception e) {
+			Logger.error(e, "Erro ao tentar exportar o relatório.");
+			throw new RuntimeException(e);
+		}
+	}
+	
 	public static void exportarRelatorioMSExcel() {
 		Map parametros = new HashMap();
 		

@@ -5,21 +5,14 @@ package controllers;
 
 import java.util.List;
 
-import javax.persistence.Query;
+import models.Produto;
 
 import org.apache.commons.lang.StringUtils;
 
-import business.cliente.service.EnderecoService;
-import business.produto.ProdutoControl;
-
-import models.Produto;
 import play.Logger;
 import play.i18n.Messages;
-import play.libs.WS;
 import play.modules.paginate.ValuePaginator;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Http.Header;
+import business.produto.ProdutoControl;
 
 /**
  * @author guerrafe
@@ -31,7 +24,7 @@ public class Home extends BaseController {
 		Logger.debug("###### Início - Home Vida Saudável...%s #######", "");
 		Boolean home = Boolean.TRUE;
 
-		List<Produto> produtos = Produto.find("ativo = ? AND ehPromocao = ?", Boolean.TRUE, Boolean.TRUE).fetch(12);
+		List<Produto> produtos = Produto.find("ativo = ? AND (fornecedor.nome = ? OR ehPromocao = ?)", Boolean.TRUE, "Estoque", Boolean.TRUE).fetch(12);
 		
 		Logger.debug("###### Fim - Home Vida Saudável...%s #######", message);
 		render(produtos, message, SecaoProdutos.loadAll(), home);

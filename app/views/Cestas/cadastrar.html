@@ -1,0 +1,156 @@
+#{extends 'layout.html' /}
+#{set 'title'}
+&{'application.subtilte'} Cadastrar Cesta
+#{/set}
+<br />
+<div class="defaultContentSize">
+	#{form @Cestas.salvar(), method:'POST', id:'cestaForm'}
+	<table width="96%" cellpadding="4" cellspacing="4" border="0" class="fontGreen2">
+		<tr>
+			<td colspan="2" align="center" class="fontGreen3">
+				#{if (cesta.id != null)}
+					<span>&{'form.edit'} &{'form.cesta.title'}</span>
+				#{/if}		
+				#{else}
+					<span>&{'form.button.cadastro'} &{'form.cesta.title'}</span>
+				#{/else}
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" align="center">
+				<input type="hidden" name="cesta.id" id="cesta.id" value="${cesta.id}" />&nbsp;
+			</td>
+		</tr>
+		<tr>
+			<td width="16%" align="right">
+				<span>&{'form.questionario.titulo'}</span>
+			</td>
+			<td align="left">
+				<input type="text" class="textBox1" name="cesta.titulo" id="cesta.titulo" size="40" autocomplete="on" value="${cesta.titulo}">
+			</td>
+		</tr>
+		<tr>
+			<td width="13%" align="right">&{'form.cesta.active'}&nbsp;</td>
+			<td align="left">
+			<div style="position: relative; float: left">
+				<div style="position: relative; float: left">
+				#{select 'produtosAtivos', id:'produtosAtivos', items:produtosAtivos, valueProperty:id, class:"selectOptionTransfer", multiple:'multiple'}						
+				#{/select}
+				</div>
+				#{if (cesta.id != null)}
+					<div class="arrowSelectOptionTransfer" id="arrowSelectOptionTransfer">
+						<br /><br /><a id="addItemAtivo" title="&{'form.excluir'}" href="#">&gt;&gt;</a>
+						<br /><br /><a id="removeItemAtivo" title="&{'form.application.add'}"  href="#">&lt;&lt;</a>
+					</div>
+					<div style="position: relative; float: left">
+					#{select 'produtosAtivosSelecionados', id:'produtosAtivosSelecionados', items:produtos, valueProperty:id, class:"selectOptionTransfer", multiple:'multiple'}						
+					#{/select}
+				#{/if}
+				</div>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td width="13%" align="right">&{'form.cesta.available'}&nbsp;</td>
+			<td align="left">
+			<div style="position: relative; float: left">
+				<div style="position: relative; float: left">
+				#{select 'produtosDisponiveis', id:'produtosDisponiveis', items:produtosDisponiveis, valueProperty:id, class:"selectOptionTransfer", multiple:'multiple'}						
+				#{/select}
+				</div>
+				#{if (cesta.id != null)}
+					<div id="arrowSelectOptionTransfer" class="arrowSelectOptionTransfer">
+						<br /><br /><a id="addItemDisponivel" title="&{'form.excluir'}" href="#">&gt;&gt;</a>
+						<br /><br /><a id="removeItemDisponivel" title="&{'form.application.add'}" href="#">&lt;&lt;</a>
+					</div>
+					<div style="position: relative; float: left">
+					#{select 'produtosDisponiveisSelecionados', id:'produtosDisponiveisSelecionados', items:produtos, valueProperty:id, class:"selectOptionTransfer", multiple:'multiple'}						
+					#{/select}
+					</div>
+				#{/if}
+			</div>
+			</td>
+		</tr>
+		#{if (cesta.id != null)}
+		<tr>
+			<td width="16%" align="right">
+				<span>&{'form.estoque.date.lastUpdate'}</span>
+			</td>
+			<td align="left">
+				<span>${cesta.dataAlteracao?.format('dd/MM/yyyy HH:mm')}</span>
+			</td>
+		</tr>
+		<tr>
+			<td align="right">&{'form.label.status'}&nbsp;</td>
+			<td align="left">
+				#{select 'ativo', id:'ativo', value:cesta.ativo, class:"fontGreen1"}*
+					#{option 'true'}Ativo#{/option}
+					#{option 'false'}Inativo#{/option}
+				#{/select}
+			</td>
+		</tr>
+		#{/if}
+		<tr>
+			<td colspan="2" align="center">
+				&nbsp;
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" align="center">
+				<a href="javascript:history.go(-1);" class="fontBrown">&{'form.button.back'}</a>
+				<span>|</span>
+				<a href="#" class="fontBrown" onclick="javascript:selectTransferOption();">&{'form.button.next'}</a>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" align="center">
+				&nbsp;
+			</td>
+		</tr>
+		<tr>
+			<td>
+				&nbsp;
+			</td>
+			<td align="center">
+				#{ifErrors}
+					#{errors}
+					<li>
+						<span class="fontRed">${error}</span>
+					</li>
+					#{/errors}
+				#{/ifErrors}
+			</td>
+		</tr>
+	</table>
+	#{/form}
+</div>
+<script type="text/javascript" charset="UTF-8">
+$().ready(function() {  
+   $('#addItemAtivo').click(function() {  
+    return !$('#produtosAtivos option:selected').remove().appendTo('#produtosAtivosSelecionados');  
+   });  
+   $('#removeItemAtivo').click(function() {  
+    return !$('#produtosAtivosSelecionados option:selected').remove().appendTo('#produtosAtivos');  
+   });
+   
+    $('#addItemDisponivel').click(function() {  
+    return !$('#produtosDisponiveis option:selected').remove().appendTo('#produtosDisponiveisSelecionados');  
+   });  
+   $('#removeItemDisponivel').click(function() {  
+    return !$('#produtosDisponiveisSelecionados option:selected').remove().appendTo('#produtosDisponiveis');  
+   });    
+  });
+  
+function selectTransferOption() {
+	try {
+		if("${cesta.id!=null}"=="true") {
+			$("#produtosAtivos").find("option").attr("selected","selected");
+			$("#produtosDisponiveis").find("option").attr("selected","selected");
+		}
+		document.getElementById('cestaForm').submit();
+	
+	}catch(e) {
+		alert("Erro ao tentar enviar os dados: " + e);
+	}
+} 
+</script>

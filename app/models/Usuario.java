@@ -38,6 +38,8 @@ import play.libs.Crypto;
 @Table(name="USUARIO")
 public class Usuario extends Model {
 	
+	private static final long serialVersionUID = 8296928212368352947L;
+
 	public Usuario() {}
 	
 	public Usuario(Long id, String senha, String email, Cliente cliente, Grupo grupo) {

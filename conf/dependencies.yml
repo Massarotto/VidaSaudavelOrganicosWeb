@@ -1,3 +1,4 @@
 # Application dependencies
 require:
 play -> paginate head
+play -> cloudbees 0.2.2

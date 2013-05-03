@@ -82,6 +82,9 @@ public class Login extends BaseController {
 			if(session.get("carrinho")!=null)
 				redirect("/pagamento/"+ ((Cookie)request.cookies.get("vidasaudavel")).value);
 			
+			else if(session.get("assinatura")!=null)
+				redirect(session.get("assinatura"));
+			
 			Home.index(null);
 		}
 	}

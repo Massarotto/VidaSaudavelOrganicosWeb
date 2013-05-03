@@ -7,21 +7,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import models.Fornecedor;
+import models.Telefone;
+import models.Telefone.TelefoneTipo;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
-import business.produto.ProdutoControl;
-import business.produto.layout.LayoutArquivo;
-import business.produto.layout.parse.factory.LayoutFactory;
-
-import models.Fornecedor;
 import play.Logger;
 import play.data.validation.Required;
 import play.data.validation.Valid;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
+import play.modules.paginate.ValuePaginator;
 import play.mvc.Before;
-import play.mvc.Controller;
+import business.produto.ProdutoControl;
+import business.produto.layout.LayoutArquivo;
+import business.produto.layout.parse.factory.LayoutFactory;
 
 /**
  * @author guerrafe
@@ -44,13 +46,16 @@ public class Fornecedores extends BaseController {
 		if(fornecedor==null)
 			fornecedor = new Fornecedor();
 		
-		render(fornecedor, success);
+		TelefoneTipo[] telefones = TelefoneTipo.values();
+		Telefone telefone = new Telefone();
+		
+		render(fornecedor, telefones, success, telefone);
 	}
 	
 	@Transactional(readOnly=false)
 	public static void cadastrar(@Valid Fornecedor fornecedor) {
 		Logger.debug("###### Início - Cadastrar Fornecedor: %s ######", fornecedor.getNome());
-		String message = null;
+		Integer telefoneTipo = null;
 		
 		if(validation.hasErrors()) {
 			Logger.debug("###### Erro - Cadastrar Fornecedor: %s ######", fornecedor.getNome());
@@ -58,33 +63,41 @@ public class Fornecedores extends BaseController {
 			validation.keep();
 			params.flash();
 			
+			index(fornecedor, null);
+			
 		}else {
+			telefoneTipo = Integer.valueOf(params.get("telefoneTipo"));
+			
+			fornecedor.getTelefones().get(0).setTipo(Telefone.findById(telefoneTipo));
+			fornecedor.getTelefones().get(0).setFornecedor(fornecedor);
+			
 			fornecedor.setAtivo(true);
 			
 			fornecedor.save();
 			
-			message = Messages.get("form.insert.data.success", "");
-			
-			params.put("success", message);
+			show();
 		}
-		Logger.debug("###### Fim - Cadastrar Fornecedor: %s ######", fornecedor.getNome());
-		show();
 	}
 	
 	public static void show() {
 		Logger.debug("###### Início - Consultar todos os Fornecedores... ######", "");
 		
 		List<Fornecedor> fornecedores = Fornecedor.findAll();
+		ValuePaginator<Fornecedor> fornecs = new ValuePaginator<Fornecedor>(fornecedores);
+		fornecs.setPageSize(20);
 		
-		render(fornecedores);
+		render(fornecs);
 	}
 	
 	public static void edit(Long id) {
 		Logger.debug("###### Início - Consultar o Fornecedor pelo id: %s ######", id);
 		Fornecedor fornecedor = Fornecedor.findById(id);
 		
+		TelefoneTipo[] telefones = TelefoneTipo.values();
+		Telefone telefone = fornecedor.getTelefones().isEmpty() ? null : fornecedor.getTelefones().get(0);
+		
 		Logger.debug("###### Fim - Consultar o Fornecedor pelo id: %s ######", id);
-		render(fornecedor);
+		render(fornecedor, telefones, telefone);
 	}
 	
 	@Transactional(readOnly=false)
@@ -154,7 +167,7 @@ public class Fornecedores extends BaseController {
 							if(!arquivo.isDirectory())
 								arquivo.delete();
 						
-						path.delete();
+						FileUtils.deleteDirectory(path);
 						
 						Logger.info("#### Diretório %s apagado? %s ####", path.getAbsolutePath(), !path.exists());
 					}

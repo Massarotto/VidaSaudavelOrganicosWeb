@@ -4,43 +4,35 @@
 package controllers;
 
 import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import business.estoque.EstoqueControl;
-import business.pagamento.service.PayPalService;
-
-import ebay.api.paypalapi.SetExpressCheckoutResponseType;
-import exception.PayPalServiceException;
-import exception.ProdutoEstoqueException;
-import exception.SystemException;
-import form.ProdutoQuantidadeForm;
-
+import models.CarrinhoItem;
 import models.CarrinhoProduto;
 import models.Cliente;
 import models.Desconto;
 import models.Endereco;
 import models.FormaPagamento;
 import models.Frete;
-import models.CarrinhoItem;
 import models.Pagamento;
 import models.Pedido;
-import models.Produto;
 import models.Pedido.PedidoEstado;
+import models.Produto;
 import play.Logger;
 import play.cache.Cache;
-import play.data.validation.Required;
-import play.db.jpa.JPA;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
 import play.mvc.Before;
 import play.mvc.Catch;
 import play.mvc.Controller;
+import business.estoque.EstoqueControl;
+import business.pagamento.service.PayPalService;
+import ebay.api.paypalapi.SetExpressCheckoutResponseType;
+import exception.PayPalServiceException;
+import exception.ProdutoEstoqueException;
+import exception.SystemException;
+import form.ProdutoQuantidadeForm;
 
 /**
  * @author guerrafe
@@ -225,7 +217,7 @@ public class Carrinho extends Controller {
 		PedidoEstado statusPedido = null;
 		
 		if(carrinho!=null && session.get("clienteId")!=null) {
-			Frete frete = new Frete(calcularFrete(carrinho.getValorTotalCompra()));
+			Frete frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra()));
 			
 			validarValorCompra(carrinho.getValorTotalCompra());
 			
@@ -254,7 +246,6 @@ public class Carrinho extends Controller {
 				
 				Cliente cliente = Cliente.findById(idCliente);
 				
-				carrinho.setValorTotalCompra(carrinho.getValorTotalCompra().add(frete.getValor()));
 				carrinho.setCliente(cliente);
 				
 				if(carrinho.id==null)
@@ -292,9 +283,11 @@ public class Carrinho extends Controller {
 					}
 					
 				}else if(FormaPagamento.DINHEIRO.equals(FormaPagamento.getFormaPagamento(formaPagamento))){
+					BigDecimal valorPedidoComDesconto = new BigDecimal(Messages.get("application.minValue.paypal", ""));
+					
 					pagamento.setFormaPagamento(FormaPagamento.DINHEIRO);
 					
-					if(frete.getValor().doubleValue()<=0) {
+					if(carrinho.getValorTotalCompra().doubleValue()>valorPedidoComDesconto.doubleValue()) {
 						Desconto desconto = new Desconto(new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
 						desconto.setDataDesconto(new Date());
 						desconto.setPedido(pedido);
@@ -315,15 +308,22 @@ public class Carrinho extends Controller {
 
 				pagamento.setPedido(pedido);
 				pagamento.setValorPagamento(pedido.getValorPedido());
-
 				pedido.setPagamento(pagamento);
+				
+				frete.addPedido(pedido);
+				frete.save();
 				pedido.save();
+				
 				Logger.info("Valor Desconto %s", pedido.getDesconto().getValorDesconto());
 				Logger.info("###### E-mail de confirmação do pedido para: %s #######", cliente.getUsuario().getEmail());
-				try {					
+				try {
+					StringBuffer email = new StringBuffer();
+					email.append("Vida Saudável Orgânicos");
+					email.append("<").append("contato@vidasaudavelorganicos.com.br").append(">");
+					
 					Mail.pedidoFinalizado(
-							"VIDA SAUDÁVEL ORGÂNICOS - PEDIDO FINALIZADO.",
-							Mail.EMAIL_ADMIN, 
+							"Pedido Finalizado",
+							email.toString(), 
 							pedido,
 							cliente.getUsuario().getEmail(), Mail.EMAIL_CONTACT);
 
@@ -409,7 +409,7 @@ public class Carrinho extends Controller {
 		
 		if(carrinho!=null && session.get("clienteId")!=null) {
 			valorMinPagPayPal = new BigDecimal(Messages.get("application.minValue.paypal", ""));
-			frete = new Frete(calcularFrete(carrinho.getValorTotalCompra()));
+			frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra()));
 			
 			if(pedidoAssessor)
 				clientes = Cliente.find("ativo = ?", Boolean.TRUE).fetch();
@@ -444,18 +444,6 @@ public class Carrinho extends Controller {
 		FormaPagamento pagamento = FormaPagamento.DINHEIRO; 
 		
 		render(carrinho, sessionId, frete, endereco, clientes, isAssessor, pagamento, valorMinPagPayPal, valorComDesconto);
-	}
-	
-	public static BigDecimal calcularFrete(BigDecimal valorTotalCompra) {
-		BigDecimal result = new BigDecimal(0);
-		
-		Double valorCompraSemFrete = Double.valueOf(Messages.get("application.frete.valor", ""));
-		
-		if(valorCompraSemFrete!=null && valorTotalCompra.doubleValue()<valorCompraSemFrete) {
-			Frete frete = Frete.findById(1L);
-			result = frete.getValor();
-		}
-		return result;
 	}
 	
 	public static void atualizar(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade) {
@@ -505,5 +493,12 @@ public class Carrinho extends Controller {
 	private static void validarValorCompra(BigDecimal valorCompra) {
 		if(Double.parseDouble(Messages.get("application.order.minValue", ""))>valorCompra.doubleValue())
 			validation.addError("Valor Compra", Messages.get("message.validation.order.minValue", ""), "");
+	}
+	
+	public static Boolean validarValorCompra(Double valorCompra) {
+		if(Double.parseDouble(Messages.get("application.order.minValue", ""))>valorCompra.doubleValue())
+			return Boolean.FALSE;
+		
+		return Boolean.TRUE;
 	}
 }

@@ -16,7 +16,7 @@
 	</div>
 	#{/ifErrors}
 
-	#{form @Fornecedores.atualizar(), method:'POST'}
+	#{form @Fornecedores.atualizar(), method:'POST', id:'formEditFornecedor'}
 	<table width="100%" cellpadding="4" cellspacing="4" border="0" class="fontGreen2">
 		<tr>
 			<td colspan="2" align="center">
@@ -46,6 +46,41 @@
 			</td>
 		</tr>
 		<tr>
+			<td width="40%"  align="right">&{'form.email'}</td>
+			<td align="left">
+				<input type="text" class="textBox1" name="fornecedor.emailContato" id="fornecedor.emailContato" size="45" maxlength="300" value="${fornecedor.emailContato}" />*
+			</td>
+		</tr>
+		<tr>
+			<td align="right">&{'form.phone.type'}</td>
+			<td align="left">
+				#{if (fornecedor.telefones.isEmpty())}
+					#{select 'fornecedor.telefones[0].tipo', items:telefones, valueProperty:'codigo', class:"select1 fontGreen1"}*
+					#{/select}
+				#{/if}
+				#{else}
+					#{select 'fornecedor.telefones[0].tipo', id:'fornecedor.telefones[0].tipo', items:telefones, value:telefone.tipo, class:"select1 fontGreen1"}*
+					#{/select}
+				#{/else}
+			</td>
+		</tr>
+		<!-- Telefone -->
+		<tr>
+			<td align="right">&{'form.phone'}</td>
+			<td align="left">
+				#{if (fornecedor.telefones.isEmpty())}
+					<input type="text" class="textBox1" name="fornecedor.telefones[0].prefixo" id="fornecedor.telefones[0].prefixo" size="3" maxlength="2" />
+					<span>-</span>
+					<input type="text" class="textBox1" name="fornecedor.telefones[0].numero" id="fornecedor.telefones[0].numero" size="11" maxlength="9" />*
+				#{/if}
+				#{else}
+					<input type="text" class="textBox1" name="fornecedor.telefones[0].prefixo" id="fornecedor.telefones[0].prefixo" size="3" maxlength="2" value="${fornecedor.telefones[0].prefixo}" />
+					<span>-</span>
+					<input type="text" class="textBox1" name="fornecedor.telefones[0].numero" id="fornecedor.telefones[0].numero" size="11" maxlength="9" value="${fornecedor.telefones[0].numero}" />*
+				#{/else}
+			</td>
+		</tr>
+		<tr>
 			<td align="right">&{'form.label.status'}&nbsp;</td>
 			<td align="left">
 				#{select 'fornecedor.ativo', value:fornecedor.ativo}*
@@ -65,7 +100,9 @@
 		</tr>
 		<tr>
 			<td colspan="2" align="center">
-				<input type="submit" value="&{'form.button.next'}" class="btnGreen" />
+				<a href="javascript:history.go(-1);" class="fontBrown">&{'form.button.back'}</a>
+				<span>|</span>
+				<a href="javascript:document.getElementById('formEditFornecedor').submit();" class="fontBrown">&{'form.button.next'}</a>
 				&nbsp;&nbsp;&nbsp;
 			</td>
 		</tr>

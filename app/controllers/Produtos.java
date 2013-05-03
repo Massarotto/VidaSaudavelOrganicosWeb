@@ -3,16 +3,9 @@
  */
 package controllers;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -21,12 +14,6 @@ import java.util.List;
 import javax.persistence.Query;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamSource;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.helpers.XMLReaderFactory;
-
-import business.produto.ProdutoControl;
 
 import models.Fornecedor;
 import models.Produto;
@@ -34,17 +21,15 @@ import models.Secao;
 import play.Logger;
 import play.cache.Cache;
 import play.data.binding.As;
-import play.data.validation.Error;
-import play.data.validation.Required;
 import play.data.validation.Valid;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
 import play.libs.Images;
 import play.modules.paginate.ValuePaginator;
 import play.mvc.Before;
-import sun.security.krb5.internal.UDPClient;
 import types.ListaProduto;
 import util.ProdutoComparator;
+import business.produto.ProdutoControl;
 
 /**
  * @author guerrafe

@@ -6,7 +6,7 @@
 <div class="defaultContentSize">
 
 	#{ifErrors}
-	<div style="width:280px; height:380px; border-color: red; border:0px solid; position: absolute; float: right; right: 2px;">
+	<div style="width:300px; height:380px; border-color: red; border:0px solid; position: absolute; float: right; right: 2px;">
 		<div style="width: 100%; border: 1px #FF0000 solid; background-color: red;">
 			<span class="fontWhite">&{'validation.failed'}</span>
 		</div>
@@ -19,7 +19,7 @@
 
 	<div>
 	#{form @Fornecedores.cadastrar(), id:'formCadastroFornecedor', method:'POST'}
-	<table width="100%" cellpadding="4" cellspacing="2" border="0" class="fontDefaultBlack">
+	<table width="100%" cellpadding="4" cellspacing="4" border="0" class="fontDefaultBlack">
 		<tr>
 			<td colspan="2" align="center" class="fontGreen3">&{'form.fornecedor.title'}</td>
 		</tr>
@@ -29,7 +29,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td width="40%" align="right">
+			<td width="30%" align="right">
 				<span>&{'form.customer.nome'}</span>
 			</td>
 			<td>
@@ -37,11 +37,33 @@
 			</td>
 		</tr>
 		<tr>
-			<td width="40%" align="right">
+			<td width="30%" align="right">
 				<span>&{'form.fornecedor.cnpj'}</span>
 			</td>
 			<td>
 				<input type="text" id="fornecedor.cnpj" name="fornecedor.cnpj" value="${fornecedor.cnpj}" maxlength="14" size="20" class="textBox1" />
+			</td>
+		</tr>
+		<tr>
+			<td width="30%"  align="right">&{'form.email'}</td>
+			<td align="left">
+				<input type="text" class="textBox1" name="fornecedor.emailContato" id="fornecedor.emailContato" size="45" maxlength="300" value="${fornecedor.emailContato}" />*
+			</td>
+		</tr>
+		<tr>
+			<td align="right">&{'form.phone.type'}</td>
+			<td align="left">
+				#{select 'telefoneTipo', items:telefones, valueProperty:'codigo', value:descricao, class:"select1 fontGreen1"}*
+				#{/select}
+			</td>
+		</tr>
+		<!-- Telefone -->
+		<tr>
+			<td align="right">&{'form.phone'}</td>
+			<td align="left">
+				<input type="text" class="textBox1" name="fornecedor.telefones[0].prefixo" id="fornecedor.telefones[0].prefixo" size="3" maxlength="2" value="${telefone.prefixo}" />
+				<span>-</span>
+				<input type="text" class="textBox1" name="fornecedor.telefones[0].numero" id="fornecedor.telefones[0].numero" size="11" maxlength="9" value="${telefone.numero}" />*
 			</td>
 		</tr>
 		<tr>

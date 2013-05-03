@@ -4,14 +4,11 @@
 package relatorios.parse;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
 
 import play.Logger;
-
 import vo.ProdutoPedidoReportVO;
 
 /**
@@ -20,6 +17,8 @@ import vo.ProdutoPedidoReportVO;
  */
 public class ProdutoPedidoReportParse implements Serializable {
 
+	private static final long serialVersionUID = -6392129970196986560L;
+	
 	private List<ProdutoPedidoReportVO> produtos = null;
 	
 	public ProdutoPedidoReportParse(List<ProdutoPedidoReportVO> produtosReport) {

@@ -13,23 +13,15 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-
-import play.data.binding.As;
-import play.data.binding.NoBinding;
-import play.data.validation.Email;
 import play.data.validation.MaxSize;
 import play.data.validation.MinSize;
 import play.data.validation.Required;
@@ -45,7 +37,9 @@ import play.db.jpa.Model;
 @Entity
 @Table(name="CLIENTE")
 public class Cliente extends Model implements Serializable {
-	
+
+	private static final long serialVersionUID = -1574180722632855582L;
+
 	@Required(message="message.required.cliente.nome")
 	@Column(name="NOME", nullable=false, length=300)
 	private String nome;
@@ -94,6 +88,9 @@ public class Cliente extends Model implements Serializable {
 
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="cliente")
 	private List<Telefone> telefones;
+	
+	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="cliente")
+	private List<CestaAssinatura> listCestaAssinatura = null;
 	
 	public Cliente(String nome, Date dataNascimento) {
 		this.nome = nome;
@@ -320,4 +317,22 @@ public class Cliente extends Model implements Serializable {
 		this.telefones = telefones;
 	}
 
+	/**
+	 * @return the listCestaAssinatura
+	 */
+	public List<CestaAssinatura> getListCestaAssinatura() {
+		if(this.listCestaAssinatura==null)
+			this.listCestaAssinatura = new ArrayList<CestaAssinatura>();
+			
+		return listCestaAssinatura;
+	}
+
+	/**
+	 * @param listCestaAssinatura the listCestaAssinatura to set
+	 */
+	public void setListCestaAssinatura(List<CestaAssinatura> listCestaAssinatura) {
+		this.listCestaAssinatura = listCestaAssinatura;
+	}
+
+	
 }

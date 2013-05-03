@@ -31,6 +31,8 @@ import play.db.jpa.Model;
 @Table(name="SECAO")
 public class Secao extends Model implements Comparable<Secao> {
 	
+	private static final long serialVersionUID = -5950668593471354114L;
+
 	@Required(message="message.required.secao.descricao")
 	@Column(name="DESCRICAO", length=120, nullable=false)
 	private String descricao;

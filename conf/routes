@@ -67,10 +67,12 @@ GET     /fornecedores							Administrador.fornecedores
 GET     /parceiros								Administrador.parceiros
 GET     /o-que-sao-organicos					Administrador.oQueSaoOrganicos
 GET     /politica-de-entrega					Administrador.politicaEntrega
-GET     /quemSomos								Administrador.quemSomos
+GET		/na-midia								Administrador.naMidia
+GET     /quem-somos								Administrador.quemSomos
 GET		/bairrosAtendidos						Administrador.showBairrosEntrega
 *		/bairrosAtendidos/cadastrar				Administrador.cadastrarBairroEntrega
 GET 	/bairrosAtendidos/edit/{id}				Administrador.editarBairroEntrega
+GET		/bairrosAtendidos/status/{id}			Administrador.changeStatus
 GET		/relatorios								Relatorios.index
 GET		/relatorios/export/msexcel/entrega		Relatorios.exportarRelatorioMSExcel
 GET		/relatorios/export/pdf/entrega			Relatorios.exportarRelatorioView
@@ -102,6 +104,18 @@ GET		/estoque/order/{order}/{asc}			Estoque.order
 GET		/estoque/changestatus/{id}				Estoque.changeStatus
 GET		/estoque/reservar/{idProduto}/{qtd}		Estoque.reservarProduto
 GET		/estoque/repor/{idProduto}/{qtd}		Estoque.reporProdutoEstoque
+
+GET		/assinar-cesta							Cestas.visualizar
+GET		/cesta/cadastrar						Cestas.cadastrar
+GET		/cesta/{id}								Cestas.editar
+GET		/cesta/consultar/all					Cestas.show
+GET		/cesta/cliente/{idCliente}				Cestas.consultaCestaCliente
+GET		/ajaxCesta/?							Cestas.visualizarProdutos
+GET		/cesta/gerar/pedidos					Cestas.gerarPedidosCestas
+GET		/consulta-cesta							Cestas.cestaAtiva
+GET		/cesta/consulta/assinaturas				Cestas.assinaturas
+
+GET		/servicos								Administrador.servicos
 
 #PayPal Integration
 *		/pedido/paypal/finalizar				Pedidos.finalizarPedidoPayPal

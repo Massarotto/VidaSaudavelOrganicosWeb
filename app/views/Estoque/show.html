@@ -56,7 +56,12 @@
 							</a>
 						</td>
 						<td align="left">
-							<span title="${estoque.produto?.nome}">${estoque.produto?.nome.substring(0, 15)}...</span>
+							#{if (estoque.produto?.nome.length()>=15)}
+								<span title="${estoque.produto?.nome}">${estoque.produto?.nome.substring(0, 15)}...</span>
+							#{/if}
+							#{else}
+								<span title="${estoque.produto?.nome}">${estoque.produto?.nome}</span>
+							#{/else}
 						</td>
 						<td width="8%" align="left">${estoque.produto?.dataValidade?.format('dd/MM/yyyy')}</td>
 						<td width="10%" align="center">${estoque.quantidade}</td>
@@ -78,7 +83,7 @@
 					#{/paginate.list}
 					</table>
 				</div>
-			</td
+			</td>
 		</tr>
 		<tr class="tr1">
 			<td colspan="4" align="center">#{paginate.summary items:posicaoEstoque /}</td>

@@ -4,15 +4,21 @@
 package controllers;
 
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.mail.EmailAttachment;
-
+import models.CestaAssinatura;
+import models.CestaAssinaturaProduto;
 import models.Cliente;
 import models.Pedido;
-import models.Usuario;
-import exception.SystemException;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.mail.EmailAttachment;
+
 import play.Logger;
+import play.i18n.Messages;
 import play.mvc.Mailer;
+import exception.SystemException;
 
 /**
  * @author guerrafe
@@ -155,7 +161,10 @@ public class Mail extends Mailer {
 			setSubject(subject);
 			addRecipient(email);
 			setReplyTo(from);
-			send(message, urlImagem);
+			
+			Future<Boolean> sent = send(message, urlImagem);
+			
+			Logger.debug("Atingiu o timeout? %s",  sent.get(5, TimeUnit.SECONDS) );
 			
 		}catch(Exception e) {
 			Logger.error(e, "Erro ao enviar e-mail com o Marketing.");
@@ -189,12 +198,13 @@ public class Mail extends Mailer {
 		try {
 			setFrom(from);
 			
-			EmailAttachment attachments = new EmailAttachment();
-			attachments.setDescription("Relatório Pedidos Aguardanto Entrega.");
-			attachments.setPath(fileAbsolutePath);
-			
-			addAttachment(attachments);
-			
+			if(!StringUtils.isEmpty(fileAbsolutePath)) {
+				EmailAttachment attachments = new EmailAttachment();
+				attachments.setDescription("Relatório Pedidos Aguardanto Entrega.");
+				attachments.setPath(fileAbsolutePath);
+				
+				addAttachment(attachments);
+			}
 			setSubject(subject);
 			addRecipient(email);
 			
@@ -204,6 +214,23 @@ public class Mail extends Mailer {
 			Logger.error(e, "Erro ao enviar e-mail com os produtos não encontrados.");
 			throw new SystemException(e);
 		}
+	}
+	
+	public static void sendCestaAssinatura(CestaAssinatura cestaAssinatura,
+											String from,
+											String message,
+											String subject,
+											String email) {
+		List<CestaAssinaturaProduto> assinaturaProdutos = cestaAssinatura.getListCestaAssinaturaProduto();
+		
+		setFrom(from);
+		setSubject(subject);
+		addRecipient(email);
+		setReplyTo(EMAIL_CONTACT);
+		
+		String staticContent = Messages.get("application.static.content", "") + Messages.get("application.path.public.images", "");
+		
+		send(cestaAssinatura, assinaturaProdutos, message, staticContent);
 	}
 
 }
