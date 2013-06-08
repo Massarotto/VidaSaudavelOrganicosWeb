@@ -22,7 +22,6 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import play.data.validation.Email;
-import play.data.validation.Min;
 import play.data.validation.MinSize;
 import play.data.validation.Required;
 import play.db.jpa.Model;

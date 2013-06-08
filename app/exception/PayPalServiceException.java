@@ -10,6 +10,8 @@ package exception;
  */
 public class PayPalServiceException extends Exception {
 
+	private static final long serialVersionUID = -837923860425399560L;
+
 	/**
 	 * 
 	 */

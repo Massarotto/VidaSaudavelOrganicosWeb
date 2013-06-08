@@ -355,7 +355,7 @@ form.politicaEntrega.bairros=Bairros Atendidos
 form.politicaEntrega.pagamento.title=Forma de Pagamento
 form.politicaEntrega.pagamento=<p>Seu pedido pode ser pago de duas maneiras:</p><br /><ul><li class='li-1'><strong>Dinheiro</strong> ou <strong>Cheque</strong> no ato da entrega.</li><li class='li-1'>Pedidos acima de R$ 150,00 podem ser pagos usando o <strong>PayPal*</strong>.</li></ul> 
 form.politicaEntrega.pagamento.paypal=<a href='https://www.paypal-brasil.com.br/' target='_blank'><img src='%s/images/paypal_logo.gif' alt='paypal logo' border='0' /></a><br />*Basta selecionar a opção PayPal na hora de fechar seu pedido, então você será redirecionado para a <b>área segura</b> do site para utilizar os dados da sua conta PayPal.
-form.politicaEntrega.baixada=<p>Seu <b>bairro</b> não está na lista? Clique <a href='/faleconosco?assunto=Meu bairro ainda não é atendido!'>aqui</a> e nos envie uma mensagem!</p><br /><p>Para Baixada Santista, clique <a href='http://www.santosorganicos.com.br' target='blank'>aqui</a>.
+form.politicaEntrega.baixada=<p>Seu <b>bairro</b> não está na lista? Clique <a href='/faleconosco?assunto=Meu bairro ainda não é atendido!'>aqui</a> e nos envie uma mensagem!</p>
 form.politicaEntrega.desconto=<i>(com %s de desconto)</i>
 
 #Fornecedor

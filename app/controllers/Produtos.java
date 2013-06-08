@@ -323,6 +323,15 @@ public class Produtos extends BaseController {
 		show(null);
 	}
 	
+	@Transactional(readOnly=false)
+	public static void excluir(Long id) {
+		int removed = Produto.delete("id = ?", id);
+		
+		Logger.info("Produto removido: %s ", removed);
+		
+		show(null);
+	}
+	
 	public static void getProdutosAtivos() {
 		List<Produto> produtosAtivos = null;
 		Marshaller marshaller = null;

@@ -13,9 +13,13 @@
 		</tr>
 		<tr>
 			<td colspan="2" align="center">
-				<input type="hidden" name="produto.id" id="produto.id" value="${produto.id}" />
 				<input type="hidden" id="produto.imagemProduto" name="produto.imagemProduto" value="${produto.imagemProduto}" />&nbsp;
 			</td>
+		</tr>
+		<tr>
+			<td width="40%" align="right">Id&nbsp;</td>
+			<td align="left">
+				<input type="text" readonly="readonly" class="textBox1" name="produto.id" id="produto.id" size="8" value="${produto.id}" /></td>
 		</tr>
 		<tr>
 			<td width="40%" align="right">&{'form.label.nome'}&nbsp;</td>
@@ -151,6 +155,8 @@
 			<td colspan="2" align="center">
 				<a href="javascript:history.go(-1);" class="fontBrown">&{'form.button.back'}</a>
 				<span>|</span>
+				<a href="#" class="fontBrown" onclick="javascript:remover(${produto.id});">&{'form.excluir'}</a>
+				<span>|</span>
 				<a href="#" class="fontBrown" onclick="document.getElementById('editProdutoForm').submit();">&{'form.button.next'}</a>
 				&nbsp;&nbsp;&nbsp;
 			</td>
@@ -168,5 +174,20 @@
 	</script>
 	#{/form}
 </div>
-
-
+<script type="text/javascript">
+	function remover(id) {
+		try {
+			var excluir = confirm("Deseja realmente excluir esse produto?");
+		
+			if(excluir==true) {
+				var url = "/produtos/excluir?id=" + id;
+				$("#editProdutoForm").attr('action', url);
+				
+				$("#editProdutoForm").submit();
+			}
+		
+		}catch(e) {
+			alert(e);
+		}
+	}
+</script>

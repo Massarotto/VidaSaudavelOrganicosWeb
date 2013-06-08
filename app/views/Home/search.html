@@ -28,15 +28,29 @@
 						#{paginate.list items:produtos, as:'produto'}
 						<tr>
 							<td align="center" width="9%">
+							#{if (produto.getEhCesta())}
+								<a href="/produtos/detail/${produto.id}/${produto.nome.slugify()}">
+									<img width="50" height="43" src="&{'application.static.content'}&{'application.path.public.images'}${produto.imagemProduto}" 
+										title="${produto.descricao}" alt="${produto.descricao}" class="imgBasket" />
+							#{/if}
+							#{else}
 								<a href="/ajaxView?height=370&width=450&id=${produto.id}" title="${produto.descricao}" class="thickbox">
 									<img width="50" height="43" src="&{'application.static.content'}&{'application.path.public.images'}${produto.imagemProduto}" 
 										title="${produto.descricao}" alt="${produto.descricao}" class="imgBasket" />
 								</a>
+							#{/else}
 							</td>
 							<td>
-								<a href="/ajaxView?height=370&width=450&id=${produto.id}" class="thickbox fontBoldWhite1">
-									<span>${produto.descricao}</span>
-								</a>
+								#{if (produto.getEhCesta())}
+									<a href="/produtos/detail/${produto.id}/${produto.nome.slugify()}" class="fontBoldWhite1">
+										<span>${produto.descricao}</span>
+									</a>
+								#{/if}
+								#{else}
+									<a href="/ajaxView?height=370&width=450&id=${produto.id}" class="thickbox fontBoldWhite1">
+										<span>${produto.descricao}</span>
+									</a>
+								#{/else}
 							</td>
 							<td width="11%" align="center">
 								<span class="fontBoldWhite1">${produto.secao?.descricao}</span>

@@ -10,7 +10,9 @@ import java.io.Serializable;
  *
  */
 public class TelefoneForm implements Serializable {
-	
+
+	private static final long serialVersionUID = 190879656409876L;
+
 	private Long id;
 	
 	private Integer tipo;

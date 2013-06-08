@@ -1,0 +1,45 @@
+#{extends 'layout.html' /}
+#{set 'title'}
+&{'application.subtilte'} Cestas Prontas
+#{/set}
+
+#{form @Cestas.associar(), method:'POST', id:'cestaAssociarForm'}
+<div>
+	<br />
+	<div class="txt_titulo_institucional">&{'form.cesta.assign'}</div>
+	<br />
+	<div style="width: 100%; float: left">
+		<img src="&{'application.static.content'}&{'application.path.public.images'}1350825231671.jpg"
+				width="&{'application.path.images.width'}"
+				height="&{'application.path.images.height'}" 
+				class="imgDetail" />
+	</div>
+	<div style="width: 100%">
+		<img src="&{'application.static.content'}&{'application.path.public.images'}1350825231671.jpg"
+				width="&{'application.path.images.width'}"
+				height="&{'application.path.images.height'}" 
+				class="imgDetail" />
+	</div>
+	<div style="width: 100%">
+		<img src="&{'application.static.content'}&{'application.path.public.images'}1350825231671.jpg"
+				width="&{'application.path.images.width'}"
+				height="&{'application.path.images.height'}" 
+				class="imgDetail" />
+	</div>
+	<div>
+		#{ifErrors}
+			#{errors}
+			<li>
+				<span class="fontRed">${error}</span>
+			</li>
+			#{/errors}
+		#{/ifErrors}
+		#{if (message!=null)}
+		<script type="text/javascript">
+			alert("${message.raw()}");
+		</script>
+		#{/if}
+	</div>
+</div>
+<br />
+#{/form}

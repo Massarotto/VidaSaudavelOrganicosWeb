@@ -5,7 +5,6 @@ package business.pagamento.service;
 
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.Date;
@@ -19,18 +18,13 @@ import javax.xml.ws.BindingProvider;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.soap.SOAPFaultException;
 
-import com.grepcepws.ws.GrepCepPortType;
-import com.sun.xml.internal.bind.api.JAXBRIContext;
-import com.sun.xml.internal.ws.developer.WSBindingProvider;
-import com.sun.xml.internal.ws.transport.Headers;
-
 import play.Logger;
 import play.cache.Cache;
 import play.i18n.Messages;
-import types.ListaProduto;
-import ebay.api.paypalapi.BillUserReq;
-import ebay.api.paypalapi.BillUserRequestType;
-import ebay.api.paypalapi.BillUserResponseType;
+
+import com.sun.xml.internal.bind.api.JAXBRIContext;
+import com.sun.xml.internal.ws.developer.WSBindingProvider;
+
 import ebay.api.paypalapi.DoExpressCheckoutPaymentReq;
 import ebay.api.paypalapi.DoExpressCheckoutPaymentRequestType;
 import ebay.api.paypalapi.DoExpressCheckoutPaymentResponseType;
@@ -39,32 +33,21 @@ import ebay.api.paypalapi.GetExpressCheckoutDetailsRequestType;
 import ebay.api.paypalapi.GetExpressCheckoutDetailsResponseType;
 import ebay.api.paypalapi.ObjectFactory;
 import ebay.api.paypalapi.PayPalAPIAAInterface;
-import ebay.api.paypalapi.PayPalAPIInterface;
 import ebay.api.paypalapi.PayPalAPIInterfaceService;
 import ebay.api.paypalapi.SetExpressCheckoutReq;
 import ebay.api.paypalapi.SetExpressCheckoutRequestType;
 import ebay.api.paypalapi.SetExpressCheckoutResponseType;
-import ebay.api.paypalapi.SetMobileCheckoutReq;
-import ebay.api.paypalapi.SetMobileCheckoutRequestType;
 import ebay.apis.corecomponenttypes.BasicAmountType;
 import ebay.apis.eblbasecomponents.AckCodeType;
-import ebay.apis.eblbasecomponents.BuyerDetailsType;
 import ebay.apis.eblbasecomponents.CurrencyCodeType;
 import ebay.apis.eblbasecomponents.CustomSecurityHeaderType;
-import ebay.apis.eblbasecomponents.DisplayControlDetailsType;
 import ebay.apis.eblbasecomponents.DoExpressCheckoutPaymentRequestDetailsType;
 import ebay.apis.eblbasecomponents.ErrorType;
-import ebay.apis.eblbasecomponents.ExternalPartnerTrackingDetailsType;
-import ebay.apis.eblbasecomponents.MerchantPullPaymentCodeType;
-import ebay.apis.eblbasecomponents.MerchantPullPaymentType;
 import ebay.apis.eblbasecomponents.PaymentActionCodeType;
 import ebay.apis.eblbasecomponents.PaymentDetailsItemType;
 import ebay.apis.eblbasecomponents.PaymentDetailsType;
 import ebay.apis.eblbasecomponents.SetExpressCheckoutRequestDetailsType;
-import ebay.apis.eblbasecomponents.ShippingServiceCodeType;
-import ebay.apis.eblbasecomponents.TotalType;
 import ebay.apis.eblbasecomponents.UserIdPasswordType;
-import ebay.apis.enhanceddatatypes.EnhancedCheckoutDataType;
 import exception.PayPalServiceException;
 
 /**
@@ -72,7 +55,9 @@ import exception.PayPalServiceException;
  *
  */
 public class PayPalService implements Serializable {
-	
+
+	private static final long serialVersionUID = 3485223699084668433L;
+
 	private String urlEndPoint = null;
 	
 	private String userService = null;

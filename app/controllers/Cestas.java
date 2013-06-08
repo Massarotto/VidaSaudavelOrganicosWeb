@@ -344,4 +344,7 @@ public class Cestas extends BaseController {
 		render(cestas);
 	}
 	
+	public static void cestaPadrao() {
+		render();
+	}
 }

@@ -7,8 +7,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
-import business.produto.layout.LayoutArquivo;
-
 /**
  * @author hpadmin
  *

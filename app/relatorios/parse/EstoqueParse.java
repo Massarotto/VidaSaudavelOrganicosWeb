@@ -4,14 +4,12 @@
 package relatorios.parse;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-import play.Logger;
-
 import models.ProdutoEstoque;
+import play.Logger;
 
 /**
  * @author hpadmin
@@ -19,6 +17,11 @@ import models.ProdutoEstoque;
  */
 public class EstoqueParse implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1089768574651L;
+
 	public static String buildHtmlLayout(List<ProdutoEstoque> estoque) {
 		StringBuffer build = new StringBuffer();
 		NumberFormat numberFormat = null;

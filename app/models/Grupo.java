@@ -27,7 +27,9 @@ import play.db.jpa.Model;
 @Entity
 @Table(name="GRUPO")
 public class Grupo extends Model {
-	
+
+	private static final long serialVersionUID = -3555867852698899928L;
+
 	public static final String ROLE_ADMIN = "ADMIN";
 	
 	public static final String ROLE_PARTNER = "PARCEIRO";

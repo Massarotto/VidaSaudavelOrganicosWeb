@@ -25,6 +25,7 @@ GET		/pesquisarProdutoEstoque				Estoque.findByParams
 GET		/pesquisarPedido						Pedidos.findByParams
 GET		/pesquisarCliente						Clientes.findByParams
 GET		/produtos/{id}							Produtos.edit
+GET		/produtos/excluir/{id}					Produtos.excluir
 GET		/produtos/changestatus/{id}				Produtos.changeStatus
 GET		/produtos/ativarinativar/{status}		Produtos.changeProductsStatus
 GET		/produtos/promocao/{id}					Produtos.adicionaStatusPromocao
@@ -114,6 +115,7 @@ GET		/ajaxCesta/?							Cestas.visualizarProdutos
 GET		/cesta/gerar/pedidos					Cestas.gerarPedidosCestas
 GET		/consulta-cesta							Cestas.cestaAtiva
 GET		/cesta/consulta/assinaturas				Cestas.assinaturas
+GET		/cestas-prontas							Cestas.cestaPadrao
 
 GET		/servicos								Administrador.servicos
 

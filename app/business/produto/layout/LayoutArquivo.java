@@ -11,7 +11,7 @@ import java.io.Serializable;
  */
 public enum LayoutArquivo implements Serializable {
 	CSV("CSV", "Arquivo usando o delimitador ';' e na sequência <código>;<ativo>;<descrição>"),
-	PRODUTO_CSV("PRODUTO_CSV", "Arquivo usando o delimitador ';' e na sequência <id>;<código>;<valorPago>;<valorVenda>;<ativo>;<descrição>");
+	PRODUTO_CSV("PRODUTO_CSV", "Arquivo usando o delimitador ';' e na sequência <id>;<código>;<valorPago>;<valorVenda>;<ativo>;<nome>;<descrição>");
 	
 	private String codigo;
 	private String descricao;
