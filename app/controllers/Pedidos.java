@@ -501,6 +501,23 @@ public class Pedidos extends BaseController {
 		render(pedidos, debito, pedido);
 	}
 	
+	/**
+	 * <p>Método que carrega os pedidos do histórico, filtrando pelos pedidos fechados e aguardando pagamento
+	 * @param idCliente
+	 * @param rows - limita o número de registros
+	 * @return pedidos
+	 */
+	public static List<Pedido> getPedidosAbertosEFinalizados(Long idCliente, Integer rows) {
+		Logger.debug("#### Carregar os pedidos do histórico para o cliente %s #####", idCliente);
+		List<Pedido> result = null;
+		
+		result = Pedido.find("cliente.id = ? AND codigoEstadoPedido IN (?, ?) order by id desc", idCliente, 
+																								Pedido.PedidoEstado.AGUARDANDO_PAGAMENTO,
+																								Pedido.PedidoEstado.FINALIZADO).fetch(rows);
+		
+		return result;
+	}
+	
 	private static Object buildQuery(StringBuffer queryAppend, String param, String value) {
 		Object parametro = null;
 		

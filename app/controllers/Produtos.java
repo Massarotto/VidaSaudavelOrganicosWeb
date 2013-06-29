@@ -294,21 +294,24 @@ public class Produtos extends BaseController {
 	@SuppressWarnings("all")
 	public static void atualizarProdutosFornecedores() {
 		Logger.debug("######### Início - Atualizar todos os produtos do site com as tabelas enviadas. ##########");
+		ProdutoControl control = new ProdutoControl();
+		/*
 		Integer updates = 0;
 		List<Long> fornecedores = Fornecedor.find("select id from Fornecedor order by id ASC", null).fetch();
-		ProdutoControl control = new ProdutoControl();
+		
 		
 		for(Long idFornecedor : fornecedores) {
 			control.atualizarProdutos(idFornecedor);
 			
 			updates++;
 		}
+		*/
 		//Rebuild dos índices
 		control.generateLuceneIndex();
 		
 		Logger.debug("######### Fim - Atualizar todos os produtos do site com as tabelas enviadas. ##########");
 		
-		Home.index("Os produtos de  " + updates + " fornecedores foram atualizados, verifique se alguns produtos não estão cadastrados.");
+		Home.index("Os produtos foram atualizados para o mecanismo de busca do site.");
 	}
 	
 	@Transactional(readOnly=false)
