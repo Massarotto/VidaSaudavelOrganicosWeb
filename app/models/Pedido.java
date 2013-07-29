@@ -136,7 +136,7 @@ public class Pedido extends Model {
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="pedido")
 	private List<PedidoItem> itens = null;
 	
-	@OneToOne(cascade=CascadeType.ALL, fetch=FetchType.EAGER, orphanRemoval=true)
+	@OneToOne(cascade=CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval=true)
 	private Pagamento pagamento = null;
 	
 	@Required

@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.File;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -22,12 +23,12 @@ import models.Pedido;
 import models.PedidoItem;
 import models.Produto;
 import play.Logger;
-import play.data.binding.As;
 import play.db.jpa.JPA;
 import play.i18n.Messages;
 import play.modules.paginate.ValuePaginator;
 import play.mvc.Before;
 import relatorios.BaseJasperReport;
+import relatorios.parse.ProdutoFornecedorParse;
 import relatorios.parse.ProdutoPedidoReportParse;
 import relatorios.parse.ProdutoReportParse;
 import util.PedidoFornecedorComparator;
@@ -96,6 +97,30 @@ public class Relatorios extends BaseController {
 	
 	public static void exportarRelatorioProdutoFornecedorCSV() {
 		renderBinary(generateRelatorioProdutoFornecedorCSV(), RELATORIO_PRODUTO_FORNECEDOR+".csv");
+	}
+	
+	public static void exportarRelatorioProdutoFornecedorExcel() {
+		renderBinary(generateRelatorioProdutoFornecedorExcel());
+	}
+	
+	public static File generateRelatorioProdutoFornecedorExcel() {
+		List<ProdutoPedidoReportVO> result = null;
+		
+		List<Produto> produtos = findProdutosAguardandoEntrega(null);
+		
+		result = ProdutoPedidoReportVO.fillProdutos(produtos);
+		
+		Collections.sort(result, new PedidoFornecedorComparator());
+
+		ProdutoFornecedorParse parse = new ProdutoFornecedorParse(result);
+		
+		StringBuffer nomeArquivo = new StringBuffer();
+		nomeArquivo.append(System.getProperty("java.io.tmpdir"));
+		nomeArquivo.append(File.separatorChar);
+		nomeArquivo.append(RELATORIO_PRODUTO_FORNECEDOR);
+		nomeArquivo.append(".xls");
+		
+		return parse.createReport(nomeArquivo.toString());
 	}
 	
 	public static InputStream generateRelatorioProdutoFornecedorCSV() {

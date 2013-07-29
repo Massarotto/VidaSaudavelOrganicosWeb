@@ -184,7 +184,7 @@ public class Produto extends Model implements Comparable<Produto> {
 	private List<PedidoItem> listPedidoItem = null;
 
 	@XmlTransient
-	@ManyToMany(mappedBy="produtos")
+	@ManyToMany(mappedBy="produtos", fetch=FetchType.LAZY)
 	private List<CarrinhoItem> listCarrinhoItem = null;
 	
 	@XmlTransient

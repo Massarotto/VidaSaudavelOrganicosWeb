@@ -300,8 +300,8 @@ message.form.login.senhas=Por favor, verifique se a senha antiga e a nova coinci
 message.ativar.inativar.todos=Deseja realmente continuar com essa operação?
 
 #Institucional
-form.intitucional.link=<a href='/quem-somos'>Quem Somos</a><span> | </span><a href='/o-que-sao-organicos'>O que são <strong>Orgânicos</strong>?</a><span> | </span><a href='/politica-de-entrega'>Política de Entrega</a><span> | </span><a href='/faleconosco'>Fale Conosco</a> | </span><a href='/fornecedores'>Fornecedores</a> | </span><a href='/servicos'>Serviços</a> 
-form.intitucional.foot.link=<a href='/quem-somos'>Quem Somos</a><span> | </span><a href='/o-que-sao-organicos'>O que são <strong>Orgânicos</strong>?</a><span> | </span><a href='/politica-de-entrega'>Política de Entrega</a><span> | </span><a href='/faleconosco'>Fale Conosco</a> | </span><a href='/fornecedores'>Fornecedores</a> | </span><a href='/parceiros'>Parceiros</a><span> | </span><a href='/na-midia'>Na Mídia</a><span> | </span><a href='/servicos'>Serviços</a>
+form.intitucional.link=<a href='/quem-somos'>Quem Somos</a><span> | </span><a href='/o-que-sao-organicos'>O que são <strong>Orgânicos</strong>?</a><span> | </span><a href='/politica-de-entrega'>Política de Entrega</a><span> | </span><a href='/faleconosco'>Fale Conosco</a> | </span><a href='/fornecedores'>Fornecedores</a> | </span><a href='/na-midia'>Na Mídia</a><span> | </span><a href='/parceiros'>Parceiros</a><span>
+#form.intitucional.foot.link=<a href='/quem-somos'>Quem Somos</a><span> | </span><a href='/o-que-sao-organicos'>O que são <strong>Orgânicos</strong>?</a><span> | </span><a href='/politica-de-entrega'>Política de Entrega</a><span> | </span><a href='/faleconosco'>Fale Conosco</a> | </span><a href='/fornecedores'>Fornecedores</a> | </span><a href='/parceiros'>Parceiros</a><span> | </span><a href='/na-midia'>Na Mídia</a><span>
 form.faleConosco.title=Fale Conosco
 form.faleConosco.text=<p><h3>Seu contato é muito importante para nós.</h3><br /><h4>Envie suas críticas, sugestões ou deixe-nos uma mensagem para que possamos melhorar nossos serviços.</h4></p>
 form.faleConosco.phoneNumber=<p>Se preferir entrar em contato por telefone: <strong>(11) 4324-8074</strong> / <strong>(11) 97379-6938(Vivo)</strong>
@@ -433,6 +433,7 @@ form.report.pedidoPorFornecedor=Produtos por Fornecedor
 form.report.pedidoAguardandoEntrega=Pedidos Aguardando Entrega
 application.form.export=Exportar
 application.form.report.format.excel=Excel
+application.form.report.format.csv=CSV
 application.form.report.format.pdf=PDF
 application.form.select=Selecione
 

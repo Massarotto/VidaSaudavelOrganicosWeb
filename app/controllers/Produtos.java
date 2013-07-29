@@ -402,7 +402,7 @@ public class Produtos extends BaseController {
 		
 		for(int i=secoes.size()-1; i>=0; i--) {
 			Secao _secao = secoes.get(i);
-			path.append("<a href=\"/produtos/secao/").append(_secao.id).append("/").append(_secao.getDescricao()).append("\">");
+			path.append("<a class=\"a1\" href=\"/produtos/secao/").append(_secao.id).append("/").append(_secao.getDescricao()).append("\">");
 			path.append(_secao.getDescricao());
 			path.append("</a>");
 			

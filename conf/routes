@@ -81,6 +81,7 @@ GET		/relatorios/produto/fornecedor			Relatorios.relatorioProdutoFornecedor
 GET		/relatorios/produto/pedido/cliente		Relatorios.relatorioProdutoPedidoCliente
 GET		/relatorios/produtos/all				Relatorios.relatorioProdutosCadastrados
 GET		/relatorios/export/csv/fornecedor		Relatorios.exportarRelatorioProdutoFornecedorCSV
+GET		/relatorios/export/excel/fornecedor		Relatorios.exportarRelatorioProdutoFornecedorExcel
 GET		/produtos/order/{order}/{asc}			Produtos.order
 GET		/produtos/detail/{id}/{nome}			Produtos.detail
 GET		/produtos-ativos						Produtos.getProdutosAtivos
