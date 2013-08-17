@@ -2,7 +2,7 @@
 <script src="&{'application.static.content'}/javascripts/jquery-ui-1.8.17.custom.min.js" type="text/javascript" charset="utf-8"></script>
 
 #{form @Pedidos.atualizar(), method:'POST', id:'editPedidoForm'}
-<table width="100%" cellpadding="4" cellspacing="2" border="0" class="fontGreen2">
+<table width="100%" cellpadding="2" cellspacing="2" border="0" class="fontGreen2">
 	<tr>
 		<td colspan="2" align="center">
 			<input type="hidden" name="pedido.desconto.id" id="pedido.desconto.id" value="${pedido.desconto?.id}" />
@@ -99,6 +99,12 @@
 					<span class="fontBlackMainHome">${pedido.pagamento.formaPagamento.getDescricao()}</span>
 				#{/else}	
 			#{/if}
+		</td>
+	</tr>
+	<tr>
+		<td align="right">&{'form.order.outrasDespesas'}&nbsp;</td>
+		<td align="left">
+			<input type="text" class="textBox1" name="pedido.outrasDespesas" id="pedido.outrasDespesas" size="20" value="${pedido.outrasDespesas}" />
 		</td>
 	</tr>
 	<tr>

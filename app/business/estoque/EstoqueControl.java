@@ -23,6 +23,8 @@ import models.ProdutoEstoque;
  */
 public class EstoqueControl implements Serializable {
 	
+	private static final long serialVersionUID = 7262464347061954320L;
+
 	public EstoqueControl() {
 		super();
 	}
@@ -61,11 +63,11 @@ public class EstoqueControl implements Serializable {
 				return null;
 	}
 	
-	private static synchronized ProdutoEstoque load(Long id) {
+	private static ProdutoEstoque load(Long id) {
 		return ProdutoEstoque.findById(id);
 	}
 
-	private static synchronized ProdutoEstoque findByIdProduto(Long id) {
+	private static ProdutoEstoque findByIdProduto(Long id) {
 		ProdutoEstoque result = ProdutoEstoque.find("produto.id = ?", id).first();
 		
 		return result;

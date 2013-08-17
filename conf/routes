@@ -52,6 +52,8 @@ GET		/pedidos/edit/{id}						Pedidos.edit
 *		/ajaxProdutos/?							Pedidos.pedidoProdutos
 GET 	/logoff/{sessionId}						Login.logout
 GET		/pedidos/produtos/show/{id}				Pedidos.viewProducts
+GET		/pedidos/incluir/produto/{id}			Pedidos.incluirProduto
+#POST	
 *		/ajaxEndereco/?							Clientes.viewEndereco
 *		/newOrder/{sessionId}/{idPedido}		Pedidos.novoPedido
 GET		/frete									Administrador.editFrete

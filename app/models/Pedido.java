@@ -45,7 +45,7 @@ import util.CestaAssinaturaProdutoComparator;
 @Cacheable
 @Entity
 @Table(name="PEDIDO")
-@NamedQuery(name="findAllOrderByDataPedidoAndCodigoEstado", query="from Pedido order by dataPedido desc, codigoEstadoPedido desc", 
+@NamedQuery(name="findAllOrderByDataPedidoAndCodigoEstado", query="from Pedido where arquivado =:arquivado order by dataPedido desc, codigoEstadoPedido desc", 
 		hints={@QueryHint(value="true", name="org.hibernate.cacheable")})
 public class Pedido extends Model {
 
@@ -154,6 +154,26 @@ public class Pedido extends Model {
 	@ManyToOne(fetch=FetchType.EAGER, cascade=CascadeType.ALL)
 	private Frete frete;
 	
+	@Column(name="PEDIDO_ARQUIVADO", nullable=true)
+	private Boolean arquivado = Boolean.FALSE;
+	
+	@Column(name="OUTRAS_DESPESAS", nullable=true, scale=2, precision=8)
+	private BigDecimal outrasDespesas;
+	
+	/**
+	 * @return the outrasDespesas
+	 */
+	public BigDecimal getOutrasDespesas() {
+		return outrasDespesas;
+	}
+
+	/**
+	 * @param outrasDespesas the outrasDespesas to set
+	 */
+	public void setOutrasDespesas(BigDecimal outrasDespesas) {
+		this.outrasDespesas = outrasDespesas;
+	}
+
 	/**
 	 * @return the codigoEstadoPedido
 	 */
@@ -669,5 +689,18 @@ public class Pedido extends Model {
 		return true;
 	}
 
+	/**
+	 * @return the arquivado
+	 */
+	public Boolean getArquivado() {
+		return arquivado;
+	}
+
+	/**
+	 * @param arquivado the arquivado to set
+	 */
+	public void setArquivado(Boolean arquivado) {
+		this.arquivado = arquivado;
+	}
 	
 }

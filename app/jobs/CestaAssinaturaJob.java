@@ -17,7 +17,6 @@ import play.jobs.Job;
 import play.jobs.On;
 import play.jobs.OnApplicationStart;
 
-@On("0 59 22 ? * Sun")
 @SuppressWarnings("all")
 public class CestaAssinaturaJob extends Job {
 

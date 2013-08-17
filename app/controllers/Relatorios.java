@@ -108,6 +108,8 @@ public class Relatorios extends BaseController {
 		
 		List<Produto> produtos = findProdutosAguardandoEntrega(null);
 		
+		Collections.sort(produtos);
+		
 		result = ProdutoPedidoReportVO.fillProdutos(produtos);
 		
 		Collections.sort(result, new PedidoFornecedorComparator());
@@ -127,6 +129,8 @@ public class Relatorios extends BaseController {
 		List<ProdutoPedidoReportVO> result = null;
 		
 		List<Produto> produtos = findProdutosAguardandoEntrega(null);
+		
+		Collections.sort(produtos);
 		
 		result = ProdutoPedidoReportVO.fillProdutos(produtos);
 		

@@ -305,7 +305,7 @@ public class Carrinho extends Controller {
 				pedido.setDataPedido(new Date());
 				pedido.setValorPedido(carrinho.getValorTotalCompra());
 				pedido.setCodigoEstadoPedido(statusPedido);
-
+				pedido.setArquivado(Boolean.FALSE);
 				pagamento.setPedido(pedido);
 				pagamento.setValorPagamento(pedido.getValorPedido());
 				pedido.setPagamento(pagamento);

@@ -261,6 +261,7 @@ form.order.alterar.metodoPagamento=Forma de Pagamento
 form.order.last=Últimos Pedidos
 form.order.debitos=Débitos pendentes:
 form.order.notaFiscal=Nota Fiscal
+form.order.outrasDespesas=Outras Despesas
 
 #Questionário
 form.questionario.title=Questionário
@@ -387,9 +388,9 @@ form.fornecedores.7.img=/images/fornecedores/piloes.jpg
 
 #Parceiros
 form.parceiros.title=Parceiros
-form.parceiros.1=Santos Orgânicos
-form.parceiros.1.link=http://www.santosorganicos.com.br
-form.parceiros.1.img=/images/fornecedores/santos_organicos.jpg
+form.parceiros.1=Cozinha Iluminada
+form.parceiros.1.link=http://cozinhailuminada.wordpress.com/
+form.parceiros.1.img=/images/cozinha.jpg
 
 form.parceiros.2=Nutricionista - Alimentação Integral e Integrada
 form.parceiros.2.link=http://flaviazanatta.blogspot.com/

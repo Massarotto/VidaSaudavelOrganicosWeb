@@ -77,7 +77,9 @@ public class Pedidos extends BaseController {
 		PedidoEstado[] status = PedidoEstado.values();
 		
 		//List<Pedido> _pedidos = Pedido.find("order by dataPedido desc, codigoEstadoPedido desc").fetch();
-		Query query = JPA.em().createQuery("from Pedido order by dataPedido desc, codigoEstadoPedido desc");
+		Query query = JPA.em().createNamedQuery("findAllOrderByDataPedidoAndCodigoEstado");
+		query.setParameter("arquivado", Boolean.FALSE);
+		
 		List<Pedido> _pedidos = query.getResultList();
 		
 		ValuePaginator<Pedido> vPedidos = new ValuePaginator<Pedido>(_pedidos);
@@ -195,6 +197,49 @@ public class Pedidos extends BaseController {
 		List<PedidoItem> itens = getProdutosByPedido(id, Boolean.TRUE);
 		
 		render(itens, pedido);
+	}
+	
+	/**
+	 * Funcionalidade de incluir produto para um pedido existente
+	 * @param id
+	 */
+	public static void incluirProduto(Long id) {
+		Pedido pedido = Pedido.findById(id);
+		List<Produto> produtos = Produto.find("ativo = ? order by descricao asc", Boolean.TRUE).fetch();
+		
+		render(produtos, pedido);
+	}
+	
+	@Transactional(readOnly=false)
+	public static void adicionarProdutoPedido(Long id, Long produtoId, Integer quantidade) {
+		Pedido pedido = Pedido.findById(id);
+		
+		Logger.info("#### Vai adicionar o produto %s (quantidade: %s) no pedido %s (valor: %s) ####", produtoId, quantidade, id, pedido.getValorPedido());
+		
+		BigDecimal valorPedido = pedido.getValorPedido();
+		
+		Produto produto = Produto.findById(produtoId);
+		
+		PedidoItem pedidoItem = new PedidoItem();
+		pedidoItem.setExcluido(Boolean.FALSE);
+		pedidoItem.setPedido(pedido);
+		pedidoItem.setQuantidade(quantidade);
+		pedidoItem.getProdutos().add(produto);
+		
+		pedido.getItens().add(pedidoItem);
+		valorPedido = valorPedido.add(BigDecimal.valueOf(produto.getValorVenda()*quantidade));
+		
+		EstoqueControl.atualizarEstoque(EstoqueControl.loadEstoque(id, produtoId), quantidade, session.get("usuarioAutenticado"));
+		
+		pedidoItem.save();
+		pedido.setValorPedido(valorPedido);
+		pedido.setDataAlteracao(new Date());
+		pedido.setObservacao("Alterado por " + session.get("usuarioAutenticado"));
+		
+		pedido.save();
+		
+		Logger.info("#### Pedido %s, novo valor: %s (produto: %s - valor: %s) ####", id, valorPedido, produto.getNome(), produto.getValorVenda()*quantidade);
+		renderText(Messages.get("form.admin.produto.cadastro.success", "inserido"));
 	}
 	
 	@Transactional(readOnly=false)
