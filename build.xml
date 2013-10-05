@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
-<project basedir="." name="VidaSaudavelWeb">
+<project basedir="." name="VidaSaudavelOrganicosWeb">
 	<description>Vida Saudavel Organicos</description>
 
 	<property file="build.properties"/>
 	<property environment="windowsEnviroment" />
-	<property name="project.name" value="VidaSaudavelWeb" />
-	<property name="bea.home" value="C:/bea_103" />
+	<property name="project.name" value="VidaSaudavelOrganicosWeb" />
+	<property name="bea.home" value="C:\\bea_103" />
 	
 	<property name="lib.home" value="${basedir}\lib" />
 	<property name="wsdlGrepCepFile" value="\public\wsdl\GrepCep.wsdl" />

@@ -31,6 +31,8 @@ import play.mvc.Before;
 import relatorios.parse.UsuarioParse;
 import business.cliente.service.EnderecoService;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.grepcepws.entity.xsd.Cep;
 
 import exception.SystemException;
@@ -429,9 +431,15 @@ public class Clientes extends BaseController {
 					tel.save();
 				}
 			}
-			
+			Endereco.cleanEnderecoCache();
 			Logger.debug("#### Fim - Atualizar o Endereço: %s #####", id);
 		}
 		renderText(Messages.get("validation.data.success", ""));
+	}
+	
+	public static void consultarEnderecoPeloIdCliente(Long idCliente) {
+		Gson gsonBuilder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+		
+		renderJSON(gsonBuilder.toJson(Endereco.getEndereco(idCliente)));
 	}
 }

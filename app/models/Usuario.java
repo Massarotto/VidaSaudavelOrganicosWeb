@@ -31,8 +31,6 @@ import play.libs.Crypto;
  * @author guerrafe
  *
  */
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Cacheable
 @Entity
 @Table(name="USUARIO")
 public class Usuario extends Model {
@@ -156,6 +154,13 @@ public class Usuario extends Model {
 			return false;
 			
 		return this.grupo.getNome().equalsIgnoreCase(Grupo.ROLE_PARTNER);
+	}
+	
+	public boolean isEmployee() {
+		if(this.grupo==null || this.grupo.getNome()==null)
+			return false;
+			
+		return this.grupo.getNome().equalsIgnoreCase(Grupo.ROLE_EMPLOYEE);
 	}
 	
 	@Transient

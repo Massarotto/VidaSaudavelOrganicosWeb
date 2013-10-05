@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,9 +17,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import play.data.validation.MaxSize;
 import play.data.validation.MinSize;
@@ -32,8 +28,6 @@ import play.db.jpa.Model;
  * @version 1.0
  * @since 01/07/2011
  */
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Cacheable
 @Entity
 @Table(name="CLIENTE")
 public class Cliente extends Model implements Serializable {
@@ -88,9 +82,6 @@ public class Cliente extends Model implements Serializable {
 
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="cliente")
 	private List<Telefone> telefones;
-	
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="cliente")
-	private List<CestaAssinatura> listCestaAssinatura = null;
 	
 	public Cliente(String nome, Date dataNascimento) {
 		this.nome = nome;
@@ -316,23 +307,5 @@ public class Cliente extends Model implements Serializable {
 	public void setTelefones(List<Telefone> telefones) {
 		this.telefones = telefones;
 	}
-
-	/**
-	 * @return the listCestaAssinatura
-	 */
-	public List<CestaAssinatura> getListCestaAssinatura() {
-		if(this.listCestaAssinatura==null)
-			this.listCestaAssinatura = new ArrayList<CestaAssinatura>();
-			
-		return listCestaAssinatura;
-	}
-
-	/**
-	 * @param listCestaAssinatura the listCestaAssinatura to set
-	 */
-	public void setListCestaAssinatura(List<CestaAssinatura> listCestaAssinatura) {
-		this.listCestaAssinatura = listCestaAssinatura;
-	}
-
 	
 }

@@ -1,0 +1,26 @@
+#{extends 'layout.html' /}
+#{set 'title'}
+&{'application.subtilte'} &{'application.route.title'}
+#{/set}
+<style type="text/css">
+      #map_canvas { height: 600px; }
+</style>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=&{'application.google.maps.key'}&sensor=&{'application.google.maps.sensor'}"></script>
+<script src="&{'application.static.content'}/javascripts/gmaps.util.js" type="text/javascript" charset="utf-8"></script>
+<div class="boxConsultaDefault" id="map_canvas">
+</div>
+<div id="passos" style="height: 100%;"></div>
+<script type="text/javascript" charset="utf-8">
+try {
+	inciarMapa('map_canvas', -23.5505233, -46.6342982);
+
+	$.post('@{Relatorios.renderRota()}', 
+		function( data ) {
+			if(data!="")
+				calcularRota(data);
+	})
+	
+}catch(e) {
+	alert(e.description);
+}
+</script>

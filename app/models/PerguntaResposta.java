@@ -4,19 +4,11 @@
 package models;
 
 import java.io.Serializable;
-import java.util.Date;
 
-import javax.persistence.Cacheable;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import play.db.jpa.Model;
 
@@ -24,12 +16,12 @@ import play.db.jpa.Model;
  * @author hpadmin
  *
  */
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Cacheable
 @Entity
 @Table(name="PERGUNTA_RESPOSTA")
 public class PerguntaResposta extends Model implements Serializable {
 	
+	private static final long serialVersionUID = 98768574615471L;
+
 	public PerguntaResposta() {
 	}
 	

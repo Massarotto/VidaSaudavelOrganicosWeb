@@ -4,12 +4,12 @@
 package models;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -63,7 +63,7 @@ import play.db.jpa.Model;
 @Entity
 @Table(name="PRODUTO")
 @Indexed(index="Produto")
-public class Produto extends Model implements Comparable<Produto> {
+public class Produto extends Model implements Comparable<Produto>, ProdutoCarrinho {
 
 	private static final long serialVersionUID = -3392437480740820408L;
 
@@ -180,7 +180,7 @@ public class Produto extends Model implements Comparable<Produto> {
 	private Boolean ehCesta = Boolean.FALSE;
 	
 	@XmlTransient
-	@ManyToMany(mappedBy="produtos")
+	@ManyToMany(mappedBy="produtos", fetch=FetchType.LAZY)
 	private List<PedidoItem> listPedidoItem = null;
 
 	@XmlTransient
@@ -188,7 +188,7 @@ public class Produto extends Model implements Comparable<Produto> {
 	private List<CarrinhoItem> listCarrinhoItem = null;
 	
 	@XmlTransient
-	@ManyToOne(fetch=FetchType.EAGER)
+	@ManyToOne(fetch=FetchType.LAZY)
 	private Fornecedor fornecedor;
 	
 	@XmlTransient
@@ -201,9 +201,27 @@ public class Produto extends Model implements Comparable<Produto> {
 	private List<CestaProduto> listCestaProdutos = null;
 	
 	@XmlTransient
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="produto")
-	private List<CestaAssinaturaProduto> listCestaAssinaturaProduto;
+	@Transient
+	private BigDecimal valorMargemLucro = BigDecimal.ZERO;
 	
+	/**
+	 * @return the valorMargemLucro
+	 */
+	public BigDecimal getValorMargemLucro() {
+		if(this.valorPago>0) {
+			valorMargemLucro = BigDecimal.valueOf( (this.valorVenda * 100) / this.valorPago );
+			valorMargemLucro = valorMargemLucro.subtract(BigDecimal.valueOf(100.0));
+		}
+		return valorMargemLucro.setScale(2, BigDecimal.ROUND_HALF_DOWN);
+	}
+
+	/**
+	 * @param valorMargemLucro the valorMargemLucro to set
+	 */
+	public void setValorMargemLucro(BigDecimal valorMargemLucro) {
+		this.valorMargemLucro = valorMargemLucro;
+	}
+
 	/**
 	 * @return the nome
 	 */
@@ -510,25 +528,7 @@ public class Produto extends Model implements Comparable<Produto> {
 	public void setListCestaProdutos(List<CestaProduto> listCestaProdutos) {
 		this.listCestaProdutos = listCestaProdutos;
 	}
-
-	/**
-	 * @return the listCestaAssinaturaProduto
-	 */
-	public List<CestaAssinaturaProduto> getListCestaAssinaturaProduto() {
-		if(this.listCestaAssinaturaProduto==null)
-			this.listCestaAssinaturaProduto = new ArrayList<CestaAssinaturaProduto>();
-		
-		return listCestaAssinaturaProduto;
-	}
-
-	/**
-	 * @param listCestaAssinaturaProduto the listCestaAssinaturaProduto to set
-	 */
-	public void setListCestaAssinaturaProduto(
-			List<CestaAssinaturaProduto> listCestaAssinaturaProduto) {
-		this.listCestaAssinaturaProduto = listCestaAssinaturaProduto;
-	}
-
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -545,5 +545,19 @@ public class Produto extends Model implements Comparable<Produto> {
 
 	}
 
+	/**
+	 * @param produtos
+	 * @return valor de custo para uma lista de produtos
+	 */
+	public static BigDecimal getValorCustoProdutos(List<Produto> produtos) {
+		BigDecimal result = BigDecimal.ZERO;
+		
+		if(produtos!=null && !produtos.isEmpty()) { 
+			for(Produto produto : produtos) {
+				result = result.add(BigDecimal.valueOf(produto.getValorPago()));
+			}
+		}
+		return result;
+	}
 	
 }

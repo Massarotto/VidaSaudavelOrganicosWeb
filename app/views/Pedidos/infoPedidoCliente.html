@@ -108,6 +108,12 @@
 		</td>
 	</tr>
 	<tr>
+		<td align="right">&{'form.label.valorCusto'}&nbsp;</td>
+		<td align="left">
+			<input type="text" class="textBox1" readonly="readonly" name="pedido.valorCustoPedido" id="pedido.valorCustoPedido" size="13" value="${pedido.getValorCustoPedido()}" />
+		</td>
+	</tr>
+	<tr>
 		<td align="right">&{'form.label.status'}&nbsp;</td>
 		<td align="left">
 			#{select 'pedido.codigoEstadoPedido', items:status, labelProperty:'estado', value:pedido.codigoEstadoPedido, class:"fontGreen1"}*

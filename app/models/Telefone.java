@@ -24,8 +24,6 @@ import play.db.jpa.Model;
  * @author Felipe G. de Oliveira
  * @since 12/09/2011
  */
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Cacheable
 @Entity
 @Table(name="TELEFONE")
 public class Telefone extends Model implements Serializable {

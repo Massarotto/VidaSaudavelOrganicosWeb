@@ -10,6 +10,7 @@ import java.util.List;
 
 import models.CarrinhoItem;
 import models.CarrinhoProduto;
+import models.CestaPronta;
 import models.Cliente;
 import models.Desconto;
 import models.Endereco;
@@ -166,6 +167,36 @@ public class Carrinho extends Controller {
 		renderJSON(adicionarProdutoCarrinho(sessionId, idProduto, quantidade, valorProduto));
 	}
 	
+	/**
+	 * <p>Metodo para inserir a cesta no carrinho.</p>
+	 * @param sessionId
+	 * @param idProduto
+	 * @param quantidade
+	 * @param valorProduto
+	 */
+	public static void adicionarCesta(String sessionId, Long idProduto, Integer quantidade, Double valorProduto) {
+		CarrinhoProduto carrinho = Cache.get(sessionId, CarrinhoProduto.class);
+		CestaPronta cesta = CestaPronta.findById(idProduto);
+		BigDecimal valorTotalCache = BigDecimal.ZERO;
+		
+		if(carrinho==null)
+			carrinho = new CarrinhoProduto();
+		
+		if(!carrinho.contains(cesta)) {
+			if(Cache.get("valorTotal."+sessionId, BigDecimal.class)!=null)
+				valorTotalCache = Cache.get("valorTotal."+sessionId, BigDecimal.class);
+			
+			valorTotalCache = valorTotalCache.add( BigDecimal.valueOf(valorProduto*quantidade).setScale(2, BigDecimal.ROUND_HALF_UP) );
+			
+			Cache.set("valorTotal."+sessionId, valorTotalCache, "40mn");
+			
+			carrinho.addCestaPronta(cesta);
+			
+			Cache.set(sessionId, carrinho, "40mn");
+		}
+		renderJSON(valorTotalCache);
+	}
+	
 	public static void valorTotalCompra(String sessionId) {
 		BigDecimal result = null;
 		
@@ -178,7 +209,7 @@ public class Carrinho extends Controller {
 		Logger.debug("######## Início - Ver Produtos do Carrinho... ########");
 		CarrinhoProduto carrinho = Cache.get(sessionId, CarrinhoProduto.class);
 		
-		if(carrinho!=null && !carrinho.getItens().isEmpty()) {
+		if(carrinho!=null && (!carrinho.getItens().isEmpty() || !carrinho.getCestas().isEmpty())) {
 			BigDecimal valorTotalCompra = Cache.get("valorTotal."+sessionId, BigDecimal.class);
 			
 			carrinho.setDataCompra(new Date());
@@ -298,7 +329,7 @@ public class Carrinho extends Controller {
 					statusPedido = PedidoEstado.AGUARDANDO_ENTREGA;
 				}
 				// Gerar Pedido
-				
+				pedido.addCesta(carrinho.getCestas());
 				pedido.setCodigoPedido(String.valueOf(carrinho.getId()));
 				pedido.addPedidoItem(carrinho.getItens());
 				pedido.setCliente(cliente);
@@ -354,41 +385,58 @@ public class Carrinho extends Controller {
 
 	}	
 	
-	public static void excluirProdutos(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade) {
+	public static void excluirProdutos(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade, List<CestaPronta> cestas) {
 		Logger.debug("##### Início - Excluir produtos do carrinho. #####");
 		
 		CarrinhoProduto carrinho = Cache.get(sessionId, CarrinhoProduto.class);
 		String message = null;
 		
-		if(produtoQuantidade==null || produtoQuantidade.isEmpty()) {
+		if( (produtoQuantidade==null || produtoQuantidade.isEmpty()) && (cestas==null || cestas.isEmpty()) ) {
 			validation.addError("", Messages.get("message.product.required", ""));
 			
 			validation.keep();
 			
 		}else {
-			for(ProdutoQuantidadeForm prod : produtoQuantidade) {
-				Produto tempProduto = new Produto(prod.getId());
+			if(produtoQuantidade!=null) {
+				for(ProdutoQuantidadeForm prod : produtoQuantidade) {
+					Produto tempProduto = new Produto(prod.getId());
+					
+					laco_carrinho:
+					for(CarrinhoItem item : carrinho.getItens()) {
+						if(item.getProdutos().get(0).id.equals(tempProduto.id)) {
+							//Subtrair o valor dos produtos
+							BigDecimal result = Cache.get("valorTotal."+sessionId, BigDecimal.class);
+							BigDecimal newValue = result.subtract(new BigDecimal( item.getQuantidade() * item.getProdutos().get(0).getValorVenda() ).setScale(2, BigDecimal.ROUND_HALF_UP));
+							
+							carrinho.setValorTotalCompra(newValue);
+							Logger.debug("#### Novo valor do carrinho: %s ####", newValue);
+							
+							carrinho.getItens().remove(item);
+							
+							Cache.set("valorTotal."+sessionId, newValue, "40mn");
+							break laco_carrinho;
+						}
+					}
+				}
+			}
+			if(cestas!=null) {
+				BigDecimal result = Cache.get("valorTotal."+sessionId, BigDecimal.class);
 				
-				laco_carrinho:
-				for(CarrinhoItem item : carrinho.getItens()) {
-					if(item.getProdutos().get(0).id.equals(tempProduto.id)) {
-						//Subtrair o valor dos produtos
-						BigDecimal result = Cache.get("valorTotal."+sessionId, BigDecimal.class);
-						BigDecimal newValue = result.subtract(new BigDecimal( item.getQuantidade() * item.getProdutos().get(0).getValorVenda() ).setScale(2, BigDecimal.ROUND_HALF_UP));
-						
+				for(CestaPronta cesta : cestas) {
+					BigDecimal valorCesta = CestaPronta.find("select valorVenda from CestaPronta where id = ?", cesta.id).first();
+					
+					BigDecimal newValue = result.subtract(valorCesta).setScale(2, BigDecimal.ROUND_HALF_UP);
+					
+					if(carrinho.getCestas().remove(cesta)) {
 						carrinho.setValorTotalCompra(newValue);
-						Logger.debug("#### Novo valor do carrinho: %s ####", newValue);
 						
-						carrinho.getItens().remove(item);
-						
-						Cache.set("valorTotal."+sessionId, newValue, "40mn");
-						break laco_carrinho;
+						Cache.set("valorTotal."+sessionId, newValue, "40mn");					
 					}
 				}
 			}
 			message = Messages.get("validation.data.success", "");
 		
-			if(carrinho.getItens().isEmpty())
+			if(carrinho.getCestas().isEmpty() && carrinho.getItens().isEmpty())
 				limparCarrinho(sessionId);
 		}
 		
@@ -446,11 +494,11 @@ public class Carrinho extends Controller {
 		render(carrinho, sessionId, frete, endereco, clientes, isAssessor, pagamento, valorMinPagPayPal, valorComDesconto);
 	}
 	
-	public static void atualizar(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade) {
+	public static void atualizar(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade, List<CestaPronta> cestas) {
 		Logger.debug("###### Início - Atualizar Produtos...%s ######", sessionId);
 		BigDecimal valorTotalCache = Cache.get("valorTotal."+sessionId, BigDecimal.class);
 		String message = null;
-		
+
 		if(produtoQuantidade==null || produtoQuantidade.isEmpty()) {
 			validation.addError("", Messages.get("message.product.required", ""));
 			

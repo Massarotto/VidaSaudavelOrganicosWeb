@@ -5,13 +5,10 @@ package business.cliente.service;
 
 import java.io.Serializable;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.Map;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.WebServiceException;
-import javax.xml.ws.handler.MessageContext;
 
 import play.Logger;
 import play.cache.Cache;
@@ -22,11 +19,13 @@ import com.grepcepws.ws.GrepCep;
 import com.grepcepws.ws.GrepCepPortType;
 
 /**
- * @author hpadmin
+ * @author Felipe Guerra
  *
  */
 public class EnderecoService implements Serializable {
-	
+
+	private static final long serialVersionUID = -8089352392001330630L;
+
 	public static final String TOKEN = "201208173556399O8EEZCMGIDEVCYOWVPKH";
 	
 	private String urlEndPoint;
@@ -99,4 +98,5 @@ public class EnderecoService implements Serializable {
         System.setProperty("https.proxyHost", "proxy.houston.hp.com");
         System.setProperty("https.proxyPort", "8080");
 	}
+	
 }

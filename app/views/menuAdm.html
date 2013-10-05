@@ -1,4 +1,4 @@
-#{if (session.get("isAdmin").equals("true") || session.get("isPartner").equals("true")) }
+#{if (session.get("isAdmin").equals("true") || session.get("isEmployee").equals("true")) }
 <!-- Início Menu Administrador -->
 <div id="menu">
 	<ul class="menu">
@@ -6,12 +6,12 @@
         	<a href="#" class="parent"><span>&{'form.admin.title'}</span></a>
             <div>
             	<ul>
+            		#{if (session.get("isAdmin").equals("true")) }
             		<li><a href="#" class="parent"><span>&{'form.parceiros.title'}</span></a>
             			<div><ul>
 	                        <li><a href="/fornecedor/upload/index"><span>&{'form.parceiros.upload.archive'}</span></a></li>
 						</ul></div>
             		</li>
-            		#{if (session.get("isAdmin").equals("true")) }
 	                <li><a href="#" class="parent"><span>&{'form.admin.produto'}</span></a>
 	                    <div><ul>
 	                        <li><a href="/produtos/cadastrar"><span>&{'form.button.cadastro'}</span></a></li>
@@ -35,6 +35,7 @@
 	                        </ul>
 						</div>
 			        </li>
+			        #{/if}
 			        <li>
 			        	<a href="#" class="parent"><span>&{'form.admin.pedido'}</span></a>
 			        	<div>
@@ -43,6 +44,7 @@
 	                        </ul>
 						</div>
 			        </li>
+			        #{if (session.get("isAdmin").equals("true")) }
 			        <li>
 			        	<a href="#" class="parent"><span>&{'form.admin.customer'}</span></a>
 			        	<div>
@@ -56,9 +58,7 @@
 			        	<div>
 			        		<ul>
 	                        	<li><a href="/cesta/cadastrar"><span>&{'form.button.cadastro'}</span></a></li>
-	                        	<li><a href="/cesta/consultar/all"><span>&{'form.admin.consulta'}</span></a></li>
-	                        	<li><a href="/cesta/gerar/pedidos"><span>&{'form.cesta.create.order'}</span></a></li>
-	                        	<li><a href="/cesta/consulta/assinaturas"><span>&{'form.cesta.assign.title'}</span></a></li>
+	                        	<li><a href="/cesta/consultar"><span>&{'form.admin.consulta'}</span></a></li>
 	                        </ul>
 						</div>
 			        </li>
@@ -116,6 +116,7 @@
 			         		</ul>
 			         	</div>
 			         </li>
+			         #{/if}
 			         <!-- Questionário -->
 			         <li>
 			         	<a href="#" class="parent">
@@ -160,11 +161,13 @@
 			         		</ul>
 			         	</div>
 			         </li>
+			         #{if (session.get("isAdmin").equals("true")) }
 			         <li>
 			         	<a href="/email">
 			         		<span>&{'form.mail.mkt.title'}</span>
 			         	</a>
 			         </li>
+			         #{/if}
 			         <li>
 			         	<a href="#" class="parent">
 			         		<span>&{'form.report.title'}</span>
@@ -177,9 +180,13 @@
 			         			<li>
 			         				<a href="/relatorios/produto/pedido/cliente"><span>&{'form.report.pedidoAguardandoEntrega'}</span></a>
 			         			</li>
+			         			<li>
+			         				<a href="/relatorios/rota/entrega"><span>&{'application.route.title'}</span></a>
+			         			</li>
 			         		</ul>
 			         	</div>
 			         </li>
+			         #{if (session.get("isAdmin").equals("true")) }
 			         <li>
 			         	<a href="/admin/clearCache">
 			         		<span>&{'form.admin.clearCache'}</span>

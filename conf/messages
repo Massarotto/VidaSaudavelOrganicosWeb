@@ -9,9 +9,9 @@ application.subtilte=Vida Saudável Orgânicos |
 application.path.upload.images=c:/Apache/htdocs/images
 application.path.report=c:/Apache/htdocs/relatorios/
 application.path.upload.archives=c:/Apache/htdocs/arquivos/
-#application.path.report=/home/vidasaudavelorganicos/domains/static.vidasaudavelorganicos.com.br/public_html/relatorios/
-#application.path.upload.images=/home/vidasaudavelorganicos/domains/static.vidasaudavelorganicos.com.br/public_html/images/
-#application.path.upload.archives=/home/vidasaudavelorganicos/domains/static.vidasaudavelorganicos.com.br/public_html/arquivos/
+#application.path.report=/home/vidasaud/public_html/static/relatorios/
+#application.path.upload.images=/home/vidasaud/public_html/static/images/
+#application.path.upload.archives=/home/vidasaud/public_html/static/arquivos/
 application.path.termoCompromisso=/html/termo_compromisso.html
 application.path.images.width=420
 application.path.images.height=384
@@ -25,8 +25,8 @@ application.message.notAuthenticated=Por favor, para prosseguir entre com seu e-
 application.message.error=Desculpe, ocorreu um erro indesperado ao tentar processar sua requisição.
 
 #Conteúdo Estático
-#application.static.content=http://www.static.vidasaudavelorganicos.com.br
-application.static.content=http://localhost
+application.static.content=http://www.static.vidasaudavelorganicos.com.br
+#application.static.content=http://localhost
 
 application.layout.foot.playText=<span class='fontBoldWhite1'><i>Powered by</i><span> 
 application.layout.foot.playImg=<img src='/images/logo_play.png' width='50' height='27' />
@@ -178,11 +178,12 @@ form.label.subtotal=Sub-Total
 form.label.total=Total
 form.label.frete=Frete
 form.label.valorCompra=Valor do Pedido
+form.label.valorCusto=Custo do Pedido
 
 #Valor Compra sem Frete
 application.frete.valor=15000.00
-application.order.minValue=40.00
-message.validation.order.minValue=Não foi possível prosseguir: o valor mínímo da compra é de R$ 40,00.
+application.order.minValue=50.00
+message.validation.order.minValue=Não foi possível prosseguir: o valor mínímo da compra é de R$ 50,00.
 
 form.button.next=Continuar
 form.button.cadastro=Cadastrar
@@ -305,7 +306,7 @@ form.intitucional.link=<a href='/quem-somos'>Quem Somos</a><span> | </span><a hr
 #form.intitucional.foot.link=<a href='/quem-somos'>Quem Somos</a><span> | </span><a href='/o-que-sao-organicos'>O que são <strong>Orgânicos</strong>?</a><span> | </span><a href='/politica-de-entrega'>Política de Entrega</a><span> | </span><a href='/faleconosco'>Fale Conosco</a> | </span><a href='/fornecedores'>Fornecedores</a> | </span><a href='/parceiros'>Parceiros</a><span> | </span><a href='/na-midia'>Na Mídia</a><span>
 form.faleConosco.title=Fale Conosco
 form.faleConosco.text=<p><h3>Seu contato é muito importante para nós.</h3><br /><h4>Envie suas críticas, sugestões ou deixe-nos uma mensagem para que possamos melhorar nossos serviços.</h4></p>
-form.faleConosco.phoneNumber=<p>Se preferir entrar em contato por telefone: <strong>(11) 4324-8074</strong> / <strong>(11) 97379-6938(Vivo)</strong>
+form.faleConosco.phoneNumber=<p>Se preferir entrar em contato por telefone: <strong>(11) 4117-8168</strong>
 form.faleConosco.message=Mensagem
 message.faleConosco.success=Seu contato foi registrado com sucesso! Em breve ele será respondido.
 form.final.order.faleConosco=Para que possamos melhorar nossos serviços, gostaríamos nos enviasse sua opinião, crítica ou sugestão <a href='/faleconosco?nome=%s&email=%s'><u>clicando aqui</u></a>.
@@ -350,7 +351,7 @@ form.oquesao.vantagens.topic9=<p>Você pode ter todas essas vantagens na sua cas
 form.politicaEntrega.order.title=<p><h3>Pedidos</h3></p>
 form.politicaEntrega.order=<p>Ao acessar a loja virtual da <strong>Vida Saudável Orgânicos</strong> pela primeira vez, você pode fazer seu cadastro antes de iniciar suas compras, ou no momento em que concluí-las. Se você já é nosso cliente, basta fazer seu <a href='/login'>login</a> utilizando o e-mail e senha cadastrados.</p>
 form.politicaEntrega.entrega.title=<p><h3>Entrega</h3></p>
-form.politicaEntrega.entrega=<p>Os pedidos fechados até Domingo, <b>23:00hs</b>, serão entregues na Terça-feira seguinte.</p><p>Já os pedidos que forem feitos após o Domingo, serão entregues somente na próxima semana, na Terça-Feira.</p><br /><p>O valor mínimo da compra é de <strong>R$ 40,00</strong> e será cobrada uma taxa de entrega de <strong>R$6,00</strong>.<br />Compras acima de <strong>R$ 150,00</strong> e com opção de pagamento <strong>Dinheiro</strong> ou <strong>Cheque</strong>, terão <b>%s</b> de desconto no valor do pedido.</p><br /><p><b><u>Importante</u>:</b> No ato da entrega poderá haver a falta de algum produto, em função de condições climáticas ou outros fatores, como por exemplo, imprevistos no transporte.</p>
+form.politicaEntrega.entrega=<p>Os pedidos fechados até Domingo, <b>23:00hs</b>, serão entregues na Terça-feira seguinte.</p><p>Já os pedidos que forem feitos após o Domingo, serão entregues somente na próxima semana, na Terça-Feira.</p><br /><p>O valor mínimo da compra é de <strong>R$ 50,00</strong> e será cobrada uma taxa de entrega de <strong>R$7,00</strong>.<br />Compras acima de <strong>R$ 200,00</strong> e com opção de pagamento <strong>Dinheiro</strong> ou <strong>Cheque</strong>, terão <b>%s</b> de desconto no valor do pedido.</p><br /><p><b><u>Importante</u>:</b> No ato da entrega poderá haver a falta de algum produto, em função de condições climáticas ou outros fatores, como por exemplo, imprevistos no transporte.</p>
 form.politicaEntrega.bairros.title=<p><h3><a href='#bairros' class='txt_titulo_06'>Bairros Atendidos</a></h3></p>
 form.politicaEntrega.bairros=Bairros Atendidos
 form.politicaEntrega.pagamento.title=Forma de Pagamento
@@ -456,6 +457,7 @@ application.link.facebook=http://www.facebook.com/VidaSaudavelOrganicosDelivery
 
 #Cestas
 form.cesta.title=Cesta
+form.cesta.previsao.text=Previsao da Semana - Entrega:
 form.cesta.assign.title=Assinaturas
 form.cesta.personal=Minha Cesta
 form.cesta.available=Disponível
@@ -503,9 +505,14 @@ application.cancel.url.paypal=http://www.vidasaudavelorganicos.com.br/pedido/pay
 #application.checkout.url.paypal=https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=
 #application.return.url.paypal=http://localhost:8001/pedido/paypal/finalizar
 #application.cancel.url.paypal=http://localhost:8001/pedido/paypal/cancelar
-application.minValue.paypal=150.00
+application.minValue.paypal=200.00
 application.error.paymentMethod=Por favor, selecione a forma de pagamento.
 application.pedido.paypal.desconto=5.00
+
+#Google Maps
+application.route.title=Trajeto
+application.google.maps.key=AIzaSyA1Gt5e8k5LNGqghHFD35vj4yvPwuW-J_Y
+application.google.maps.sensor=false
 
 form.paypal.info.token=Token da Transação
 form.paypal.error=Erro da Transação

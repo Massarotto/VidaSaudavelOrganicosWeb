@@ -34,6 +34,8 @@ public class Grupo extends Model {
 	
 	public static final String ROLE_PARTNER = "PARCEIRO";
 	
+	public static final String ROLE_EMPLOYEE = "COLABORADOR";
+	
 	@Required
 	@Column(name="NOME", length=80, nullable=false)
 	private String nome;

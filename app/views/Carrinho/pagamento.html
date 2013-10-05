@@ -5,10 +5,6 @@
 
 #{form @Carrinho.finalizar(), id:"finalizarForm"}
 <div class="defaultContentSize">
-	#{if (carrinho.itens.isEmpty())}
-		<span>&{'message.norecordfound'}</span>
-	#{/if}
-	#{else}
 	<br />
 	<table width="97%" border="0" id="showProdutosCarrinho" cellpadding="0" cellspacing="2" align="center" style="border-bottom-width: 1px; border-bottom-style: dashed; border-bottom-style: solid;">
 		<tr>
@@ -44,6 +40,23 @@
 				<span>&{'form.label.valorUnitario'}</span>
 			</td>
 		</tr>
+		#{list items:carrinho.cestas, as:'cesta'}
+		<tr>
+			<td width="12%">
+				<img width="50" height="43" src="${cesta.caminhoImagem}" 
+						title="${cesta.titulo}" alt="${cesta.titulo}" class="imgBasket" />
+			</td>
+			<td>
+				<span class="fontBlackMainHome">&nbsp;${cesta.titulo}</span><br />
+			</td>
+			<td width="16%" align="center">
+				<span class="fontBlackMainHome">1</span>
+			</td>
+			<td width="11%" align="center">
+				<span class="fontBlackMainHome">&nbsp;${cesta.valorVenda.formatCurrency('BRL').raw()}</span><br />
+			</td>
+		</tr>
+		#{/list}
 		#{list items:carrinho.itens, as:'item'}
 		<tr>
 			<td width="12%">
@@ -200,7 +213,6 @@
 		</div>
 	</div>
 	<br /><br />
-	#{/else}
 </div>
 #{/form}
 <br />

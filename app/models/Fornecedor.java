@@ -6,7 +6,6 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,22 +13,16 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import business.produto.layout.LayoutArquivo;
-
 import play.data.validation.Email;
 import play.data.validation.MinSize;
 import play.data.validation.Required;
 import play.db.jpa.Model;
+import business.produto.layout.LayoutArquivo;
 
 /**
  * @author guerrafe
  *
  */
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Cacheable
 @Table(name="FORNECEDOR")
 @Entity
 public class Fornecedor extends Model {
@@ -59,7 +52,7 @@ public class Fornecedor extends Model {
 	@Email(message="E-mail inválido!")
 	private String emailContato;
 	
-	@OneToMany(fetch=FetchType.EAGER, cascade=CascadeType.ALL, mappedBy="fornecedor")
+	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL, mappedBy="fornecedor")
 	private List<Telefone> telefones = new ArrayList<Telefone>();
 	
 	/**

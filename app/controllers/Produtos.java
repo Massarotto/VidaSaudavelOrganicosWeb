@@ -15,6 +15,7 @@ import javax.persistence.Query;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import models.CestaPronta;
 import models.Fornecedor;
 import models.Produto;
 import models.Secao;
@@ -127,8 +128,6 @@ public class Produtos extends BaseController {
 		
 		Produto produto = Produto.findById(id);
 		render(produto);
-		
-		Logger.debug("######### Fim - Visualização de produto %s... #########", id);
 	}
 	
 	public static void edit(Long id, String message) {
@@ -239,19 +238,31 @@ public class Produtos extends BaseController {
 	}
 	
 	public static void findBySecao(Long id, String nome) {
-		List<Produto> prods = Produto.find("secao.id = ? AND ativo = ?", id, Boolean.TRUE).fetch();
 		Secao secao = Secao.findById(id);
 		
 		flash.success(buildProdutosSecao(secao));
 		
-		Logger.debug("######## Fim - Pesquisa da seção %s, foram econtrado(s) %s produto(s).########", id, prods.size());
-		
-		Collections.sort(prods, new ProdutoComparator(true));
-		
-		ValuePaginator<Produto> produtos = new ValuePaginator<Produto>(prods);
-		produtos.setPageSize(50);
-		
-		renderTemplate("Home/search.html", produtos);
+		if(nome.toLowerCase().trim().contains("cestas prontas")) {
+			List<CestaPronta> cestas = Cache.get("cestasAtivas", List.class);
+			
+			if(cestas==null) {
+				cestas = CestaPronta.find("ativo = ?", Boolean.TRUE).fetch();
+				Cache.add("cestasAtivas", cestas, "24h");
+			}
+			renderTemplate("Cestas/cestaProdutos.html", cestas);
+			
+		}else {
+			List<Produto> prods = Produto.find("secao.id = ? AND ativo = ?", id, Boolean.TRUE).fetch();
+			
+			Logger.debug("######## Fim - Pesquisa da seção %s, foram econtrado(s) %s produto(s).########", id, prods.size());
+			
+			Collections.sort(prods, new ProdutoComparator(true));
+			
+			ValuePaginator<Produto> produtos = new ValuePaginator<Produto>(prods);
+			produtos.setPageSize(50);
+			
+			renderTemplate("Home/search.html", produtos);
+		}
 	}
 	
 	/**
@@ -385,29 +396,39 @@ public class Produtos extends BaseController {
 	}
 	
 	private static String buildProdutosSecao(Secao secao) {
-		List<Secao> secoes = new ArrayList<Secao>();
-		StringBuilder path = new StringBuilder();
-		boolean test = true;
+		StringBuilder path = null;
 		
-		while(test) {
-			if(secao.getSecaoPai()==null) {
-				secoes.add(secao);
-				test = !test;
-			}else {
-				secoes.add(secao);
-				
-				secao = Secao.findById(secao.getSecaoPai().id);
-			}
-		}
-		
-		for(int i=secoes.size()-1; i>=0; i--) {
-			Secao _secao = secoes.get(i);
-			path.append("<a class=\"a1\" href=\"/produtos/secao/").append(_secao.id).append("/").append(_secao.getDescricao()).append("\">");
-			path.append(_secao.getDescricao());
-			path.append("</a>");
+		if(Cache.get("secao:" + secao.id)==null) {
+			List<Secao> secoes = new ArrayList<Secao>();
+			path = new StringBuilder();
+			boolean test = true;
 			
-			if(i>0)
-				path.append(" > ");
+			while(test) {
+				if(secao.getSecaoPai()==null) {
+					secoes.add(secao);
+					test = !test;
+				}else {
+					secoes.add(secao);
+					
+					secao = Secao.findById(secao.getSecaoPai().id);
+				}
+			}
+			
+			for(int i=secoes.size()-1; i>=0; i--) {
+				Secao _secao = secoes.get(i);
+				path.append("<a class=\"a1\" href=\"/produtos/secao/").append(_secao.id).append("/").append(_secao.getDescricao()).append("\">");
+				path.append(_secao.getDescricao());
+				path.append("</a>");
+				
+				if(i>0)
+					path.append(" > ");
+			}
+			
+			Cache.add("secao:" + secao.id, path, "24h");
+			
+		}else {
+			path = (StringBuilder) Cache.get("secao:" + secao.id);
+			
 		}
 		return path.toString();
 	}

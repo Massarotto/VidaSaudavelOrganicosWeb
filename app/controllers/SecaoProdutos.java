@@ -5,17 +5,15 @@ package controllers;
 
 import java.util.List;
 
-import javax.swing.text.StyledEditorKit.BoldAction;
-
 import models.Secao;
 import play.Logger;
+import play.cache.Cache;
 import play.data.validation.Error;
 import play.data.validation.Required;
 import play.data.validation.Valid;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
 import play.mvc.Before;
-import play.mvc.Controller;
 
 /**
  * @author guerrafe
@@ -56,6 +54,8 @@ public class SecaoProdutos extends BaseController {
 			index(secao, null);
 		}
 		
+		Cache.safeDelete("menu");
+		
 		secao.save();
 		
 		show();
@@ -94,6 +94,8 @@ public class SecaoProdutos extends BaseController {
 				secao.setSecaoPai(null);
 			}
 			secao.save();
+			
+			Cache.safeDelete("menu");
 			
 			Logger.debug("########## Fim - Atualizar Seção %s ##########", descricao);
 		}

@@ -18,16 +18,25 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import models.Cliente;
+import models.Endereco;
 import models.Fornecedor;
 import models.Pedido;
 import models.PedidoItem;
 import models.Produto;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import play.Logger;
 import play.db.jpa.JPA;
 import play.i18n.Messages;
 import play.modules.paginate.ValuePaginator;
 import play.mvc.Before;
 import relatorios.BaseJasperReport;
+import relatorios.parse.EnderecoGMapsParse;
 import relatorios.parse.ProdutoFornecedorParse;
 import relatorios.parse.ProdutoPedidoReportParse;
 import relatorios.parse.ProdutoReportParse;
@@ -48,7 +57,9 @@ public class Relatorios extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || Boolean.valueOf(session.get("isAdmin"))==Boolean.FALSE) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+			|| (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+		{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");
@@ -57,6 +68,27 @@ public class Relatorios extends BaseController {
 	
 	public static void index() {
 		render();
+	}
+	
+	@SuppressWarnings("all")
+	public static void rotaEntregaPedido() {
+		render();
+	}
+	
+	public static void renderRota() {
+		String rota = "";
+		
+		Query query = JPA.em().createQuery("select cliente.id from Pedido p where p.codigoEstadoPedido =:codigoEstadoPedido");
+		query.setParameter("codigoEstadoPedido", Pedido.PedidoEstado.AGUARDANDO_ENTREGA);
+		List<Long> clientes = query.getResultList();
+		List<Endereco> enderecos = new ArrayList<Endereco>();
+		
+		for(Long idCliente : clientes)
+			enderecos.add(Endereco.getEndereco(idCliente));
+		
+		rota = new EnderecoGMapsParse(enderecos).buildEnderecosJson();
+		
+		renderText(rota);
 	}
 	
 	public static void relatorioProdutosCadastrados() {

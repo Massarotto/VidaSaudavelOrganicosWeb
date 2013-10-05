@@ -17,6 +17,7 @@ POST 	/cliente/atualizar/?					Clientes.atualizarEndereco
 GET 	/cliente/{id}							Clientes.edit
 GET		/cliente/show/all						Clientes.showAll
 *		/cliente/endereco/{cep}					Clientes.consultarCep
+GET		/cliente/endereco/cache/{idCliente}		Clientes.consultarEnderecoPeloIdCliente
 GET		/minhapagina							Clientes.mypage
 GET		/produtos/cadastrar						Produtos.cadastrar
 GET		/produtos/consultar						Produtos.show
@@ -36,6 +37,7 @@ GET		/pedidos/produtos/{id}					Pedidos.showProdutos
 GET		/pedidos/info/{id}						Pedidos.infoPedidoCliente
 GET		/pedidos/historico/{id}/{idCliente}/{rows}	Pedidos.findUltimosPedidos
 POST	/adicionarProduto						Carrinho.adicionarProduto
+POST	/adicionarCesta							Carrinho.adicionarCesta
 GET		/secao									SecaoProdutos.index
 GET		/secao/all								SecaoProdutos.show
 GET		/secao/{id}								SecaoProdutos.edit
@@ -84,6 +86,7 @@ GET		/relatorios/produto/pedido/cliente		Relatorios.relatorioProdutoPedidoClient
 GET		/relatorios/produtos/all				Relatorios.relatorioProdutosCadastrados
 GET		/relatorios/export/csv/fornecedor		Relatorios.exportarRelatorioProdutoFornecedorCSV
 GET		/relatorios/export/excel/fornecedor		Relatorios.exportarRelatorioProdutoFornecedorExcel
+GET		/relatorios/rota/entrega				Relatorios.rotaEntregaPedido
 GET		/produtos/order/{order}/{asc}			Produtos.order
 GET		/produtos/detail/{id}/{nome}			Produtos.detail
 GET		/produtos-ativos						Produtos.getProdutosAtivos
@@ -109,18 +112,12 @@ GET		/estoque/changestatus/{id}				Estoque.changeStatus
 GET		/estoque/reservar/{idProduto}/{qtd}		Estoque.reservarProduto
 GET		/estoque/repor/{idProduto}/{qtd}		Estoque.reporProdutoEstoque
 
-GET		/assinar-cesta							Cestas.visualizar
-GET		/cesta/cadastrar						Cestas.cadastrar
-GET		/cesta/{id}								Cestas.editar
-GET		/cesta/consultar/all					Cestas.show
-GET		/cesta/cliente/{idCliente}				Cestas.consultaCestaCliente
-GET		/ajaxCesta/?							Cestas.visualizarProdutos
-GET		/cesta/gerar/pedidos					Cestas.gerarPedidosCestas
-GET		/consulta-cesta							Cestas.cestaAtiva
-GET		/cesta/consulta/assinaturas				Cestas.assinaturas
-GET		/cestas-prontas							Cestas.cestaPadrao
-
 GET		/servicos								Administrador.servicos
+
+#Nova funcionalidade para as Cestas Prontas
+GET		/cesta/cadastrar						Cestas.cadastrar
+GET		/cesta/consultar						Cestas.show
+GET		/cesta/detail/{id}/{nome}				Cestas.detail
 
 #PayPal Integration
 *		/pedido/paypal/finalizar				Pedidos.finalizarPedidoPayPal

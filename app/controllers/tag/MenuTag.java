@@ -37,14 +37,13 @@ public class MenuTag extends FastTags {
 		
 		List<Secao> secoes = Cache.get("menu", List.class);
 		 
-		if(secoes==null || secoes.isEmpty())
+		if(secoes==null || secoes.isEmpty()) {
 			secoes = SecaoProdutos.loadAll();
-		 
+			Cache.add("menu", secoes, "24h");
+		}
 		List<NoSecao> nos = load(secoes);
 
 		Logger.debug("#### Fim renderizar menu... ####","");
-		
-		Cache.add("menu", secoes, "480mn");
 		
 		for(NoSecao _no : nos)
 			out.print(_no.buildMenu());

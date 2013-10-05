@@ -50,7 +50,7 @@ public class Pedidos extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || Boolean.valueOf(session.get("isAdmin"))==Boolean.FALSE) {
+		if(Boolean.valueOf(session.get("isAdmin")).equals(Boolean.FALSE) && Boolean.valueOf(session.get("isEmployee").equals(Boolean.FALSE))) {
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");

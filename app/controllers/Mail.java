@@ -3,12 +3,9 @@
  */
 package controllers;
 
-import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import models.CestaAssinatura;
-import models.CestaAssinaturaProduto;
 import models.Cliente;
 import models.Pedido;
 
@@ -16,7 +13,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.mail.EmailAttachment;
 
 import play.Logger;
-import play.i18n.Messages;
 import play.mvc.Mailer;
 import exception.SystemException;
 
@@ -214,23 +210,6 @@ public class Mail extends Mailer {
 			Logger.error(e, "Erro ao enviar e-mail com os produtos não encontrados.");
 			throw new SystemException(e);
 		}
-	}
-	
-	public static void sendCestaAssinatura(CestaAssinatura cestaAssinatura,
-											String from,
-											String message,
-											String subject,
-											String email) {
-		List<CestaAssinaturaProduto> assinaturaProdutos = cestaAssinatura.getListCestaAssinaturaProduto();
-		
-		setFrom(from);
-		setSubject(subject);
-		addRecipient(email);
-		setReplyTo(EMAIL_CONTACT);
-		
-		String staticContent = Messages.get("application.static.content", "") + Messages.get("application.path.public.images", "");
-		
-		send(cestaAssinatura, assinaturaProdutos, message, staticContent);
 	}
 
 }

@@ -5,10 +5,8 @@ package models;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
@@ -19,7 +17,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.Query;
 import javax.persistence.QueryHint;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -29,13 +26,10 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import play.Logger;
 import play.data.validation.MaxSize;
 import play.data.validation.Required;
-import play.db.jpa.JPA;
 import play.db.jpa.Model;
 import play.i18n.Messages;
-import util.CestaAssinaturaProdutoComparator;
 
 /**
  * @author guerrafe
@@ -304,7 +298,15 @@ public class Pedido extends Model {
 			}
 		}
 	}
-
+	
+	public void addCesta(List<CestaPronta> cestas) {
+		if(cestas!=null && !cestas.isEmpty()) {
+			for(CestaPronta cesta : cestas) {
+				this.getItens().addAll( PedidoItem.buildListPedidoItem(cesta.getProdutosAtivos(), this) );
+			}
+		}
+	}
+	
 	/**
 	 * @return the desconto
 	 */
@@ -376,7 +378,7 @@ public class Pedido extends Model {
 		BigDecimal result = null;
 		
 		if(pedidos!=null && !pedidos.isEmpty()) {
-			result = new BigDecimal(0.0d);
+			result = BigDecimal.ZERO;
 			
 			for(Pedido pedido : pedidos)
 				result = result.add(pedido.getValorPedido());
@@ -440,143 +442,6 @@ public class Pedido extends Model {
 		this.valorPedido = this.getValorPedido().add(calcularFrete(this.getValorPedido())).setScale(2, BigDecimal.ROUND_HALF_UP);
 	}
 	
-	/**
-	 * <p>
-	 * 	Gerar um pedido de acordo com uma assinatura de cesta
-	 * </p>
-	 * @param cestaAssign
-	 * @return novo pedido (necessário persistir)
-	 */
-	public static Pedido newPedido(CestaAssinatura cestaAssign) {
-		Pedido pedido = null;
-		int size = 0;
-		
-		try {
-			//A cesta precisa estar ativa
-			if(cestaAssign!=null && cestaAssign.getAtivo()) {
-				Secao secao = null;
-				List<CestaAssinaturaProduto> produtosCestaPedido = new ArrayList<CestaAssinaturaProduto>();
-				Integer produtosPrimeiraOpcao = Integer.valueOf(0);
-
-				Collections.sort(cestaAssign.getListCestaAssinaturaProduto(), new CestaAssinaturaProdutoComparator(Boolean.FALSE));
-				
-				pedido = new Pedido();
-				pedido.setCodigoEstadoPedido(Pedido.PedidoEstado.AGUARDANDO_ENTREGA);
-				pedido.setDataPedido(new Date());
-				pedido.setCliente(cestaAssign.getCliente());
-				pedido.setValorPedido(cestaAssign.getValorCesta());
-
-				BigDecimal valorPedidoComDesconto = new BigDecimal(Messages.get("application.minValue.paypal", ""));
-				
-				if(pedido.getValorPedido().doubleValue()>valorPedidoComDesconto.doubleValue()) {
-					Desconto desconto = new Desconto(new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
-					desconto.setDataDesconto(new Date());
-					desconto.setPedido(pedido);
-					
-					pedido.setDesconto(desconto);
-				}
-				
-				Pagamento _pag = new Pagamento();
-				_pag.setFormaPagamento(cestaAssign.getPagamento().getFormaPagamento());
-				_pag.setValorPagamento(pedido.getValorComDesconto());
-				
-				pedido.setPagamento(_pag);
-				
-				pedido.setCodigoPedido("CESTA_"+cestaAssign.id + "_" + new Date().getTime());
-				pedido.setObservacao("Pedido gerado automaticamente para assinatura de cesta " + cestaAssign.getPeriodo().getDescricao());
-				pedido.setEhPedidoDeCesta(Boolean.TRUE);
-
-				secao = cestaAssign.getListCestaAssinaturaProduto().get(0).getProduto().getSecao();
-				
-				for(CestaAssinaturaProduto cestaAssinaturaProduto : cestaAssign.getListCestaAssinaturaProduto()) {
-					size++;
-					
-					if(size==1 || !secao.equals(cestaAssinaturaProduto.getProduto().getSecao())) {
-						produtosPrimeiraOpcao = getQuantidadeProdutosSecao(cestaAssign.id, cestaAssinaturaProduto.getProduto().getSecao());
-						List<CestaAssinaturaProduto> listProdutosPrimeiraOpcao = produtosAssinaturaPrimeiraOpcao(cestaAssign.id, cestaAssinaturaProduto.getProduto().getSecao());
-						
-						if(!listProdutosPrimeiraOpcao.isEmpty() && produtosPrimeiraOpcao>listProdutosPrimeiraOpcao.size())
-							produtosCestaPedido.addAll(produtosAssinaturaOpcional(cestaAssign.id, cestaAssinaturaProduto.getProduto().getSecao(), produtosPrimeiraOpcao-listProdutosPrimeiraOpcao.size()));
-						
-						produtosCestaPedido.addAll(listProdutosPrimeiraOpcao);
-					}
-					secao = cestaAssinaturaProduto.getProduto().getSecao();
-				}
-				pedido.getItens().addAll(PedidoItem.buildItemPedido(produtosCestaPedido, pedido));
-				
-				pedido.getFrete().setValor(Pedido.calcularFrete(pedido.getValorPedido()));
-			}
-			
-		}catch(Exception e) {
-			Logger.error(e, "Erro ao tentar gerar um novo pedido para a cesta: %s", cestaAssign.id);
-			throw new RuntimeException(e);
-		}
-		return pedido;
-	}
-	
-	private static Integer getQuantidadeProdutosSecao(Long idCestaAssinatura, Secao secao) {
-		List<Map<Long, String>> listCestaAssinaturaProduto = new ArrayList<Map<Long,String>>();
-		Integer result = null;
-		
-		Query query = JPA.em().createQuery("select new map(count(sec.id) as qtd, sec.descricao as secao) from Produto as prd, Secao as sec, CestaAssinaturaProduto as cap " +
-				"where prd.secao.id = sec.id AND prd.id = cap.produto.id AND " +
-				"cap.cestaAssinatura.id =:id AND cap.opcional =:isOpcional " +
-				"AND sec.id =:idSecao " +
-				"group by sec.id, sec.descricao " +
-				"order by sec.descricao ASC");
-		query.setParameter("id", idCestaAssinatura);
-		query.setParameter("isOpcional", Boolean.FALSE);
-		query.setParameter("idSecao", secao.id);
-	
-		listCestaAssinaturaProduto = query.getResultList();
-
-		if(!listCestaAssinaturaProduto.isEmpty())
-			result = Integer.valueOf( listCestaAssinaturaProduto.get(0).values().toArray()[0].toString() );
-		
-		Logger.info("#### Quantidade de produtos por seção %s, idCestaAssinatura%s: %s  #####", secao.getDescricao(), idCestaAssinatura, listCestaAssinaturaProduto.size());
-		
-		return result;
-	}
-	
-	private static List<CestaAssinaturaProduto> produtosAssinaturaOpcional(Long idCestaAssinaturaProduto, Secao secao, Integer results) {
-		List<CestaAssinaturaProduto> result = new ArrayList<CestaAssinaturaProduto>();
-		
-		Query query = JPA.em().createQuery("select cap from Produto as prd, Secao as sec, CestaAssinaturaProduto as cap " +
-				"where prd.secao.id = sec.id AND prd.id = cap.produto.id AND " +
-				"cap.cestaAssinatura.id =:id AND cap.opcional =:isOpcional " +
-				"AND sec.id =:idSecao");
-		
-		query.setParameter("id", idCestaAssinaturaProduto);
-		query.setParameter("isOpcional", Boolean.TRUE);
-		query.setMaxResults(results);
-		query.setParameter("idSecao", secao.id);
-		
-		Logger.info("#### Quantidade de produtos segunda opção para seção %s, idCestaAssinatura%s: %s  #####", secao.getDescricao(), idCestaAssinaturaProduto, result.size());
-	
-		result = query.getResultList();
-		
-		return result;
-	}
-	
-	private static List<CestaAssinaturaProduto> produtosAssinaturaPrimeiraOpcao(Long idCestaAssinatura, Secao secao) {
-		List<CestaAssinaturaProduto> result = new ArrayList<CestaAssinaturaProduto>();
-		
-		Query query = JPA.em().createQuery("select cap from Produto as prd, Secao as sec, CestaAssinaturaProduto as cap " +
-				"where prd.secao.id = sec.id AND prd.id = cap.produto.id AND " +
-				"cap.cestaAssinatura.id =:id AND cap.opcional =:isOpcional " +
-				"AND sec.id =:idSecao AND prd.ativo = 1");
-		
-		query.setParameter("id", idCestaAssinatura);
-		query.setParameter("isOpcional", Boolean.FALSE);
-		query.setParameter("idSecao", secao.id);
-	
-		result = query.getResultList();
-		
-		Logger.info("#### Quantidade de produtos primeira opção para seção %s, idCestaAssinatura%s: %s  #####", secao.getDescricao(), idCestaAssinatura, result.size());
-		
-		return result;
-	}
-
 	/**
 	 * @return the ehPedidoDeCesta
 	 */
@@ -701,6 +566,16 @@ public class Pedido extends Model {
 	 */
 	public void setArquivado(Boolean arquivado) {
 		this.arquivado = arquivado;
+	}
+	
+	public BigDecimal getValorCustoPedido() {
+		BigDecimal result = BigDecimal.ZERO;
+		
+		for(PedidoItem item : this.itens) {
+			if(!item.getExcluido())
+				result = result.add(Produto.getValorCustoProdutos(item.getProdutos()));
+		}
+		return result;
 	}
 	
 }

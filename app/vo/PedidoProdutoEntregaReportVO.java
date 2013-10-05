@@ -279,7 +279,7 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 																	pedido.getObservacao(),
 																	pedido.getFrete()==null ? BigDecimal.ZERO : pedido.getFrete().getValor()));
 				
-				entity.setUltimosPedidos(fillPedidosHistorico(Pedidos.getPedidosAbertosEFinalizados(pedido.getCliente().id, 3)));
+				entity.setUltimosPedidos(fillPedidosHistorico(Pedidos.getPedidosAbertosEFinalizados(pedido.getCliente().id, 4)));
 
 				result.add(entity);
 			}
