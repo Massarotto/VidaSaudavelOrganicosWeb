@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.util.List;
 
-import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,10 +12,6 @@ import javax.persistence.Table;
 import javax.swing.text.MaskFormatter;
 
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import com.google.gson.annotations.Expose;
 
 import play.Logger;
 import play.data.validation.Min;
@@ -24,9 +19,9 @@ import play.data.validation.MinSize;
 import play.data.validation.Required;
 import play.db.jpa.Model;
 
+import com.google.gson.annotations.Expose;
+
 @Entity
-@Cacheable
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Table(name="ENDERECO")
 public class Endereco extends Model implements Serializable {
 
@@ -362,7 +357,7 @@ public class Endereco extends Model implements Serializable {
 		String cepFormatado = "";
 		MaskFormatter formatter = null;
 		
-		if(!StringUtils.isEmpty(this.cep)) {			
+		if(!StringUtils.isEmpty(this.cep)) {		
 			try {
 				formatter = new MaskFormatter("#####-###");
 				formatter.setValueContainsLiteralCharacters(false);

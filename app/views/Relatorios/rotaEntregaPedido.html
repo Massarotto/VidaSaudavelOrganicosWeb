@@ -5,22 +5,36 @@
 <style type="text/css">
       #map_canvas { height: 600px; }
 </style>
-<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=&{'application.google.maps.key'}&sensor=&{'application.google.maps.sensor'}"></script>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=&{'application.google.maps.key'}&sensor=&{'application.google.maps.sensor'}&region=BR"></script>
 <script src="&{'application.static.content'}/javascripts/gmaps.util.js" type="text/javascript" charset="utf-8"></script>
+<div id="textOrigin" style="float: left; margin: 5px">
+	<span class="fontGreen1">&{'form.cesta.startDate'}: </span><input type="text" id="origin" name="origin" size="55" value="&{'application.google.maps.origin'}" style="background-color: #DDDDDD" />
+</div>
+<div id="textDestination" style="float: left; margin: 5px">
+	<span class="fontGreen1">&{'application.google.maps.destination.title'}: </span><input type="text" id="destination" name="destination" size="55" value="&{'application.google.maps.destination'}" style="background-color: #DDDDDD" />
+</div>
+<div id="textDestination" style="float: left; margin: 5px">
+	<input type="button" id="btnRota" name="btnRota" onclick="javascript:renderCalcRota($('#origin').val(), $('#destination').val())" 
+			value="&{'application.google.maps.route.title'}" style="background-color: #DDDDDD; border-color: #DDDDDD" />
+</div>
 <div class="boxConsultaDefault" id="map_canvas">
 </div>
 <div id="passos" style="height: 100%;"></div>
 <script type="text/javascript" charset="utf-8">
-try {
-	inciarMapa('map_canvas', -23.5505233, -46.6342982);
+inciarMapa('map_canvas', -23.5505233, -46.6342982);
 
-	$.post('@{Relatorios.renderRota()}', 
-		function( data ) {
-			if(data!="")
-				calcularRota(data);
-	})
-	
-}catch(e) {
-	alert(e.description);
+renderCalcRota('', '');
+
+function renderCalcRota(origem, destino) {
+	try {
+		$.post('@{Relatorios.renderRota()}', {origin: origem, destination: destino},
+			function( data ) {
+				if(data!="")
+					calcularRota(data);
+		})
+		
+	}catch(e) {
+		alert(e.description);
+	}
 }
 </script>

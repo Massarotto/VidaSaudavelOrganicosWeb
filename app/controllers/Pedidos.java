@@ -41,8 +41,8 @@ import ebay.api.paypalapi.GetExpressCheckoutDetailsResponseType;
 import form.ProdutoQuantidadeForm;
 
 /**
- * @author guerrafe
- *
+ * @author Felipe Guerra
+ * @version 1.0
  */
 public class Pedidos extends BaseController {
 	
@@ -50,7 +50,9 @@ public class Pedidos extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(Boolean.valueOf(session.get("isAdmin")).equals(Boolean.FALSE) && Boolean.valueOf(session.get("isEmployee").equals(Boolean.FALSE))) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+			&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+		{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");
@@ -142,7 +144,7 @@ public class Pedidos extends BaseController {
 			pedido.getDesconto().setPedido(pedido);
 			pedido.getDesconto().setUsuario(usuario);
 			pedido.getDesconto().setDataDesconto(new Date());
-			
+			pedido.setUsuarioAlteracao(session.get("usuarioAutenticado"));
 			pedido.calcularDesconto();
 			
 			Desconto desconto = pedido.getDesconto();
@@ -234,7 +236,7 @@ public class Pedidos extends BaseController {
 		pedidoItem.save();
 		pedido.setValorPedido(valorPedido);
 		pedido.setDataAlteracao(new Date());
-		pedido.setObservacao("Alterado por " + session.get("usuarioAutenticado"));
+		pedido.setUsuarioAlteracao(session.get("usuarioAutenticado"));
 		
 		pedido.save();
 		
@@ -287,6 +289,7 @@ public class Pedidos extends BaseController {
 		pedido.setValorPedido(valorPedidoAlterado);
 		Logger.info("###### Novo valor do frete %s para o pedido: %s. Total: %s  ######", vlrFrete, id, valorPedidoAlterado);
 		pedido.setDataAlteracao(new Date());
+		pedido.setUsuarioAlteracao(session.get("usuarioAutenticado"));
 		pedido.setObservacao("Alterado por " + session.get("usuarioAutenticado"));
 		pedido.save();
 		
@@ -364,17 +367,14 @@ public class Pedidos extends BaseController {
 		render("Pedidos/showAll.html", vPedidos);
 	}
 
-	public static void order(String campo, Boolean asc) {
+	public static void order(String campo, Boolean asc, String criterioPedido, String valorCriterioPedido) {
 		Logger.debug("###### Início - Ordernar por %s ######", campo);
 		StringBuffer query = new StringBuffer();
 		
-		Object[] parametro = new Object[]{};
-		
-		String criterioPedido = params.get("criterioPedido", String.class);
-		String valorCriterioPedido = params.get("valorCriterioPedido", String.class);
-		
+		Object[] parametro = null;
+				
 		if(!StringUtils.isEmpty(criterioPedido) && !StringUtils.isEmpty(valorCriterioPedido))
-			parametro[0] = buildQuery(query, criterioPedido, valorCriterioPedido);
+			parametro = new Object[]{buildQuery(query, criterioPedido, valorCriterioPedido)};
 		
 		query.append("order by ").append(campo).append(" ").append(asc ? "ASC" :"DESC");
 		
@@ -580,7 +580,19 @@ public class Pedidos extends BaseController {
 				Logger.error(e, "Não foi possível converter a data: %s", value);
 			}
 			
-			queryAppend.append("dataPedido >= ? order by codigoEstadoPedido DESC");
+			queryAppend.append("DATE(dataPedido) = ? ");
+			
+		}else if("dataEntrega".equalsIgnoreCase(param)) {
+				SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+				try {
+					parametro = dateFormat.parse(value);
+					
+				}catch(Exception e) {
+					validation.addError("dataEntrega", "Digite uma data válida.", "");
+					Logger.error(e, "Não foi possível converter a data: %s", value);
+				}
+				
+				queryAppend.append("dataEntrega = ? ");
 			
 		}else if("cliente".equalsIgnoreCase(param)) {
 			parametro = "%"+value.toUpperCase().trim()+"%";

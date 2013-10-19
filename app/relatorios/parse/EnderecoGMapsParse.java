@@ -33,7 +33,7 @@ public class EnderecoGMapsParse implements Serializable {
 		this.enderecos = enderecos;
 	}
 	
-	public String buildEnderecosJson() {
+	public String buildEnderecosJson(String origin, String destination) {
 		StringBuilder result = new StringBuilder();
 		Integer totalEnderecos = Integer.valueOf(0);
 		//Date dataSaida = new
@@ -48,12 +48,12 @@ public class EnderecoGMapsParse implements Serializable {
 			result.append("\n");
 			result.append("origin:");
 			result.append("'");
-			result.append(buildOrigin(enderecos.get(0)));
+			result.append(buildOrigin(origin));
 			result.append("',");
 			result.append("\n");
 			result.append("destination:");
 			result.append("'");
-			result.append(buildDestination(enderecos.get(totalEnderecos-1)));
+			result.append(buildDestination(destination));
 			
 			result.append("', ");
 			result.append("\n");
@@ -61,19 +61,18 @@ public class EnderecoGMapsParse implements Serializable {
 			result.append("\n");
 			result.append("[");
 			for(int i=1; i<totalEnderecos; i++) {
-				if(i<(totalEnderecos-1)) {
-					result.append("\n");
-					result.append("{");
-					result.append("location:");
-					result.append("'");
-					result.append(buildWayPoint(enderecos.get(i)));
-					result.append("'");
-					result.append(",");
-					result.append("stopover:true");
-					result.append("}");
-				}
+				result.append("\n");
+				result.append("{");
+				result.append("location:");
+				result.append("'");
+				result.append(buildWayPoint(enderecos.get(i)));
+				result.append("'");
+				result.append(",");
+				result.append("stopover:true");
+				result.append("}");
+				
 				//Separa os elementos do array até o último
-				if(i<(totalEnderecos-2))
+				if(i<(totalEnderecos-1))
 					result.append(",");
 			}
 			result.append("\n");
@@ -115,6 +114,13 @@ public class EnderecoGMapsParse implements Serializable {
 		return result.toString();
 	}
 	
+	private String buildOrigin(String endereco) {
+		StringBuffer result = new StringBuffer();
+		result.append(endereco);
+		
+		return result.toString();
+	}
+	
 	private String buildWayPoint(Endereco endereco) {
 		StringBuffer result = new StringBuffer();
 		result.append(endereco.getLogradouro().trim()).append(", ");
@@ -133,6 +139,13 @@ public class EnderecoGMapsParse implements Serializable {
 		result.append(endereco.getCidade().trim()).append("-");
 		result.append(endereco.getUf()).append(", ");
 		result.append(endereco.getCepFormatado());
+		
+		return result.toString();
+	}
+	
+	private String buildDestination(String endereco) {
+		StringBuffer result = new StringBuffer();
+		result.append(endereco);
 		
 		return result.toString();
 	}

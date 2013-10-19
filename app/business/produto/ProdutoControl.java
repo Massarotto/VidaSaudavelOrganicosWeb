@@ -60,7 +60,7 @@ public class ProdutoControl implements Serializable {
 			caminhoArquivos = Messages.get("application.path.upload.archives", "");
 			diretorio = new File(caminhoArquivos);
 			
-			if(diretorio.exists()) {
+			if(diretorio!=null && diretorio.exists()) {
 				for(File _arq : diretorio.listFiles())
 					if(!_arq.isDirectory()) {
 						produtosAtivos = layoutParse.parse(null, _arq);

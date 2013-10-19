@@ -5,6 +5,8 @@ package controllers;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import models.Secao;
 import play.Logger;
 import play.cache.Cache;
@@ -25,7 +27,9 @@ public class SecaoProdutos extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || Boolean.valueOf(session.get("isAdmin"))==Boolean.FALSE) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+				&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+			{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");

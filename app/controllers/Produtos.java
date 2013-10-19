@@ -15,6 +15,8 @@ import javax.persistence.Query;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import org.apache.commons.lang.StringUtils;
+
 import models.CestaPronta;
 import models.Fornecedor;
 import models.Produto;
@@ -44,7 +46,9 @@ public class Produtos extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || Boolean.valueOf(session.get("isAdmin"))==Boolean.FALSE) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+				&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+			{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");

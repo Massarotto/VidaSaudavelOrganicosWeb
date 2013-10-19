@@ -18,7 +18,6 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import models.Cliente;
 import models.Endereco;
 import models.Fornecedor;
 import models.Pedido;
@@ -26,9 +25,6 @@ import models.PedidoItem;
 import models.Produto;
 
 import org.apache.commons.lang.StringUtils;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import play.Logger;
 import play.db.jpa.JPA;
@@ -58,7 +54,7 @@ public class Relatorios extends BaseController {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
 		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
-			|| (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+			&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
 		{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
@@ -75,8 +71,10 @@ public class Relatorios extends BaseController {
 		render();
 	}
 	
-	public static void renderRota() {
+	public static void renderRota(String origin, String destination) {
 		String rota = "";
+		String origem = StringUtils.isEmpty(origin) ? Messages.get("application.google.maps.origin", "") : origin.trim();
+		String destino = StringUtils.isEmpty(destination) ? Messages.get("application.google.maps.destination", "") : destination.trim();
 		
 		Query query = JPA.em().createQuery("select cliente.id from Pedido p where p.codigoEstadoPedido =:codigoEstadoPedido");
 		query.setParameter("codigoEstadoPedido", Pedido.PedidoEstado.AGUARDANDO_ENTREGA);
@@ -86,7 +84,7 @@ public class Relatorios extends BaseController {
 		for(Long idCliente : clientes)
 			enderecos.add(Endereco.getEndereco(idCliente));
 		
-		rota = new EnderecoGMapsParse(enderecos).buildEnderecosJson();
+		rota = new EnderecoGMapsParse(enderecos).buildEnderecosJson(origem, destino);
 		
 		renderText(rota);
 	}

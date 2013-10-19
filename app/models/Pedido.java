@@ -137,6 +137,9 @@ public class Pedido extends Model {
 	@OneToOne(cascade=CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval=true)
 	private Desconto desconto = null;
 	
+	@Column(name="USUARIO_ALTERACAO", nullable=true, length=80)
+	private String usuarioAlteracao;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="DATA_ALTERACAO", nullable=true)
 	private Date dataAlteracao;
@@ -517,7 +520,7 @@ public class Pedido extends Model {
 		}
 		Pedido other = (Pedido) obj;
 		
-		if (this.id != other.id) {
+		if (!this.id.equals(other.id)) {
 			return false;
 		}
 		if (codigoEstadoPedido != other.codigoEstadoPedido) {
@@ -576,6 +579,20 @@ public class Pedido extends Model {
 				result = result.add(Produto.getValorCustoProdutos(item.getProdutos()));
 		}
 		return result;
+	}
+
+	/**
+	 * @return the usuarioAlteracao
+	 */
+	public String getUsuarioAlteracao() {
+		return usuarioAlteracao;
+	}
+
+	/**
+	 * @param usuarioAlteracao the usuarioAlteracao to set
+	 */
+	public void setUsuarioAlteracao(String usuarioAlteracao) {
+		this.usuarioAlteracao = usuarioAlteracao;
 	}
 	
 }

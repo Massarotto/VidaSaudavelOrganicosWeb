@@ -330,6 +330,10 @@ public class Carrinho extends Controller {
 				}
 				// Gerar Pedido
 				pedido.addCesta(carrinho.getCestas());
+				
+				if(!carrinho.getCestas().isEmpty())
+					pedido.setObservacao(Messages.get("form.product.isBasket", ""));
+				
 				pedido.setCodigoPedido(String.valueOf(carrinho.getId()));
 				pedido.addPedidoItem(carrinho.getItens());
 				pedido.setCliente(cliente);

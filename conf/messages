@@ -513,6 +513,11 @@ application.pedido.paypal.desconto=5.00
 application.route.title=Trajeto
 application.google.maps.key=AIzaSyA1Gt5e8k5LNGqghHFD35vj4yvPwuW-J_Y
 application.google.maps.sensor=false
+application.google.maps.origin=Av. Francisco Matarazzo, 455, São Paulo, 05001-900
+application.google.maps.origin.title=Origem
+application.google.maps.destination=Av. Mutinga, 3914, São Paulo, Brasil
+application.google.maps.destination.title=Destino Final
+application.google.maps.route.title=Rota
 
 form.paypal.info.token=Token da Transação
 form.paypal.error=Erro da Transação

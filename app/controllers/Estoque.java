@@ -5,6 +5,7 @@ package controllers;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+
+import org.apache.commons.lang.StringUtils;
 
 import models.Produto;
 import models.ProdutoEstoque;
@@ -34,7 +37,9 @@ public class Estoque extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || Boolean.valueOf(session.get("isAdmin"))==Boolean.FALSE) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+				&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+			{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");
@@ -182,6 +187,7 @@ public class Estoque extends BaseController {
 		EstoqueService service = null;
 		Marshaller marshaller = null;
 		File xmlReservaEstoque = null;
+		InputStreamReader reader = null;
 		
 		try{
 			Logger.info("Início - Reserva de estoque para o produto: %s", idProduto);
@@ -196,7 +202,7 @@ public class Estoque extends BaseController {
 			xmlReservaEstoque = new File(System.getProperty("java.io.tmpdir")+File.separatorChar + "reservaEstoque_" + new Date().getTime() + ".xml");
 			xmlReservaEstoque.createNewFile();
 			
-			InputStreamReader reader = new InputStreamReader(new FileInputStream(xmlReservaEstoque));
+			reader = new InputStreamReader(new FileInputStream(xmlReservaEstoque));
 			
 			if(estoque==null) {
 				service.setError(1000L);
@@ -220,8 +226,6 @@ public class Estoque extends BaseController {
 			
 			reader.read(buffer);
 			
-			reader.close();
-			
 			renderXml(new String(buffer));
 			
 		}catch(Exception e) {
@@ -231,6 +235,12 @@ public class Estoque extends BaseController {
 			renderXml(e);
 			
 		}finally {
+			if(reader!=null)
+				try {
+					reader.close();
+					
+				}catch(IOException e) {}
+			
 			Logger.info("Fim - Reserva de estoque para o produto: %s", idProduto);
 		}
 	}
@@ -241,6 +251,7 @@ public class Estoque extends BaseController {
 		EstoqueService service = null;
 		Marshaller marshaller = null;
 		File xmlReservaEstoque = null;
+		InputStreamReader reader = null;
 		
 		try{
 			Logger.info("Início - Repor estoque para o produto: %s", idProduto);
@@ -255,7 +266,7 @@ public class Estoque extends BaseController {
 			xmlReservaEstoque = new File(System.getProperty("java.io.tmpdir")+File.separatorChar + "reporEstoque_" + new Date().getTime() + ".xml");
 			xmlReservaEstoque.createNewFile();
 			
-			InputStreamReader reader = new InputStreamReader(new FileInputStream(xmlReservaEstoque));
+			reader = new InputStreamReader(new FileInputStream(xmlReservaEstoque));
 			
 			if(estoque==null) {
 				service.setError(1000L);
@@ -279,8 +290,6 @@ public class Estoque extends BaseController {
 			
 			reader.read(buffer);
 			
-			reader.close();
-			
 			renderXml(new String(buffer));
 			
 		}catch(Exception e) {
@@ -290,6 +299,12 @@ public class Estoque extends BaseController {
 			renderXml(e);
 			
 		}finally {
+			if(reader!=null)
+				try {
+					reader.close();
+					
+				}catch(IOException e) {}
+			
 			Logger.info("Fim - Repor estoque para o produto: %s", idProduto);
 		}
 	}
