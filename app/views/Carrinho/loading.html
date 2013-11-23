@@ -17,10 +17,12 @@
 				<tr>
 					<td align="center" class="fontGreen3">
 						<input type="hidden" id="sessionId" name="sessionId" value="${sessionId}" />
-						<input type="hidden" id="formaPagamento" name="formaPagamento" value="PAYPAL" />
+						<input type="hidden" id="formaPagamento" name="formaPagamento" value="${formaPagamento}" />
 						<img alt="Vida Saudável Orgânicos Logo" width="72" height="56"
 							src="&{'application.static.content'}&{'application.path.public.images'}logo-relatorio.jpg" border="0" />
-						<img src="&{'application.static.content'}&{'application.path.public.images'}paypal_logo.gif" alt="paypal logo" />
+						#{if (formaPagamento!='PagSeguro')}
+							<img src="&{'application.static.content'}&{'application.path.public.images'}paypal_logo.gif" alt="paypal logo" />
+						#{/if}
 					</td>
 				</tr>
 				<tr>

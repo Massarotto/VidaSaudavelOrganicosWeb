@@ -3,10 +3,16 @@
  */
 package controllers;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.io.IOUtils;
 
 import models.CarrinhoItem;
 import models.CarrinhoProduto;
@@ -28,9 +34,10 @@ import play.mvc.Before;
 import play.mvc.Catch;
 import play.mvc.Controller;
 import business.estoque.EstoqueControl;
+import business.pagamento.service.PagamentoServiceFactory;
 import business.pagamento.service.PayPalService;
+import business.pagamento.service.interfaces.GatewayService;
 import ebay.api.paypalapi.SetExpressCheckoutResponseType;
-import exception.PayPalServiceException;
 import exception.ProdutoEstoqueException;
 import exception.SystemException;
 import form.ProdutoQuantidadeForm;
@@ -238,155 +245,191 @@ public class Carrinho extends Controller {
 	}
 	
 	@Transactional(readOnly=false)
-	public static void finalizar(String sessionId) throws ProdutoEstoqueException, PayPalServiceException {
+	public static void finalizar(String sessionId) {
 		CarrinhoProduto carrinho = Cache.get(sessionId, CarrinhoProduto.class);
 		Boolean isAssessor = null;
 		Boolean responderQuestionario = Boolean.FALSE;
 		String formaPagamento = null;
 		SetExpressCheckoutResponseType resultPayPalService = null;
-		String urlCheckoutPayPal = null;
+		String urlCheckout = null;
 		PedidoEstado statusPedido = null;
+		String caminhoArquivo = null;
 		
-		if(carrinho!=null && session.get("clienteId")!=null) {
-			Frete frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra()));
-			
-			validarValorCompra(carrinho.getValorTotalCompra());
-			
-			if(Boolean.parseBoolean(session.get("isAdmin")) && "-1".equalsIgnoreCase(params.get("cliente"))) {
-				validation.addError("cliente", "message.basket.order.assessor.required", "");
-				isAssessor = Boolean.TRUE;
-			}
-			
-			formaPagamento = params.get("formaPagamento");
-			
-			if(validation.hasErrors()) {
-				params.flash();
-				validation.keep();
+		try {
+			if(carrinho!=null && session.get("clienteId")!=null) {
+				Frete frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra()));
 				
-				Logger.debug("###### Não foi possível finalizar o pedido: %s ######", validation.errors());
+				validarValorCompra(carrinho.getValorTotalCompra());
 				
-				pagamento(sessionId, isAssessor);
+				if(Boolean.parseBoolean(session.get("isAdmin")) && "-1".equalsIgnoreCase(params.get("cliente"))) {
+					validation.addError("cliente", "message.basket.order.assessor.required", "");
+					isAssessor = Boolean.TRUE;
+				}
 				
-			}else {
-				//Validar o Estoque	
-				EstoqueControl.atualizarEstoque(carrinho.getItens());
+				formaPagamento = params.get("formaPagamento");
 				
-				Pagamento pagamento = new Pagamento();
-				
-				Long idCliente = params.get("cliente")==null ? Long.parseLong(session.get("clienteId")) : Long.parseLong(params.get("cliente"));
-				
-				Cliente cliente = Cliente.findById(idCliente);
-				
-				carrinho.setCliente(cliente);
-				
-				if(carrinho.id==null)
-					carrinho.save();
-				else
-					carrinho.merge();
-				
-				Pedido pedido = new Pedido();
-				
-				if(FormaPagamento.PAYPAL.equals(FormaPagamento.getFormaPagamento(formaPagamento))) {
-					StringBuffer infosPedido = new StringBuffer();
-					pagamento.setFormaPagamento(FormaPagamento.PAYPAL);
+				if(validation.hasErrors()) {
+					params.flash();
+					validation.keep();
 					
-					PayPalService payPalService = PayPalService.newInstance(Messages.get("application.service.url.paypal", ""), 
-																			Messages.get("application.username.url.paypal", ""), 
-																			Messages.get("application.password.url.paypal", ""), 
-																			Messages.get("application.signature.url.paypal", ""));
-					infosPedido.append("Pedido gerado em: ").append(new Date()).append(".");
-					infosPedido.append("Cliente: ").append(cliente.getNome()).append(".");
-					infosPedido.append("Código Pedido: ").append(carrinho.id);
-					infosPedido.append("Total Pedido: ").append(carrinho.getValorTotalCompra());
+					Logger.debug("###### Não foi possível finalizar o pedido: %s ######", validation.errors());
 					
-					resultPayPalService = payPalService.solicitarPagamento(cliente.getNome(), carrinho.getValorTotalCompra().doubleValue(), carrinho.id, infosPedido.toString());
+					pagamento(sessionId, isAssessor);
 					
-					if(payPalService.foiExecutadoComSucesso(resultPayPalService.getAck(), resultPayPalService.getErrors())) {
-						pagamento.setInformacoes(resultPayPalService.getToken());
+				}else {
+					//Validar o Estoque	
+					EstoqueControl.atualizarEstoque(carrinho.getItens());
+					
+					Pagamento pagamento = new Pagamento();
+					
+					Long idCliente = params.get("cliente")==null ? Long.parseLong(session.get("clienteId")) : Long.parseLong(params.get("cliente"));
+					
+					Cliente cliente = Cliente.findById(idCliente);
+					
+					carrinho.setCliente(cliente);
+					
+					if(carrinho.id==null)
+						carrinho.save();
+					else
+						carrinho.merge();
+					
+					Pedido pedido = new Pedido();
+					
+					if(FormaPagamento.PAGSEGURO.equals(FormaPagamento.getFormaPagamento(formaPagamento))) {
+						GatewayService pagSeguroService = PagamentoServiceFactory.getInstance().getGatewayServiceImpl(FormaPagamento.PAGSEGURO);
 						
-						urlCheckoutPayPal = Messages.get("application.checkout.url.paypal", "");
-						urlCheckoutPayPal += resultPayPalService.getToken();
+						String token = pagSeguroService.checkout(cliente, carrinho, frete.getValor());
+						
+						urlCheckout = Messages.get("application.redirectUrl.pagseguro", token);
 						
 						statusPedido = PedidoEstado.AGUARDANDO_PAGAMENTO;
 						
-					}else {
-						Logger.info("#### O pedido de pagamento no Paypal não foi aprovado: %s ####", PayPalService.getInformacoesErro(resultPayPalService.getErrors()));
-					}
+						pagamento.setInformacoes(token);
+						pagamento.setFormaPagamento(FormaPagamento.PAGSEGURO);
 					
-				}else if(FormaPagamento.DINHEIRO.equals(FormaPagamento.getFormaPagamento(formaPagamento))){
-					BigDecimal valorPedidoComDesconto = new BigDecimal(Messages.get("application.minValue.paypal", ""));
-					
-					pagamento.setFormaPagamento(FormaPagamento.DINHEIRO);
-					
-					if(carrinho.getValorTotalCompra().doubleValue()>valorPedidoComDesconto.doubleValue()) {
-						Desconto desconto = new Desconto(new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
-						desconto.setDataDesconto(new Date());
-						desconto.setPedido(pedido);
+					}else if(FormaPagamento.PAYPAL.equals(FormaPagamento.getFormaPagamento(formaPagamento))) {
+						StringBuffer infosPedido = new StringBuffer();
+						pagamento.setFormaPagamento(FormaPagamento.PAYPAL);
 						
-						pedido.setDesconto(desconto);
+						PayPalService payPalService = PayPalService.newInstance(Messages.get("application.service.url.paypal", ""), 
+																				Messages.get("application.username.url.paypal", ""), 
+																				Messages.get("application.password.url.paypal", ""), 
+																				Messages.get("application.signature.url.paypal", ""));
+						infosPedido.append("Pedido gerado em: ").append(new Date()).append(".");
+						infosPedido.append("Cliente: ").append(cliente.getNome()).append(".");
+						infosPedido.append("Código Pedido: ").append(carrinho.id);
+						infosPedido.append("Total Pedido: ").append(carrinho.getValorTotalCompra());
+						
+						resultPayPalService = payPalService.solicitarPagamento(cliente.getNome(), carrinho.getValorTotalCompra().doubleValue(), carrinho.id, infosPedido.toString());
+						
+						if(payPalService.foiExecutadoComSucesso(resultPayPalService.getAck(), resultPayPalService.getErrors())) {
+							pagamento.setInformacoes(resultPayPalService.getToken());
+							
+							urlCheckout = Messages.get("application.checkout.url.paypal", "");
+							urlCheckout += resultPayPalService.getToken();
+							
+							statusPedido = PedidoEstado.AGUARDANDO_PAGAMENTO;
+							
+						}else {
+							Logger.info("#### O pedido de pagamento no Paypal não foi aprovado: %s ####", PayPalService.getInformacoesErro(resultPayPalService.getErrors()));
+						}
+						
+					}else if(FormaPagamento.DINHEIRO.equals(FormaPagamento.getFormaPagamento(formaPagamento))){
+						BigDecimal valorPedidoComDesconto = new BigDecimal(Messages.get("application.valor.pedido.desconto", ""));
+						
+						pagamento.setFormaPagamento(FormaPagamento.DINHEIRO);
+						
+						if(carrinho.getValorTotalCompra().doubleValue()>valorPedidoComDesconto.doubleValue()) {
+							Desconto desconto = new Desconto(new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
+							desconto.setDataDesconto(new Date());
+							desconto.setPedido(pedido);
+							
+							pedido.setDesconto(desconto);
+						}
+						
+						statusPedido = PedidoEstado.AGUARDANDO_ENTREGA;
 					}
+					// Gerar Pedido
+					pedido.addCesta(carrinho.getCestas());
 					
-					statusPedido = PedidoEstado.AGUARDANDO_ENTREGA;
+					if(!carrinho.getCestas().isEmpty())
+						pedido.setObservacao(Messages.get("form.product.isBasket", ""));
+					
+					pedido.setCodigoPedido(String.valueOf(carrinho.getId()));
+					pedido.addPedidoItem(carrinho.getItens());
+					pedido.setCliente(cliente);
+					pedido.setDataPedido(new Date());
+					pedido.setValorPedido(carrinho.getValorTotalCompra());
+					pedido.setCodigoEstadoPedido(statusPedido);
+					pedido.setArquivado(Boolean.FALSE);
+					pagamento.setPedido(pedido);
+					pagamento.setValorPagamento(pedido.getValorPedido());
+					pedido.setPagamento(pagamento);
+					
+					frete.addPedido(pedido);
+					frete.save();
+					pedido.save();
+					
+					Logger.info("Valor Desconto %s", pedido.getDesconto().getValorDesconto());
+					Logger.info("###### E-mail de confirmação do pedido para: %s #######", cliente.getUsuario().getEmail());
+					try {
+						StringBuffer email = new StringBuffer();
+						email.append("Vida Saudável Orgânicos");
+						email.append("<").append("contato@vidasaudavelorganicos.com.br").append(">");
+						
+						try {
+							File tempFile = File.createTempFile(Relatorios.REPORT_TITLE, ".pdf");
+							tempFile.deleteOnExit();
+							FileOutputStream fis = new FileOutputStream(tempFile);
+							
+							IOUtils.copy(Relatorios.gerarNotaFiscalPedido(pedido.id), fis);
+							caminhoArquivo = tempFile.getAbsolutePath();
+							
+						}catch(IOException ioex) {
+							Logger.error(ioex, "Erro ao tentar gerar a Nota do Pedido %s ", pedido.id);
+						}
+						
+						Mail.pedidoFinalizado(
+								"Pedido Finalizado",
+								email.toString(), 
+								pedido,
+								caminhoArquivo,
+								cliente.getUsuario().getEmail(), Mail.EMAIL_CONTACT);
+	
+						Logger.info("###### E-mail de confirmação do pedido para: %s enviado. #######", cliente.getUsuario().getEmail());
+											
+					} catch (SystemException ex) {
+						Logger.error("Erro ao enviar o e-mail de confirmação para %s", cliente.getUsuario().getEmail(), ex);
+						
+					}
+					Cache.safeDelete(sessionId);
+					Cache.safeDelete("valorTotal." + sessionId);
+	
+					Logger.debug("######## Cache limpo e Pedido gerado: %s ########", pedido.id);
+	
+					if(urlCheckout==null) {
+						String pedidoFinalizado = String.valueOf(pedido.id);
+	
+						responderQuestionario = Questionarios.haQuestionarioPendente(cliente.getUsuario().getId());
+						
+						render(pedidoFinalizado, cliente, responderQuestionario);
+					}
+					redirect(urlCheckout);
 				}
-				// Gerar Pedido
-				pedido.addCesta(carrinho.getCestas());
 				
-				if(!carrinho.getCestas().isEmpty())
-					pedido.setObservacao(Messages.get("form.product.isBasket", ""));
-				
-				pedido.setCodigoPedido(String.valueOf(carrinho.getId()));
-				pedido.addPedidoItem(carrinho.getItens());
-				pedido.setCliente(cliente);
-				pedido.setDataPedido(new Date());
-				pedido.setValorPedido(carrinho.getValorTotalCompra());
-				pedido.setCodigoEstadoPedido(statusPedido);
-				pedido.setArquivado(Boolean.FALSE);
-				pagamento.setPedido(pedido);
-				pagamento.setValorPagamento(pedido.getValorPedido());
-				pedido.setPagamento(pagamento);
-				
-				frete.addPedido(pedido);
-				frete.save();
-				pedido.save();
-				
-				Logger.info("Valor Desconto %s", pedido.getDesconto().getValorDesconto());
-				Logger.info("###### E-mail de confirmação do pedido para: %s #######", cliente.getUsuario().getEmail());
-				try {
-					StringBuffer email = new StringBuffer();
-					email.append("Vida Saudável Orgânicos");
-					email.append("<").append("contato@vidasaudavelorganicos.com.br").append(">");
-					
-					Mail.pedidoFinalizado(
-							"Pedido Finalizado",
-							email.toString(), 
-							pedido,
-							cliente.getUsuario().getEmail(), Mail.EMAIL_CONTACT);
-
-					Logger.info("###### E-mail de confirmação do pedido para: %s enviado. #######", cliente.getUsuario().getEmail());
-										
-				} catch (SystemException ex) {
-					Logger.error("Erro ao enviar o e-mail de confirmação para %s", cliente.getUsuario().getEmail(), ex);
-					
-				}
-				Cache.safeDelete(sessionId);
-				Cache.safeDelete("valorTotal." + sessionId);
-
-				Logger.debug("######## Cache limpo e Pedido gerado: %s ########", pedido.id);
-
-				if(urlCheckoutPayPal==null) {
-					String pedidoFinalizado = String.valueOf(pedido.id);
-
-					responderQuestionario = Questionarios.haQuestionarioPendente(cliente.getUsuario().getId());
-					
-					render(pedidoFinalizado, cliente, responderQuestionario);
-				}
-				redirect(urlCheckoutPayPal);
+			}else {
+				Home.index(Messages.get("application.message.basket.empty", ""));
 			}
 			
-		}else {
-			Home.index(Messages.get("application.message.basket.empty", ""));
+		}catch(Exception ex) {
+			EstoqueControl.reporEstoque(carrinho.getItens());
+			
+			validation.addError("cliente", ex.getMessage(), "");
+			params.flash();
+			validation.keep();
+			
+			pagamento(sessionId, isAssessor);
 		}
-
 	}	
 	
 	public static void excluirProdutos(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade, List<CestaPronta> cestas) {
@@ -460,7 +503,7 @@ public class Carrinho extends Controller {
 		BigDecimal valorComDesconto = null;
 		
 		if(carrinho!=null && session.get("clienteId")!=null) {
-			valorMinPagPayPal = new BigDecimal(Messages.get("application.minValue.paypal", ""));
+			valorMinPagPayPal = new BigDecimal(Messages.get("application.minValue.gateways", ""));
 			frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra()));
 			
 			if(pedidoAssessor)
@@ -538,8 +581,10 @@ public class Carrinho extends Controller {
 		view(sessionId, message);
 	}
 	
-	public static void loading(String sessionId) {
-		render(sessionId);
+	public static void loading(String sessionId, String pagamentoSolicitado) {
+		String formaPagamento = FormaPagamento.getFormaPagamento(pagamentoSolicitado).getDescricao();
+		
+		render(sessionId, formaPagamento);
 	}
 	
 	private static void validarValorCompra(BigDecimal valorCompra) {

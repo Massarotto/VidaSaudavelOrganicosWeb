@@ -43,7 +43,7 @@ import vo.ProdutoPedidoReportVO;
 public class Relatorios extends BaseController {
 	
 	private static final String RELATORIO_PEDIDOS_ABERTO_VENDAS		=	"PedidoClienteEntrega.jasper";
-	private static final String REPORT_TITLE						=	"RELATÓRIO DE PEDIDO";
+	public static final String REPORT_TITLE						=	"RELATÓRIO DE PEDIDO";
 	private static final String SUBREPORT_DIR						= 	Messages.get("application.path.report", "");
 	public static final String RELATORIO_PRODUTO_FORNECEDOR			=	"RELATORIO_PRODUTOS_FORNECEDOR";
 	public static final String RELATORIO_PRODUTO_ESTOQUE			=	"RELATORIO_PRODUTOS_ESTOQUE_ENTREGA";
@@ -135,6 +135,7 @@ public class Relatorios extends BaseController {
 	
 	public static File generateRelatorioProdutoFornecedorExcel() {
 		List<ProdutoPedidoReportVO> result = null;
+		String caminhoRelatorio = Messages.get("application.path.upload.archives", ""); 
 		
 		List<Produto> produtos = findProdutosAguardandoEntrega(null);
 		
@@ -144,15 +145,9 @@ public class Relatorios extends BaseController {
 		
 		Collections.sort(result, new PedidoFornecedorComparator());
 
-		ProdutoFornecedorParse parse = new ProdutoFornecedorParse(result);
+		ProdutoFornecedorParse parse = new ProdutoFornecedorParse(result, caminhoRelatorio);
 		
-		StringBuffer nomeArquivo = new StringBuffer();
-		nomeArquivo.append(System.getProperty("java.io.tmpdir"));
-		nomeArquivo.append(File.separatorChar);
-		nomeArquivo.append(RELATORIO_PRODUTO_FORNECEDOR);
-		nomeArquivo.append(".xls");
-		
-		return parse.createReport(nomeArquivo.toString());
+		return parse.createReport();
 	}
 	
 	public static InputStream generateRelatorioProdutoFornecedorCSV() {
@@ -211,23 +206,8 @@ public class Relatorios extends BaseController {
 	}
 	
 	public static void gerarNotaFiscal(Long idPedido) {
-		Map parametros = new HashMap();
-		List<Pedido> pedidos = new ArrayList<Pedido>();
-		Pedido pedido = null;
-		
 		try {
-			StringBuilder pathStaticContent = new StringBuilder(Messages.get("application.path.report", ""));
-			pathStaticContent.append(RELATORIO_PEDIDOS_ABERTO_VENDAS);
-		
-			parametros.put("REPORT_TITLE", REPORT_TITLE);
-			parametros.put("SUBREPORT_DIR", SUBREPORT_DIR);
-			
-			pedido = Pedido.findById(idPedido);
-			pedidos.add(pedido);
-			
-			List<PedidoProdutoEntregaReportVO> dados = PedidoProdutoEntregaReportVO.fillListReport(pedidos);
-			
-			renderBinary(BaseJasperReport.generatePdfReport(pathStaticContent.toString(), "NOTA_FISCAL_PEDIDO", parametros, dados), "NotaFiscalPedido.pdf");
+			renderBinary(gerarNotaFiscalPedido(idPedido), "NotaFiscalPedido.pdf");
 			
 		}catch(Exception e) {
 			Logger.error(e, "Erro ao tentar exportar o relatório.");
@@ -235,8 +215,32 @@ public class Relatorios extends BaseController {
 		}
 	}
 	
+	public static InputStream gerarNotaFiscalPedido(Long idPedido) {
+		Map<String, String> parametros = new HashMap<String, String>();
+		List<Pedido> pedidos = new ArrayList<Pedido>();
+		Pedido pedido = null;
+		StringBuffer nomeArquivo = new StringBuffer();
+		
+		StringBuilder pathStaticContent = new StringBuilder(Messages.get("application.path.report", ""));
+		pathStaticContent.append(RELATORIO_PEDIDOS_ABERTO_VENDAS);
+	
+		parametros.put("REPORT_TITLE", REPORT_TITLE);
+		parametros.put("SUBREPORT_DIR", SUBREPORT_DIR);
+		
+		pedido = Pedido.findById(idPedido);
+		pedidos.add(pedido);
+		
+		nomeArquivo.append("NOTA PEDIDO");
+		nomeArquivo.append(" - ");
+		nomeArquivo.append(pedido.id);
+		
+		List<PedidoProdutoEntregaReportVO> dados = PedidoProdutoEntregaReportVO.fillListReport(pedidos);
+		
+		return BaseJasperReport.generatePdfReport(pathStaticContent.toString(), nomeArquivo.toString(), parametros, dados);
+	}
+	
 	public static void exportarRelatorioMSExcel() {
-		Map parametros = new HashMap();
+		Map<String, String> parametros = new HashMap<String, String>();
 		
 		try {
 			StringBuilder pathStaticContent = new StringBuilder(Messages.get("application.path.report", ""));

@@ -61,9 +61,18 @@ public class Mail extends Mailer {
 		}
 	}
 	
+	/**
+	 * @param subject
+	 * @param from
+	 * @param pedido
+	 * @param fileAbsolutePath - caminho absoluto da Nota Gerada
+	 * @param to
+	 * @throws SystemException
+	 */
 	public static void pedidoFinalizado(String subject,
 										String from,
 										Pedido pedido,
+										String fileAbsolutePath,
 										String... to) throws SystemException {
 		try {
 			setFrom(from);
@@ -71,6 +80,14 @@ public class Mail extends Mailer {
 			addRecipient(to[0]);
 			addBcc(to[to.length-1]);
 			setReplyTo(EMAIL_CONTACT);
+			
+			if(!StringUtils.isEmpty(fileAbsolutePath)) {
+				EmailAttachment attachments = new EmailAttachment();
+				attachments.setDescription("Nota Pedido");
+				attachments.setPath(fileAbsolutePath);
+				
+				addAttachment(attachments);
+			}
 			
 			send(pedido);
 			

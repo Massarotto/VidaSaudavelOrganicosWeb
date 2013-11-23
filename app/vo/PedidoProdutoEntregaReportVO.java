@@ -31,7 +31,7 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 	private BigDecimal valorPedidoHistorico = new BigDecimal(0);
 	private BigDecimal valorPedidoHistoricoPago = new BigDecimal(0);
 	private String statusPedido;
-	
+	private String formaPagamento;
 	private String observacao;
 	
 	private List<ProdutoPedidoReportVO> produtos;
@@ -261,6 +261,7 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 				entity.setCep(pedido.getCliente().getEnderecos().get(0).getCep());
 				entity.setPrefixoTelefone(pedido.getCliente().getTelefones().get(0).getPrefixo());
 				entity.setTelefone(pedido.getCliente().getTelefones().get(0).getNumero());
+				entity.setFormaPagamento(pedido.getPagamento().getFormaPagamento().getDescricao());
 				
 				//2º telefone
 				if(pedido.getCliente().getTelefones().size()>1) {
@@ -468,6 +469,20 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 	 */
 	public void setStatusPedido(String statusPedido) {
 		this.statusPedido = statusPedido;
+	}
+
+	/**
+	 * @return the formaPagamento
+	 */
+	public String getFormaPagamento() {
+		return formaPagamento;
+	}
+
+	/**
+	 * @param formaPagamento the formaPagamento to set
+	 */
+	public void setFormaPagamento(String formaPagamento) {
+		this.formaPagamento = formaPagamento;
 	}
 
 }

@@ -104,7 +104,7 @@ public class CompactadorZip implements Serializable {
 				}
 				return listaEntradasZip;  
 			}
-
+			
 			String caminhoEntradaZip = null;  
 			int idx = arquivo.getAbsolutePath().indexOf(caminhoInicial);  
 

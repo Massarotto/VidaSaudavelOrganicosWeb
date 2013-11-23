@@ -299,11 +299,15 @@ public class Produtos extends BaseController {
 	}
 	
 	public static void detail(Long id, String nome) {
-		Produto produto = Produto.findById(id);
+		Produto produto = Produto.find("id = ? AND ativo = ?", id, Boolean.TRUE).first();
 		
-		flash.success(buildProdutosSecao(produto.getSecao()));
+		if(produto!=null) {
+			flash.success(buildProdutosSecao(produto.getSecao()));
 		
-		render(produto);
+			render(produto);
+		}else {
+			Home.index(Messages.get("message.notfound.product", ""));
+		}
 	}
 	
 	@SuppressWarnings("all")

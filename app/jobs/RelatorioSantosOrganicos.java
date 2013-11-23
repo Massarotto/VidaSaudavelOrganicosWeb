@@ -16,10 +16,10 @@ import controllers.Mail;
 import controllers.Relatorios;
 
 /**
- * @author guerrafe
- *
+ * @author Felipe Guerra
+ * @version 1.0
  */
-@On("0 10 23 ? * Sun")
+@On("0 20 23 ? * Sun")
 public class RelatorioSantosOrganicos extends Job {
 	
 	public void doJob() {
@@ -28,42 +28,21 @@ public class RelatorioSantosOrganicos extends Job {
 	}
 	
 	public void enviarRelatorioProdutosPorFornecedor() {
-		InputStream csv = null;
-		String pathReport = null;
-		OutputStream outputStream = null;
 		File report = null;
 		
 		try {
 			Logger.info("### Início do processo de envio de e-mail automático com o Relatório de Produtos por Fornecedor. ###", "");
-			csv = Relatorios.generateRelatorioProdutoFornecedorCSV();
+			report = Relatorios.generateRelatorioProdutoFornecedorExcel();
 			
-			Logger.info("### Relatório gerado? [%s - %s] ###", this.getClass().getName(), csv);
+			Logger.info("### Relatório gerado? [%s - %s] ###", this.getClass().getName(), report);
 			
-			if(csv!=null) {
-				pathReport = System.getProperty("java.io.tmpdir") + File.separatorChar + Relatorios.RELATORIO_PRODUTO_FORNECEDOR + "_" + new Date().getTime()+ ".csv";
-				outputStream = new FileOutputStream(pathReport);
-
-				int read;
-				
-				byte[] bytes = new byte[1024];
+			if(report!=null) {
+				Logger.warn("### Gerou o Relatório Excel? %s | path: %s ###", report.exists(), report.getAbsolutePath());
 	
-				while((read = csv.read(bytes))>-1) {
-					outputStream.write(bytes, 0, read);
-				}
-				
-				report = new File(pathReport);
-				
-				Logger.warn("### Gerou o Relatório CSV? %s | path: %s ###", report.exists(), report.getAbsolutePath());
-	
-				csv.close();
-				outputStream.flush();
-				outputStream.close();
-				
 				Mail.sendRelatorioPedidosAguardandoEntrega("Relatório de Produtos por Fornecedor", 
 															"Vida Saudável Orgânicos<administrador@vidasaudavelorganicos.com.br>", 
 															report.getAbsolutePath(), report.getName(),
-															"alexandre@vidasaudavelorganicos.com.br" 
-															//"klauss@santosorganicos.com.br"
+															"felipe@vidasaudavelorganicos.com.br"
 															);
 			}
 			
@@ -106,7 +85,7 @@ public class RelatorioSantosOrganicos extends Job {
 			
 			Mail.sendRelatorioPedidosAguardandoEntrega("Relatório de Pedidos Aguardando Entrega", Mail.EMAIL_ADMIN, 
 														report.getAbsolutePath(), report.getName(),
-														"alexandre@vidasaudavelorganicos.com.br");
+														"marcelo@vidasaudavelorganicos.com.br");
 			
 		}catch(Throwable e) {
 			Logger.error(e, "Erro no processo de envio de e-mail automático com o Relatório de Pedidos Aguardando Entrega.");

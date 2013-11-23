@@ -5,7 +5,6 @@ package relatorios.parse;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
 
@@ -15,11 +14,14 @@ import jxl.write.Number;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import play.Logger;
+import play.i18n.Messages;
+import util.CompactadorZip;
 import vo.ProdutoPedidoReportVO;
 
 /**
- * @author guerrafe
- *
+ * @author Felipe Guerra
+ * @version 1.0
+ * @since 13/11/2013
  */
 public class ProdutoFornecedorParse implements Serializable {
 
@@ -27,38 +29,46 @@ public class ProdutoFornecedorParse implements Serializable {
 	
 	private List<ProdutoPedidoReportVO> produtosPorPedido = null;
 	
-	public ProdutoFornecedorParse(List<ProdutoPedidoReportVO> dados) {
-		produtosPorPedido = dados;
-	}
-
-	private WritableWorkbook createWorkbook(File nomeArquivo) throws IOException {
-		WritableWorkbook result = null;
-		
-		result = Workbook.createWorkbook(nomeArquivo);
-		
-		return result;
+	private StringBuffer tempfilePath = new StringBuffer(Messages.get("application.path.upload.archives", ""));
+	private StringBuffer caminhoCompletoRelatorio = null;
+	private WritableSheet sheet = null;
+	private WritableWorkbook workbook = null;
+	private File relatorioExcel = null;
+	private File arquivosCompactados = null; 
+	
+	/**
+	 * @param dados
+	 * @param tempfilePath arquivo onde será gravado os arquivos
+	 */
+	public ProdutoFornecedorParse(List<ProdutoPedidoReportVO> dados, String tempfilePath) {
+		this.produtosPorPedido = dados;
+		this.tempfilePath = new StringBuffer(tempfilePath);
 	}
 	
-	public File createReport(String nomeArquivo) {
-		WritableSheet sheet = null;
+	public File createReport() {
 		String fornecedor = null;
 		int coluna = 0;
 		int linha = 1;
-		File relatorioExcel = null;
 		
 		try {
-			relatorioExcel =  new File(nomeArquivo);
+			caminhoCompletoRelatorio = new StringBuffer();
+			this.tempfilePath.append("temp");
 			
-			WritableWorkbook workbook = createWorkbook(relatorioExcel);
+			arquivosCompactados = new File(this.tempfilePath.toString());
 			
-			sheet = createWritableSheet(this.produtosPorPedido.get(0).getFornecedor(), workbook);
-			addLabelHeader(sheet);
+			if(!arquivosCompactados.exists())
+				arquivosCompactados.mkdir();
+			
+			initInstances(this.produtosPorPedido.get(0));
+			
 			fornecedor = this.produtosPorPedido.get(0).getFornecedor();
 			
 			for(ProdutoPedidoReportVO vo : this.produtosPorPedido) {
 				if(!fornecedor.equalsIgnoreCase(vo.getFornecedor())) {
-					sheet = createWritableSheet(vo.getFornecedor(), workbook);
-					addLabelHeader(sheet);
+					closeWorkbook();
+					
+					initInstances(vo);
+					
 					linha = 1;
 				}
 				Label codigo = new Label(coluna, linha, vo.getCodigoProduto());
@@ -75,39 +85,59 @@ public class ProdutoFornecedorParse implements Serializable {
 				coluna = 0;
 				linha++;
 				fornecedor = vo.getFornecedor();
+				
 			}
+			closeWorkbook();
 			
-			workbook.write();
-			workbook.close();
+			new CompactadorZip().criarZip(arquivosCompactados, arquivosCompactados.listFiles());
 			
 		}catch(Exception e) {
 			Logger.error(e, "Ocorreu um erro na tentativa de gerar o Relatório de Produtos por Fornecedor no formato Excel.");
 			throw new RuntimeException(e);
 		}
-		return relatorioExcel;
+		return new File(arquivosCompactados.getAbsolutePath()+".zip");
 	}
 	
-	private WritableSheet createWritableSheet(String nomeFornecedor, WritableWorkbook workbook) {
-		WritableSheet sheet = workbook.createSheet(nomeFornecedor, 0);
-		
-		return sheet;
-	}
-	
-	private void addLabelHeader(WritableSheet sheet) throws IOException {
+	private void addLabelHeader() throws IOException {
 		try {
 			Label label = new Label(0, 0, "Código");
-			sheet.addCell(label);
+			this.sheet.addCell(label);
 			
 			Label label2 = new Label(1, 0, "Descrição");
-			sheet.addCell(label2);
+			this.sheet.addCell(label2);
 			
 			Label label3 = new Label(2, 0, "Quantidade");
-			sheet.addCell(label3);
+			this.sheet.addCell(label3);
 			
 		}catch(Exception e) {
 			Logger.error(e, "Ocorreu um erro na tentativa de escrever o cabeçalho do Relatório de Produtos por Fornecedor no formato Excel.");
 			throw new IOException(e);
 		}
+	}
+	
+	private void initInstances( 
+								ProdutoPedidoReportVO vo
+								) throws Exception {
+		this.caminhoCompletoRelatorio = new StringBuffer();
+		this.caminhoCompletoRelatorio.append(this.tempfilePath);
+		this.caminhoCompletoRelatorio.append(File.separatorChar);
+		this.caminhoCompletoRelatorio.append(vo.getFornecedor());
+		this.caminhoCompletoRelatorio.append(".xls");
+		
+		this.relatorioExcel = new File(caminhoCompletoRelatorio.toString());
+		
+		this.relatorioExcel.createNewFile();
+		
+		this.workbook = Workbook.createWorkbook(this.relatorioExcel);
+		
+		this.sheet = workbook.createSheet(vo.getFornecedor(), 0);
+		
+		addLabelHeader();
+	}
+	
+	private void closeWorkbook() throws Exception {
+		workbook.write();
+		workbook.close();
 	}
 	
 }

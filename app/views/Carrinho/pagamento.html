@@ -179,6 +179,17 @@
 							</div>
 						</td>
 					</tr>
+					<tr>
+						<td width="5%" align="center">
+							<input type="radio" name="formaPagamento" id="formaPagamento" value="${pagamento.getFormaPagamento('PagSeguro')}" />
+						</td>
+						<td>
+							<img src="&{'application.static.content'}&{'application.path.public.images'}logo_pagseguro.gif" alt="paypal logo" />
+							<div id="valorPayPal" style="width: 65%; float: right; position: relative; margin-top: 8px;">
+								<span class="fontGreen3">${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}</span>
+							</div>
+						</td>
+					</tr>
 					#{/if}
 					<tr>
 						<td width="5%" align="center">
@@ -204,6 +215,7 @@
 	</div>
 	<br />
 	#{/ifnot}
+	<br />
 	<div align="right" style="width: 97%;">
 		<div id="btn-end">
 			<a href="javascript:finalizarPedido();"><span>&nbsp;</span></a>
@@ -228,8 +240,8 @@
 				if(pagamentoSolicitado=="DINHEIRO") {
 					document.getElementById("finalizarForm").submit();
 					
-				}else if(pagamentoSolicitado=="PAYPAL") {
-					window.open("/carrinho/loading/${sessionId}", "_self");
+				}else {
+					window.open("/carrinho/loading/${sessionId}?pagamentoSolicitado="+pagamentoSolicitado, "_self");
 				}
 			}
 			

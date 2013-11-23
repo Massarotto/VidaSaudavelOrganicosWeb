@@ -12,7 +12,8 @@ public enum FormaPagamento {
 	CARTAO_CREDITO(2, "Cartão de Crédito"),
 	DINHEIRO(3, "Dinheiro/Cheque"),
 	CHEQUE(4, "Cheque"),
-	PAYPAL(5, "PayPal");
+	PAYPAL(5, "PayPal"),
+	PAGSEGURO(6, "PagSeguro");
 	
 	private FormaPagamento(Integer codigo, String descricao) {
 		this.codigo = codigo;

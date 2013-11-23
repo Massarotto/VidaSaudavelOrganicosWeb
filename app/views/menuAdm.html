@@ -132,6 +132,7 @@
 			         					<span>&{'form.questionario.todos'}</span>
 			         				</a>
 			         			</li>
+			         			 #{if (session.get("isAdmin").equals("true")) }
 			         			<li>
 			         				<a href="/questionarios/associar">
 			         					<span>&{'form.questionario.novo'}</span>
@@ -161,6 +162,7 @@
 			         					</ul>
 			         				</div>
 			         			</li>
+			         			#{/if}
 			         		</ul>
 			         	</div>
 			         </li>
@@ -177,9 +179,11 @@
 			         	</a>
 			         	<div>
 			         		<ul>
+			         			#{if (session.get("isAdmin").equals("true")) }
 			         			<li>
 			         				<a href="/relatorios/produto/fornecedor"><span>&{'form.report.pedidoPorFornecedor'}</span></a>
 			         			</li>
+			         			#{/if}
 			         			<li>
 			         				<a href="/relatorios/produto/pedido/cliente"><span>&{'form.report.pedidoAguardandoEntrega'}</span></a>
 			         			</li>

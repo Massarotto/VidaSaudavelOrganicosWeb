@@ -66,8 +66,10 @@
 </div>
 <br />
 <a href="/pedidos/info/${pedido.id}" class="fontBrown">&{'form.button.back'}</a>
+#{if (session.get("isAdmin").equals("true")) }
 <span>|</span>
 <a href="#" class="fontBrown" onclick="javascript:enviar('${pedido.id}', true);">&{'form.excluir'} do &{'form.admin.pedido'}</a>
+#{/if}
 <span>|</span>
 <a href="#" class="fontBrown" onclick="javascript:enviar('${pedido.id}', false);">&{'form.order.removerEntrega'}</a>
 <script>

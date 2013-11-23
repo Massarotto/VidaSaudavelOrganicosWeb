@@ -457,6 +457,48 @@ public class Pedidos extends BaseController {
 	}
 	
 	@Transactional(readOnly=false)
+	public static void finalizarPedidoPagSeguro(String token) {
+		Logger.info("#### Início - Gateway de Pagamento PagSeguro confirmando transação [token: %s ] ####", token);
+		Pagamento pagamentoFeito = null;
+		Cliente cliente = null;
+		Pedido pedido = null;
+		Boolean responderQuestionario = Boolean.FALSE;
+		
+		try {
+			pagamentoFeito = Pagamento.find("informacoes = ? AND formaPagamento = ?", token, FormaPagamento.PAGSEGURO).first();
+			
+			if(pagamentoFeito!=null) {
+				Logger.info("#### PayPal confirmando transação [token: %s] - pagamento encontrado? %s####", token, pagamentoFeito.id!=null);
+				cliente = pagamentoFeito.getPedido().getCliente();
+				pedido = pagamentoFeito.getPedido();
+				
+				pedido.setUltimoStatusEstadoPedido(pedido.getCodigoEstadoPedido());
+				pedido.setCodigoEstadoPedido(PedidoEstado.AGUARDANDO_ENTREGA);
+				pedido.setDataAlteracao(new Date());
+				pedido.setObservacao("Pagamento confirmado!");
+				pedido.save();
+				
+				Logger.info("####Fim - PagSeguro confirmando transação [token: %s] - Pedido: %s. ####", token, pedido.id);
+				
+				responderQuestionario = Questionarios.haQuestionarioPendente(cliente.getUsuario().getId());
+				
+				render("Carrinho/finalizar.html", pedido.id, cliente, responderQuestionario);
+				
+			}else {
+				Home.index("Dados não encontrados para o token: " + token);
+			}
+			
+		}catch(Exception e) {
+			Logger.error(e, "Erro - PagSeguro confirmando transação [token: %s]", token);
+			throw new RuntimeException(e);
+			
+		}finally {
+			Logger.info("#### Fim - Gateway de Pagamento PagSeguro confirmando transação [token: %s] ####", token);
+		}
+		
+	}
+	
+	@Transactional(readOnly=false)
 	public static void cancelarPedidoPayPal(String token, String PayerID) {
 		Logger.info("#### Início - Gateway de Pagamento PayPal cancelando transação [token: %s - payerId: %s] ####", token, PayerID);
 		Pagamento pagamentoFeito = null;

@@ -123,6 +123,10 @@ GET		/cesta/detail/{id}/{nome}				Cestas.detail
 *		/pedido/paypal/finalizar				Pedidos.finalizarPedidoPayPal
 *		/pedido/paypal/cancelar					Pedidos.cancelarPedidoPayPal
 
+#PagSeguro Integration
+*		/pedido/pagseguro/finalizar				Pedidos.finalizarPedidoPagSeguro
+
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 GET		/images.loadingAnimation.gif			404

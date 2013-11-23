@@ -144,6 +144,31 @@ public class EstoqueControl implements Serializable {
 		Logger.debug("#### Fim atualizar o estoque...usuário: %s####", usuarioAlteracao);
 	}
 	
+	public static synchronized void reporEstoque(List<CarrinhoItem> itens) {
+		Produto produto = null;
+		ProdutoEstoque estoque = null;
+		Integer quantidade = null;
+		
+		if(itens!=null && !itens.isEmpty()) {
+			for(CarrinhoItem item : itens) {
+				quantidade = 0;
+				
+				produto = item.getProdutos().get(0);
+				estoque = loadEstoque(null, produto.id);
+				
+				if(estoque!=null) {
+					quantidade = estoque.getQuantidade() + item.getQuantidade();
+					
+					estoque.setQuantidade(quantidade);
+					estoque.setDataAlteracao(new Date());
+					
+					estoque.save();
+					Logger.info("#### Estoque para o produto %s atualizado. Qtde atualizada: %s ####", produto.getNome(), quantidade);
+				}
+			}
+		}
+	}
+	
 	/**
 	 * Consulta todos os produtos que se encontram com uma quantidade menor ou igual a especificada. 
 	 * @param qtdMinimaEstoque

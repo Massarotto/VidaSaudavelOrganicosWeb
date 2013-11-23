@@ -33,10 +33,12 @@
 					<span>Pedido nº: #{a @@Pedidos.view(pedido.cliente.id)}${pedido.id}#{/a}</span><br /><br />
 					<span>Clique #{a @@Pedidos.view(pedido.cliente.id)}aqui#{/a} para acompanhar o seu pedido.</span><br /><br />
 					<span>OBSERVAÇÃO: Para pedidos fechados até Domingo, a entrega será realizada na próxima Terça-feira.</span><br /><br />
-					<span>
+					<strong style="color: #FF0000;">
 						Importante: No ato da entrega poderá haver a falta de algum produto, em função de condições climáticas ou outros fatores, 
 						como por exemplo, imprevistos no transporte.
-					</span><br /><br />
+					</strong><br />
+					&{'form.politicaEntrega.observacao'}
+					<br />
 					<span>Atenciosamente,</span><br />
 					<span>Vida Saudável Orgânicos.</span><br />
 					<a href="http://www.vidasaudavelorganicos.com.br">www.vidasaudavelorganicos.com.br</a>

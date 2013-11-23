@@ -58,7 +58,7 @@ public class RelatorioProdutoEstoque extends Job {
 			Mail.sendRelatorioPedidosAguardandoEntrega("Relatório de Produtos em Estoque Aguardando Entregas", 
 														"Vida Saudável Orgânicos<administrador@vidasaudavelorganicos.com.br>", 
 														report.getAbsolutePath(), report.getName(),
-														"alexandre@vidasaudavelorganicos.com.br");
+														"felipe@vidasaudavelorganicos.com.br");
 		}
 	}
 	
