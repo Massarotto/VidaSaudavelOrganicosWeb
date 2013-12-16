@@ -21,6 +21,7 @@ import models.Pedido;
 import models.Pedido.PedidoEstado;
 import models.PedidoItem;
 import models.Produto;
+import models.ProdutoEstoque;
 import models.Usuario;
 
 import org.apache.commons.lang.StringUtils;
@@ -104,7 +105,7 @@ public class Pedidos extends BaseController {
 	public static void atualizar(@Valid Pedido pedido) {
 		Logger.debug("######### Vai atualizar o pedido id: %s #########", pedido.id);
 		
-		if(pedido.getDesconto().getValorDesconto().doubleValue()>pedido.getValorPedido().doubleValue())
+		if(pedido.getValorDesconto().doubleValue()>pedido.getValorPedido().doubleValue())
 			validation.addError("pedido.desconto.valorDesconto", "message.error.value.desconto", "");
 		
 		if(pedido.getDataEntrega()!=null && pedido.getDataPedido().after(pedido.getDataEntrega()))
@@ -141,9 +142,9 @@ public class Pedidos extends BaseController {
 			Usuario usuario = Usuario.findById(Long.parseLong(session.get("clienteId")));
 			
 			pedido.setDataAlteracao(new Date());
-			pedido.getDesconto().setPedido(pedido);
 			pedido.getDesconto().setUsuario(usuario);
 			pedido.getDesconto().setDataDesconto(new Date());
+			
 			pedido.setUsuarioAlteracao(session.get("usuarioAutenticado"));
 			pedido.calcularDesconto();
 			
@@ -231,7 +232,10 @@ public class Pedidos extends BaseController {
 		pedido.getItens().add(pedidoItem);
 		valorPedido = valorPedido.add(BigDecimal.valueOf(produto.getValorVenda()*quantidade));
 		
-		EstoqueControl.atualizarEstoque(EstoqueControl.loadEstoque(id, produtoId), quantidade, session.get("usuarioAutenticado"));
+		ProdutoEstoque estoque = EstoqueControl.loadEstoque(id, produtoId);
+		
+		if(estoque!=null)
+			EstoqueControl.atualizarEstoque(estoque, estoque.getQuantidade()-quantidade, session.get("usuarioAutenticado"));
 		
 		pedidoItem.save();
 		pedido.setValorPedido(valorPedido);

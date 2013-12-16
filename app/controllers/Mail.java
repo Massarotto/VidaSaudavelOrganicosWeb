@@ -7,6 +7,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import models.Cliente;
+import models.CupomDesconto;
 import models.Pedido;
 
 import org.apache.commons.lang.StringUtils;
@@ -24,7 +25,7 @@ public class Mail extends Mailer {
 	
 	public static final String EMAIL_ADMIN = "Administrador<administrador@vidasaudavelorganicos.com.br>";
 	
-	public static final String EMAIL_CONTACT = "Contato<contato@vidasaudavelorganicos.com.br>";
+	public static final String EMAIL_CONTACT = "Vida Saudável Orgânicos<contato@vidasaudavelorganicos.com.br>";
 	
 	public static void sendEmail(String subject,
 								String from,
@@ -177,7 +178,7 @@ public class Mail extends Mailer {
 			
 			Future<Boolean> sent = send(message, urlImagem);
 			
-			Logger.debug("Atingiu o timeout? %s",  sent.get(5, TimeUnit.SECONDS) );
+			Logger.debug("Atingiu o timeout? %s",  sent.get(60, TimeUnit.SECONDS) );
 			
 		}catch(Exception e) {
 			Logger.error(e, "Erro ao enviar e-mail com o Marketing.");
@@ -202,6 +203,33 @@ public class Mail extends Mailer {
 			throw new SystemException(e);
 		}
 		
+	}
+	
+	public static void enviarCupomDescontoCliente(String subject, 
+													String from, 
+													CupomDesconto cupomDesconto,
+													String to) throws SystemException {
+		try {
+			setFrom(from);
+			setSubject(subject);
+			addRecipient(to);
+			
+//			if(!StringUtils.isEmpty(fileAbsolutePath)) {
+//				EmailAttachment attachments = new EmailAttachment();
+//				attachments.setDescription("Cupom de Desconto.");
+//				attachments.setPath(fileAbsolutePath);
+//				
+//				addAttachment(attachments);
+//			}
+			
+			Future<Boolean> sent = send(cupomDesconto);
+			
+			Logger.info("Atingiu timeout %s", sent.get(60, TimeUnit.SECONDS));
+			
+		}catch(Exception e) {
+			Logger.error(e, "Erro ao enviar e-mail com o cupom de desconto %s.", cupomDesconto.getCodigo());
+			throw new SystemException(e);
+		}
 	}
 	
 	public static void sendProdutosNaoEncontrados(String subject, String from, 

@@ -30,6 +30,7 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 	private String telefoneCelular;
 	private BigDecimal valorPedidoHistorico = new BigDecimal(0);
 	private BigDecimal valorPedidoHistoricoPago = new BigDecimal(0);
+	private BigDecimal valorPago = new BigDecimal(0);
 	private String statusPedido;
 	private String formaPagamento;
 	private String observacao;
@@ -276,7 +277,7 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 				entity.setObservacao(pedido.getObservacao());
 				entity.setProdutos( ProdutoPedidoReportVO.fillProdutos(Relatorios.findProdutosAguardandoEntrega(pedido.id), 
 																	pedido.getValorPedido(), 
-																	pedido.getDesconto().getValorDesconto(),
+																	pedido.getValorDesconto(),
 																	pedido.getObservacao(),
 																	pedido.getFrete()==null ? BigDecimal.ZERO : pedido.getFrete().getValor()));
 				
@@ -301,10 +302,18 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 				pedidoVO.setDataPedido(_pedido.getDataPedido());
 				pedidoVO.setValorPedidoHistorico(_pedido.getValorTotal());
 				pedidoVO.setStatusPedido(_pedido.getCodigoEstadoPedido().getEstado());
+				pedidoVO.setValorPago(_pedido.getValorPago()==null ? _pedido.getValorTotal() : _pedido.getValorPago());
 				
-				if(_pedido.getCodigoEstadoPedido().equals(Pedido.PedidoEstado.AGUARDANDO_PAGAMENTO))
-					pedidoVO.setValorPedidoHistoricoPago(_pedido.getValorTotal().negate());
-				
+				switch (_pedido.getCodigoEstadoPedido()) {
+					case AGUARDANDO_PAGAMENTO:
+						pedidoVO.setValorPedidoHistoricoPago(_pedido.getValorTotal().negate());
+						break;
+					case FINALIZADO:
+						pedidoVO.setValorPedidoHistoricoPago(_pedido.getValorPago()!=null ? _pedido.getValorPago().subtract(_pedido.getValorTotal()) : BigDecimal.ZERO);
+						break;
+					default:
+						break;
+				}
 				result.add(pedidoVO);
 			}
 		}
@@ -483,6 +492,20 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 	 */
 	public void setFormaPagamento(String formaPagamento) {
 		this.formaPagamento = formaPagamento;
+	}
+
+	/**
+	 * @return the valorPago
+	 */
+	public BigDecimal getValorPago() {
+		return valorPago;
+	}
+
+	/**
+	 * @param valorPago the valorPago to set
+	 */
+	public void setValorPago(BigDecimal valorPago) {
+		this.valorPago = valorPago;
 	}
 
 }

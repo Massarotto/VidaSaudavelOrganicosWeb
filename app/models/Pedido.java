@@ -103,6 +103,9 @@ public class Pedido extends Model {
 	@Column(name="VALOR_PEDIDO", nullable=false, scale=2, precision=8)
 	private BigDecimal valorPedido;
 	
+	@Column(name="VALOR_PAGO", nullable=true, scale=2, precision=8)
+	private BigDecimal valorPago;
+	
 	/**
 	 * À partir de 29/05/2012, o valor do código do pedido será o id do carrinho, 
 	 * para questões de rastreabilidade. 
@@ -134,7 +137,7 @@ public class Pedido extends Model {
 	private Pagamento pagamento = null;
 	
 	@Required
-	@OneToOne(cascade=CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval=true)
+	@ManyToOne(fetch=FetchType.EAGER, cascade=CascadeType.PERSIST)
 	private Desconto desconto = null;
 	
 	@Column(name="USUARIO_ALTERACAO", nullable=true, length=80)
@@ -347,12 +350,19 @@ public class Pedido extends Model {
 	 */
 	@Transient
 	public void calcularDesconto() {
-		if(this.getDesconto().getValorDesconto().doubleValue()>0) {
-			this.getDesconto().setPorcentagem( new BigDecimal(this.getDesconto().getValorDesconto().doubleValue() / this.getValorPedido().doubleValue()).multiply(Desconto.CEM_PORCENTO).setScale(2, BigDecimal.ROUND_HALF_UP));
+		if(getDesconto().getValorDesconto().doubleValue()>0) {
+			this.getDesconto().setPorcentagem( new BigDecimal(getDesconto().getValorDesconto().doubleValue() / this.getValorPedido().doubleValue()).multiply(Desconto.CEM_PORCENTO).setScale(2, BigDecimal.ROUND_HALF_UP));
 			
 		}else if(this.getDesconto().getPorcentagem().doubleValue()>0) {
-			this.valorPedido.subtract( this.desconto.getPorcentagem().divide(Desconto.CEM_PORCENTO).multiply(this.valorPedido) ).setScale(2, BigDecimal.ROUND_HALF_UP);
+			this.getDesconto().setValorDesconto( this.desconto.getPorcentagem().divide(Desconto.CEM_PORCENTO).multiply(this.valorPedido).setScale(2, BigDecimal.ROUND_HALF_UP) );
 		}
+	}
+	
+	public BigDecimal getValorDesconto() {
+		if(this.desconto==null)
+			return BigDecimal.ZERO;
+		
+		return getDesconto().getPorcentagem().divide(Desconto.CEM_PORCENTO).multiply(getValorPedido()).setScale(2, BigDecimal.ROUND_HALF_DOWN);
 	}
 	
 	/**
@@ -370,10 +380,10 @@ public class Pedido extends Model {
 	
 	@Transient
 	public BigDecimal getValorComDesconto() {
-		if(getDesconto().getValorDesconto().doubleValue()>0)
-			return this.valorPedido.subtract( this.desconto.getValorDesconto() ).setScale(2, BigDecimal.ROUND_HALF_DOWN);
+		if(getValorDesconto().doubleValue()>0)
+			return this.valorPedido.subtract( getValorDesconto() ).setScale(2, BigDecimal.ROUND_HALF_DOWN);
 		else
-			return this.valorPedido.subtract( this.desconto.getPorcentagem().divide(Desconto.CEM_PORCENTO).multiply(this.valorPedido) ).setScale(2, BigDecimal.ROUND_HALF_DOWN);
+			return this.valorPedido.subtract( getDesconto().getPorcentagem().divide(Desconto.CEM_PORCENTO).multiply(this.valorPedido) ).setScale(2, BigDecimal.ROUND_HALF_DOWN);
 	}
 	
 	@Transient
@@ -593,6 +603,20 @@ public class Pedido extends Model {
 	 */
 	public void setUsuarioAlteracao(String usuarioAlteracao) {
 		this.usuarioAlteracao = usuarioAlteracao;
+	}
+
+	/**
+	 * @return the valorPago
+	 */
+	public BigDecimal getValorPago() {
+		return valorPago;
+	}
+
+	/**
+	 * @param valorPago the valorPago to set
+	 */
+	public void setValorPago(BigDecimal valorPago) {
+		this.valorPago = valorPago;
 	}
 	
 }

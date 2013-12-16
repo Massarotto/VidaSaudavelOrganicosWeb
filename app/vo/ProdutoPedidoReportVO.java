@@ -324,7 +324,7 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 				entity.setFornecedor(item.getProdutos().get(0).getFornecedor().getNome());
 			
 			entity.setValor(new BigDecimal(item.getProdutos().get(0).getValorVenda()));
-			entity.setDesconto(item.getPedido().getDesconto().getValorDesconto());
+			entity.setDesconto(item.getPedido().getValorDesconto());
 			
 			//Observação
 			entity.setObservacao(item.getPedido().getObservacao());
@@ -363,7 +363,7 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 					entity.setFornecedor(produto.getFornecedor().getNome());
 				
 				entity.setValor(new BigDecimal(produto.getValorVenda()));
-				entity.setDesconto(item.getPedido().getDesconto().getValorDesconto());
+				entity.setDesconto(item.getPedido().getValorDesconto());
 				
 				//Observação
 				entity.setObservacao(item.getPedido().getObservacao());

@@ -48,7 +48,7 @@ public class Usuario extends Model {
 	}
 	
 	@Transient
-	private static final String CRYPTO_KEY = "GFsdjhgyu56s09-1";
+	public static final String CRYPTO_KEY = "GFsdjhgyu56s09-1";
 
 	@MinSize(message="message.user.password.minsize", value=6)
 	@Required(message="message.required.login.password")

@@ -1,18 +1,9 @@
-import java.util.List;
-
 import javax.persistence.EntityManager;
 
-import models.Produto;
-
-import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
-import org.hibernate.search.query.dsl.QueryBuilder;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-
-import business.produto.ProdutoControl;
 
 import play.db.jpa.JPA;
 import play.test.UnitTest;

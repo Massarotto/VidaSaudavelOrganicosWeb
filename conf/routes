@@ -126,6 +126,8 @@ GET		/cesta/detail/{id}/{nome}				Cestas.detail
 #PagSeguro Integration
 *		/pedido/pagseguro/finalizar				Pedidos.finalizarPedidoPagSeguro
 
+#CRM Funcionalidades
+GET		/relacionamento/cliente/cupom-desconto	RelacionamentoCliente.index
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

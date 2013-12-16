@@ -6,12 +6,16 @@ package business.cliente.service;
 import java.io.Serializable;
 import java.net.URL;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.WebServiceException;
 
+import org.w3c.dom.Document;
+
 import play.Logger;
 import play.cache.Cache;
+import play.libs.WS;
 
 import com.grepcepws.entity.xsd.Cep;
 import com.grepcepws.entity.xsd.ObterCepResponse;
@@ -33,6 +37,31 @@ public class EnderecoService implements Serializable {
 	private GrepCepPortType portType;
 	
 	private EnderecoService() {}
+	
+	private EnderecoService(String url) {
+		//addProxySettings();
+		this.urlEndPoint = url;
+	}
+	
+	public Cep consultarEnderecoWSCep() {
+		Cep cep = null;
+		
+		try {
+			Document document = WS.url(this.urlEndPoint).get().getXml();
+			
+			cep = new Cep();
+			
+			cep.setBairro(new JAXBElement<String>(new QName("http://entity.grepcepws.com/xsd"), String.class, document.getElementsByTagName("bairro").item(0).getTextContent()));
+			cep.setLogradouro(new JAXBElement<String>(new QName("http://entity.grepcepws.com/xsd"), String.class, document.getElementsByTagName("logradouro").item(0).getTextContent()));
+			cep.setCidade(new JAXBElement<String>(new QName("http://entity.grepcepws.com/xsd"), String.class, document.getElementsByTagName("cidade").item(0).getTextContent()));
+			cep.setEstado(new JAXBElement<String>(new QName("http://entity.grepcepws.com/xsd"), String.class, document.getElementsByTagName("uf").item(0).getTextContent()));
+			
+		}catch(Exception e) {
+			Logger.error(e, "Ocorreu um erro no serviço de consulta de CEP. [%s]", this.urlEndPoint);
+			throw new RuntimeException("Ocorreu um erro no serviço de consulta de CEP. ["+this.urlEndPoint+"]");
+		}
+		return cep;
+	}
 
 	private EnderecoService(String url, String token) {
 		try {
@@ -90,6 +119,10 @@ public class EnderecoService implements Serializable {
 	 */
 	public static EnderecoService newInstance(String endPoint, String token) {
 		return new EnderecoService(endPoint, token);
+	}
+	
+	public static EnderecoService newInstance(String endPoint) {
+		return new EnderecoService(endPoint);
 	}
 	
 	private void addProxySettings() {

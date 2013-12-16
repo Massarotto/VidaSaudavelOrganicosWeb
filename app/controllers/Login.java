@@ -88,6 +88,7 @@ public class Login extends BaseController {
 		session.remove("usuarioAutenticado");
 		session.remove("clienteId");
 		session.remove("isAdmin");
+		session.remove("cupom");
 		
 		session.clear();
 		

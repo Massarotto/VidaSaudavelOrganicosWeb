@@ -105,9 +105,13 @@ public class Clientes extends BaseController {
 		Logger.debug("###### Consultar o cep: %s #######", cep);
 		Endereco endereco = null;
 		Cep _cep = null;
+		StringBuffer urlConsultaCep = new StringBuffer();
 		
 		try {
-			_cep = EnderecoService.newInstance("http://webservice.grepcep.com/GrepCepWS/services/GrepCep?wsdl", EnderecoService.TOKEN).consultarEndereco(cep);
+			urlConsultaCep.append("http://api.wscep.com/cep?key=free&val=");
+			urlConsultaCep.append(cep);
+			
+			_cep = EnderecoService.newInstance(urlConsultaCep.toString()).consultarEnderecoWSCep();
 			
 			if(_cep!=null) {
 				endereco = new Endereco();
@@ -115,7 +119,7 @@ public class Clientes extends BaseController {
 				endereco.setBairro(_cep.getBairro().getValue());
 				endereco.setLogradouro(_cep.getLogradouro().getValue());
 				endereco.setCidade(_cep.getCidade().getValue());
-				endereco.setUf(UF.findUF(_cep.getEstado().getValue().trim()));
+				endereco.setUf(_cep.getEstado().getValue().trim());
 				
 				Logger.debug("###### Endereço encontrado! [%s] #######", _cep.getLogradouro().getValue());
 			}

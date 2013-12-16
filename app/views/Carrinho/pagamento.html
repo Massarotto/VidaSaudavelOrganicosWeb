@@ -3,7 +3,7 @@
 &{'application.subtilte'} Finalizar Pedido
 #{/set}
 
-#{form @Carrinho.finalizar(), id:"finalizarForm"}
+#{form @Carrinho.finalizar(), id:"finalizarForm",}
 <div class="defaultContentSize">
 	<br />
 	<table width="97%" border="0" id="showProdutosCarrinho" cellpadding="0" cellspacing="2" align="center" style="border-bottom-width: 1px; border-bottom-style: dashed; border-bottom-style: solid;">
@@ -175,7 +175,14 @@
 						<td>
 							<img src="&{'application.static.content'}&{'application.path.public.images'}paypal_logo.gif" alt="paypal logo" />
 							<div id="valorPayPal" style="width: 65%; float: right; position: relative; margin-top: 8px;">
-								<span class="fontGreen3">${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}</span>
+								<span class="fontGreen3">
+									#{if (cupom!=null)}
+										${(valorComDesconto+ frete.valor).formatCurrency('BRL').raw()} &{'form.politicaEntrega.desconto', cupom.desconto.porcentagem+'%'}
+									#{/if}
+									#{else}
+										${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}
+									#{/else}
+								</span>
 							</div>
 						</td>
 					</tr>
@@ -186,14 +193,21 @@
 						<td>
 							<img src="&{'application.static.content'}&{'application.path.public.images'}logo_pagseguro.gif" alt="paypal logo" />
 							<div id="valorPayPal" style="width: 65%; float: right; position: relative; margin-top: 8px;">
-								<span class="fontGreen3">${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}</span>
+								<span class="fontGreen3">
+									#{if (cupom!=null)}
+										${(valorComDesconto+ frete.valor).formatCurrency('BRL').raw()} &{'form.politicaEntrega.desconto', cupom.desconto.porcentagem+'%'}
+									#{/if}
+									#{else}
+										${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}
+									#{/else}
+								</span>
 							</div>
 						</td>
 					</tr>
 					#{/if}
 					<tr>
 						<td width="5%" align="center">
-							#{if (valorMinPagPayPal > (carrinho.valorTotalCompra))}
+							#{if (valorMinPagPayPal >= (carrinho.valorTotalCompra))}
 								<input type="radio" name="formaPagamento" id="formaPagamento" checked="checked" value="${pagamento.getFormaPagamento('Dinheiro')}" />
 							#{/if}
 							#{else}
@@ -202,11 +216,23 @@
 						</td>
 						<td>
 							<span class="fontBlackMainHome">${pagamento.getFormaPagamento('DINHEIRO').descricao}</span>
-							#{if (carrinho.valorTotalCompra > valorMinPagPayPal)}
+							#{if (cupom!=null)}
 							<div id="valorDinheiroCheque" style="width: 65%; float: right; position: relative;">
-								<span class="fontGreen3">${(valorComDesconto+ frete.valor).formatCurrency('BRL').raw()} &{'form.politicaEntrega.desconto', '5%'}</span>
+								<span class="fontGreen3">${(valorComDesconto+ frete.valor).formatCurrency('BRL').raw()} &{'form.politicaEntrega.desconto', cupom.desconto.porcentagem+'%'}</span>
 							</div>
 							#{/if}
+							#{else}
+								#{if (carrinho.valorTotalCompra > valorPagamentoComDesconto)}
+									<div id="valorDinheiroCheque" style="width: 65%; float: right; position: relative;">
+										<span class="fontGreen3">${(valorComDesconto+ frete.valor).formatCurrency('BRL').raw()} &{'form.politicaEntrega.desconto', '5%'}</span>
+									</div>
+								#{/if}
+								#{else}
+								<div id="valorDinheiroCheque" style="width: 65%; float: right; position: relative;">
+									<span class="fontGreen3">${(carrinho.valorTotalCompra+ frete.valor).formatCurrency('BRL').raw()}</span>
+								</div>
+								#{/else}
+							#{/else}
 						</td>
 					</tr>
 				</tbody>
@@ -231,9 +257,12 @@
 <script type="text/javascript" charset="UTF-8">
 	function finalizarPedido() {
 		try {
+			loadingAnimation();
+			
 			var pagamentoSolicitado = $("input[type=radio]:checked").val();
 		
 			if(pagamentoSolicitado==undefined) {
+				unloadingAnimation();
 				alert("&{'application.error.paymentMethod'}");
 				
 			}else {
@@ -246,6 +275,7 @@
 			}
 			
 		}catch(e) {
+			unloadingAnimation();
 			alert("Erro ao tentar finalizar o pedido:" + e.description);
 		}
 	}

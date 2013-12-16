@@ -4,7 +4,9 @@
 package models;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
@@ -12,7 +14,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -57,8 +59,11 @@ public class Desconto extends Model {
 	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.REFRESH)
 	private Usuario usuario;
 	
-	@OneToOne(mappedBy="desconto", cascade=CascadeType.ALL)
-	private Pedido pedido;
+	@OneToMany(mappedBy="desconto", fetch=FetchType.LAZY)
+	private List<Pedido> pedidos;
+	
+	@OneToMany(mappedBy="desconto",fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+	private List<CupomDesconto> cupons;
 	
 	public Desconto() {
 		this.porcentagem = new BigDecimal(0);
@@ -68,6 +73,14 @@ public class Desconto extends Model {
 	public Desconto(BigDecimal porcentagem) {
 		this.porcentagem = porcentagem;
 		this.valorDesconto = new BigDecimal(0);
+	}
+	
+	public Desconto(BigDecimal porcentagem, Usuario usuario, Pedido pedido) {
+		this.porcentagem = porcentagem;
+		this.valorDesconto = new BigDecimal(0);
+		this.usuario = usuario;
+		getPedidos().add(pedido);
+		this.dataDesconto = new Date();
 	}
 
 	/**
@@ -119,30 +132,6 @@ public class Desconto extends Model {
 	}
 
 	/**
-	 * @return the pedido
-	 */
-	public Pedido getPedido() {
-		return pedido;
-	}
-
-	/**
-	 * @param pedido the pedido to set
-	 */
-	public void setPedido(Pedido pedido) {
-		this.pedido = pedido;
-	}
-
-	/**
-	 * @return the valorDesconto
-	 */
-	public BigDecimal getValorDesconto() {
-		if((valorDesconto==null || valorDesconto.doubleValue()<=0) && this.getPedido()!=null)
-			return getPorcentagem().divide(CEM_PORCENTO).multiply(this.getPedido().getValorPedido()).setScale(2, BigDecimal.ROUND_HALF_DOWN);
-		
-		return valorDesconto;
-	}
-
-	/**
 	 * @param valorDesconto the valorDesconto to set
 	 */
 	public void setValorDesconto(BigDecimal valorDesconto) {
@@ -151,5 +140,45 @@ public class Desconto extends Model {
 		
 		this.valorDesconto = valorDesconto;
 	}
-	
+
+	/**
+	 * @return the cupom
+	 */
+	public List<CupomDesconto> getCupons() {
+		if(this.cupons==null)
+			this.cupons = new ArrayList<CupomDesconto>();
+			
+		return cupons;
+	}
+
+	/**
+	 * @param cupom the cupom to set
+	 */
+	public void setCupons(List<CupomDesconto> cupons) {
+		this.cupons = cupons;
+	}
+
+	/**
+	 * @return the pedidos
+	 */
+	public List<Pedido> getPedidos() {
+		if(pedidos==null)
+			this.pedidos = new ArrayList<Pedido>();
+			
+		return pedidos;
+	}
+
+	/**
+	 * @param pedidos the pedidos to set
+	 */
+	public void setPedidos(List<Pedido> pedidos) {
+		this.pedidos = pedidos;
+	}
+
+	/**
+	 * @return the valorDesconto
+	 */
+	public BigDecimal getValorDesconto() {
+		return valorDesconto;
+	}
 }

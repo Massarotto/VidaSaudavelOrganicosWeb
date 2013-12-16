@@ -355,7 +355,7 @@ form.politicaEntrega.entrega=<p>Os pedidos fechados até Domingo, <b>23:00hs</b>
 form.politicaEntrega.bairros.title=<p><h3><a href='#bairros' class='txt_titulo_06'>Bairros Atendidos</a></h3></p>
 form.politicaEntrega.bairros=Bairros Atendidos
 form.politicaEntrega.pagamento.title=Forma de Pagamento
-form.politicaEntrega.pagamento=<p>Seu pedido pode ser pago de duas maneiras:</p><br /><ul><li class='li-1'><strong>Dinheiro</strong> ou <strong>Cheque</strong> no ato da entrega.</li><li class='li-1'>Pedidos acima de R$ 150,00 podem ser pagos usando o <strong>PayPal*</strong> ou o <strong>PagSeguro**</strong>.</li></ul> 
+form.politicaEntrega.pagamento=<p>Seu pedido pode ser pago de duas maneiras:</p><br /><ul><li class='li-1'><strong>Dinheiro</strong> ou <strong>Cheque</strong> no ato da entrega.</li><li class='li-1'>Pedidos acima de R$ 80,00 podem ser pagos usando o <strong>PayPal*</strong> ou o <strong>PagSeguro**</strong>.</li></ul> 
 form.politicaEntrega.pagamento.paypal=<a href='https://www.paypal-brasil.com.br/' target='_blank'><img src='%s/images/paypal_logo.gif' alt='paypal logo' border='0' /></a><br />*Basta selecionar a opção PayPal na hora de fechar seu pedido, então você será redirecionado para a <b>área segura</b> do site para utilizar os dados da sua conta PayPal.<br /><br /><img src='%s/images/logo_pagseguro.gif' alt='pagseguro logo' border='0' /><br />**Basta selecionar a opção PagSeguro na hora de fechar seu pedido, então você será redirecionado para a <b>área segura</b> do site e poderá digitar seu cartão de crédito.
 form.politicaEntrega.baixada=<p>Seu <b>bairro</b> não está na lista? Clique <a href='/faleconosco?assunto=Meu bairro ainda não é atendido!'>aqui</a> e nos envie uma mensagem!</p>
 form.politicaEntrega.desconto=<i>(com %s de desconto)</i>
@@ -455,6 +455,7 @@ application.btnFacebook=btn_facebook.gif
 application.btnFacebook.width=23
 application.btnFacebook.height=23
 application.link.facebook=http://www.facebook.com/VidaSaudavelOrganicosDelivery
+application.link.instagram=http://instagram.com/vidasaudavelorganicos
 
 #Cestas
 form.cesta.title=Cesta
@@ -516,7 +517,7 @@ application.token.pagseguro=8D96365337A04FC99809187EB0137863
 application.redirectUrl.pagseguro=https://pagseguro.uol.com.br/v2/checkout/payment.html?code=%s
 application.return.url.pagseguro=http://www.vidasaudavelorganicos.com.br/pedido/pagseguro/finalizar
 
-application.minValue.gateways=150.00
+application.minValue.gateways=80.00
 
 application.valor.pedido.desconto=200.00
 
@@ -535,6 +536,17 @@ form.paypal.error=Erro da Transação
 form.paypal.loading.payment=Aguarde enquanto estamos processando seu pagamento...
 form.paypal.cancel.order=Você optou por cancelar o pagamento. Caso deseje mudar a forma de pagamento, entre em contato conosco.
 form.paypal.error.token.notfound=Dados não encontrados para o token: %s
+
+#CRM - Novas funcionalidade
+application.crm.cupom.desconto.title=Gerar Cupom
+application.crm.cupom.desconto.validade=Validade (dias)
+application.crm.cupom.desconto.email.subject=Indicação Saudável
+application.crm.cupom.desconto.email.text=Indique a <b>Vida Saudável Orgânicos</b> para os seus amigos e ganhe um desconto de 5%% de desconto a cada amigo que fechar um pedido conosco!
+application.crm.cupom.desconto.max.time=10
+application.crm.cupom.desconto.max.time.title=Quantidade Uso
+application.crm.cupom.desconto.success=Os cupons foram enviados aos clientes com sucesso!
+application.crm.cupom.desconto.fail=Já existem cupons ativos cadastrados para os clientes na base
+application.crm.cupom.flag.all=Enviar para todos clientes?
 
 play-paginate.first=&laquo;&nbsp;Primeira
 play-paginate.prev=&lsaquo;&nbsp;Anterior

@@ -12,6 +12,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -28,6 +30,16 @@ import play.db.jpa.Model;
  * @version 1.0
  * @since 01/07/2011
  */
+@NamedQueries(value={
+	@NamedQuery(name="pesquisarClienteComAlgumPedidoValido", query="select DISTINCT(cli) from Cliente cli inner join cli.pedidos as ped " +
+																	"inner join cli.usuario as user " +
+																	"WHERE user.recebeMail = true " +
+																	"AND cli.id NOT IN (SELECT cliente.id FROM CupomDesconto as cp WHERE cp.ativo = true) " +
+																	"AND ped.codigoEstadoPedido IN (:parameters) " +
+																	"ORDER BY cli.id DESC"
+				)
+	}
+)
 @Entity
 @Table(name="CLIENTE")
 public class Cliente extends Model implements Serializable {
@@ -82,6 +94,9 @@ public class Cliente extends Model implements Serializable {
 
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="cliente")
 	private List<Telefone> telefones;
+	
+	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="cliente")
+	private List<CupomDesconto> cupons = null;
 	
 	public Cliente(String nome, Date dataNascimento) {
 		this.nome = nome;
@@ -306,6 +321,30 @@ public class Cliente extends Model implements Serializable {
 	 */
 	public void setTelefones(List<Telefone> telefones) {
 		this.telefones = telefones;
+	}
+
+	/**
+	 * @return the cupons
+	 */
+	public List<CupomDesconto> getCupons() {
+		if(cupons==null)
+			this.cupons = new ArrayList<CupomDesconto>();
+			
+		return cupons;
+	}
+
+	/**
+	 * @param cupons the cupons to set
+	 */
+	public void setCupons(List<CupomDesconto> cupons) {
+		this.cupons = cupons;
+	}
+
+	/**
+	 * @param enderecos the enderecos to set
+	 */
+	public void setEnderecos(List<Endereco> enderecos) {
+		this.enderecos = enderecos;
 	}
 	
 }

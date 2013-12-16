@@ -4,20 +4,22 @@
 package controllers;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import org.apache.commons.io.IOUtils;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import models.CarrinhoItem;
 import models.CarrinhoProduto;
 import models.CestaPronta;
 import models.Cliente;
+import models.CupomDesconto;
 import models.Desconto;
 import models.Endereco;
 import models.FormaPagamento;
@@ -26,13 +28,18 @@ import models.Pagamento;
 import models.Pedido;
 import models.Pedido.PedidoEstado;
 import models.Produto;
+
+import org.apache.commons.io.IOUtils;
+
 import play.Logger;
 import play.cache.Cache;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
+import play.libs.F;
 import play.mvc.Before;
 import play.mvc.Catch;
 import play.mvc.Controller;
+import util.ProcessamentoConcorrenteUtil;
 import business.estoque.EstoqueControl;
 import business.pagamento.service.PagamentoServiceFactory;
 import business.pagamento.service.PayPalService;
@@ -253,7 +260,6 @@ public class Carrinho extends Controller {
 		SetExpressCheckoutResponseType resultPayPalService = null;
 		String urlCheckout = null;
 		PedidoEstado statusPedido = null;
-		String caminhoArquivo = null;
 		
 		try {
 			if(carrinho!=null && session.get("clienteId")!=null) {
@@ -294,6 +300,8 @@ public class Carrinho extends Controller {
 						carrinho.merge();
 					
 					Pedido pedido = new Pedido();
+					
+					Desconto desconto = CupomDesconto.getDescontoDoCupom(session.get("cupom"), cliente);
 					
 					if(FormaPagamento.PAGSEGURO.equals(FormaPagamento.getFormaPagamento(formaPagamento))) {
 						GatewayService pagSeguroService = PagamentoServiceFactory.getInstance().getGatewayServiceImpl(FormaPagamento.PAGSEGURO);
@@ -339,16 +347,17 @@ public class Carrinho extends Controller {
 						
 						pagamento.setFormaPagamento(FormaPagamento.DINHEIRO);
 						
-						if(carrinho.getValorTotalCompra().doubleValue()>valorPedidoComDesconto.doubleValue()) {
-							Desconto desconto = new Desconto(new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
+						if(desconto==null && carrinho.getValorTotalCompra().doubleValue()>valorPedidoComDesconto.doubleValue()) {
+							desconto = new Desconto(new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
 							desconto.setDataDesconto(new Date());
-							desconto.setPedido(pedido);
-							
-							pedido.setDesconto(desconto);
+							desconto.getPedidos().add(pedido);
 						}
 						
 						statusPedido = PedidoEstado.AGUARDANDO_ENTREGA;
 					}
+					//Dá baixa no cupom utilizado
+					CupomDesconto.atualizarCupomDesconto(session.get("cupom"), cliente);
+					
 					// Gerar Pedido
 					pedido.addCesta(carrinho.getCestas());
 					
@@ -366,45 +375,20 @@ public class Carrinho extends Controller {
 					pagamento.setValorPagamento(pedido.getValorPedido());
 					pedido.setPagamento(pagamento);
 					
+					if(desconto!=null) {
+						pedido.setDesconto(new Desconto(desconto.getPorcentagem(), cliente.getUsuario(), pedido));
+						pedido.calcularDesconto();
+					}
+					
 					frete.addPedido(pedido);
 					frete.save();
 					pedido.save();
 					
-					Logger.info("Valor Desconto %s", pedido.getDesconto().getValorDesconto());
-					Logger.info("###### E-mail de confirmação do pedido para: %s #######", cliente.getUsuario().getEmail());
-					try {
-						StringBuffer email = new StringBuffer();
-						email.append("Vida Saudável Orgânicos");
-						email.append("<").append("contato@vidasaudavelorganicos.com.br").append(">");
-						
-						try {
-							File tempFile = File.createTempFile(Relatorios.REPORT_TITLE, ".pdf");
-							tempFile.deleteOnExit();
-							FileOutputStream fis = new FileOutputStream(tempFile);
-							
-							IOUtils.copy(Relatorios.gerarNotaFiscalPedido(pedido.id), fis);
-							caminhoArquivo = tempFile.getAbsolutePath();
-							
-						}catch(IOException ioex) {
-							Logger.error(ioex, "Erro ao tentar gerar a Nota do Pedido %s ", pedido.id);
-						}
-						
-						Mail.pedidoFinalizado(
-								"Pedido Finalizado",
-								email.toString(), 
-								pedido,
-								caminhoArquivo,
-								cliente.getUsuario().getEmail(), Mail.EMAIL_CONTACT);
-	
-						Logger.info("###### E-mail de confirmação do pedido para: %s enviado. #######", cliente.getUsuario().getEmail());
-											
-					} catch (SystemException ex) {
-						Logger.error("Erro ao enviar o e-mail de confirmação para %s", cliente.getUsuario().getEmail(), ex);
-						
-					}
+					gerarNotaPedidoEnviarPorEmail(pedido, cliente);
+					
 					Cache.safeDelete(sessionId);
 					Cache.safeDelete("valorTotal." + sessionId);
-	
+					session.remove("cupom");
 					Logger.debug("######## Cache limpo e Pedido gerado: %s ########", pedido.id);
 	
 					if(urlCheckout==null) {
@@ -430,7 +414,52 @@ public class Carrinho extends Controller {
 			
 			pagamento(sessionId, isAssessor);
 		}
-	}	
+	}
+	
+	private static void gerarNotaPedidoEnviarPorEmail(Pedido pedido, Cliente cliente) {
+		String caminhoArquivo = null;
+		FileOutputStream fis = null;
+		File tempFile = null;
+		
+		try {
+			StringBuffer email = new StringBuffer();
+			email.append("Vida Saudável Orgânicos");
+			email.append("<").append("contato@vidasaudavelorganicos.com.br").append(">");
+			
+//			tempFile = File.createTempFile(Relatorios.REPORT_TITLE, ".pdf");
+//			tempFile.deleteOnExit();
+//			fis = new FileOutputStream(tempFile);
+//			
+//			IOUtils.copy(Relatorios.gerarNotaFiscalPedido(pedido.id), fis);
+//			caminhoArquivo = tempFile.getAbsolutePath();
+			
+			Logger.info("Valor Desconto %s", pedido.getValorDesconto());
+			Logger.info("###### E-mail de confirmação do pedido para: %s #######", cliente.getUsuario().getEmail());
+			
+			Mail.pedidoFinalizado(
+					"Pedido Finalizado",
+					email.toString(), 
+					pedido,
+					caminhoArquivo,
+					cliente.getUsuario().getEmail(), Mail.EMAIL_CONTACT);
+
+			Logger.info("###### E-mail de confirmação do pedido para: %s enviado. #######", cliente.getUsuario().getEmail());
+			
+//		}catch(IOException ioex) {
+//			Logger.error(ioex, "Erro ao gerar a nota para o cliente %s", cliente.getUsuario().getEmail());
+								
+		}catch(SystemException ex) {
+			Logger.error(ex, "Erro ao enviar o e-mail de confirmação para %s", cliente.getUsuario().getEmail());
+			
+		}finally {
+			if(fis!=null)
+				try {
+					fis.close();
+				}catch(IOException ex) {
+					//ignore
+				}
+		}
+	}
 	
 	public static void excluirProdutos(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade, List<CestaPronta> cestas) {
 		Logger.debug("##### Início - Excluir produtos do carrinho. #####");
@@ -501,8 +530,11 @@ public class Carrinho extends Controller {
 		Boolean pedidoAssessor = Boolean.TRUE.equals(isAssessor) && Boolean.parseBoolean(session.get("isAdmin"));
 		BigDecimal valorMinPagPayPal = null;
 		BigDecimal valorComDesconto = null;
+		BigDecimal valorPagamentoComDesconto = null;
+		CupomDesconto cupom = null;
 		
 		if(carrinho!=null && session.get("clienteId")!=null) {
+			valorPagamentoComDesconto = new BigDecimal(Messages.get("application.valor.pedido.desconto", ""));
 			valorMinPagPayPal = new BigDecimal(Messages.get("application.minValue.gateways", ""));
 			frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra()));
 			
@@ -525,9 +557,14 @@ public class Carrinho extends Controller {
 					endereco = cliente.getEnderecos().get(0);
 					
 					carrinho.setCliente(cliente);
+					
+					cupom = CupomDesconto.pesquisarPorCodigoCupom(session.get("cupom"), cliente);
 				}
 				
-				valorComDesconto = Pedido.calcularDesconto(carrinho.getValorTotalCompra(), new BigDecimal(Messages.get("application.pedido.paypal.desconto", ""))).setScale(2, BigDecimal.ROUND_HALF_DOWN);
+				if(cupom!=null)
+					valorComDesconto = CupomDesconto.calcularDescontoCarrinhoComCupom(cupom, carrinho);
+				else
+					valorComDesconto = Pedido.calcularDesconto(carrinho.getValorTotalCompra(), new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
 			}
 			
 		}else {
@@ -538,7 +575,8 @@ public class Carrinho extends Controller {
 		
 		FormaPagamento pagamento = FormaPagamento.DINHEIRO; 
 		
-		render(carrinho, sessionId, frete, endereco, clientes, isAssessor, pagamento, valorMinPagPayPal, valorComDesconto);
+		render(carrinho, sessionId, frete, endereco, clientes, isAssessor, pagamento, valorMinPagPayPal, 
+				valorComDesconto, valorPagamentoComDesconto, cupom);
 	}
 	
 	public static void atualizar(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade, List<CestaPronta> cestas) {
