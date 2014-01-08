@@ -346,5 +346,14 @@ public class Cliente extends Model implements Serializable {
 	public void setEnderecos(List<Endereco> enderecos) {
 		this.enderecos = enderecos;
 	}
-	
+
+	public Boolean estaNaCapital() {
+		Boolean result = null;
+		
+		if(!this.getEnderecos().isEmpty()) {
+			result = "São Paulo".equalsIgnoreCase(this.getEnderecos().get(0).getCidade().trim());
+			
+		}
+		return result;
+	}
 }

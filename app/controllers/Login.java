@@ -70,6 +70,7 @@ public class Login extends BaseController {
 		}else {
 			usuario.decryptPassword();
 			
+			session.put("estaNaCapital", usuario.getCliente().getEnderecos().get(0));
 			session.put("usuarioAutenticado", usuario);
 			session.put("clienteId", usuario.getCliente().getId());
 			session.put("isAdmin", usuario.isAdmin());

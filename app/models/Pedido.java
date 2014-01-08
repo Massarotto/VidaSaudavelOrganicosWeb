@@ -439,20 +439,24 @@ public class Pedido extends Model {
 		return result;
 	}
 	
-	public static BigDecimal calcularFrete(BigDecimal valorTotalCompra) {
+	public static BigDecimal calcularFrete(BigDecimal valorTotalCompra, Boolean estaNaCapital) {
 		BigDecimal result = new BigDecimal(0);
 		
 		Double valorCompraSemFrete = Double.valueOf(Messages.get("application.frete.valor", ""));
 		
 		if(valorCompraSemFrete!=null && valorTotalCompra.doubleValue()<valorCompraSemFrete) {
-			Frete frete = Frete.findById(1L);
-			result = frete.getValor();
+			if(estaNaCapital) {
+				Frete frete = Frete.findById(1L);
+				result = frete.getValor();
+			}else {
+				result = new BigDecimal(Double.valueOf(Messages.get("application.frete.interior.valor", "")));
+			}
 		}
 		return result;
 	}
 	
 	public void addFrete() {
-		this.valorPedido = this.getValorPedido().add(calcularFrete(this.getValorPedido())).setScale(2, BigDecimal.ROUND_HALF_UP);
+		this.valorPedido = this.getValorPedido().add(calcularFrete(this.getValorPedido(), this.cliente.estaNaCapital())).setScale(2, BigDecimal.ROUND_HALF_UP);
 	}
 	
 	/**

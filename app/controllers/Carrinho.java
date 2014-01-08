@@ -10,10 +10,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import models.CarrinhoItem;
 import models.CarrinhoProduto;
@@ -28,18 +24,13 @@ import models.Pagamento;
 import models.Pedido;
 import models.Pedido.PedidoEstado;
 import models.Produto;
-
-import org.apache.commons.io.IOUtils;
-
 import play.Logger;
 import play.cache.Cache;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
-import play.libs.F;
 import play.mvc.Before;
 import play.mvc.Catch;
 import play.mvc.Controller;
-import util.ProcessamentoConcorrenteUtil;
 import business.estoque.EstoqueControl;
 import business.pagamento.service.PagamentoServiceFactory;
 import business.pagamento.service.PayPalService;
@@ -263,8 +254,6 @@ public class Carrinho extends Controller {
 		
 		try {
 			if(carrinho!=null && session.get("clienteId")!=null) {
-				Frete frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra()));
-				
 				validarValorCompra(carrinho.getValorTotalCompra());
 				
 				if(Boolean.parseBoolean(session.get("isAdmin")) && "-1".equalsIgnoreCase(params.get("cliente"))) {
@@ -285,13 +274,15 @@ public class Carrinho extends Controller {
 				}else {
 					//Validar o Estoque	
 					EstoqueControl.atualizarEstoque(carrinho.getItens());
-					
-					Pagamento pagamento = new Pagamento();
-					
+
 					Long idCliente = params.get("cliente")==null ? Long.parseLong(session.get("clienteId")) : Long.parseLong(params.get("cliente"));
 					
 					Cliente cliente = Cliente.findById(idCliente);
 					
+					Frete frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra(), cliente.estaNaCapital()));
+					
+					Pagamento pagamento = new Pagamento();
+
 					carrinho.setCliente(cliente);
 					
 					if(carrinho.id==null)
@@ -326,9 +317,10 @@ public class Carrinho extends Controller {
 						infosPedido.append("Pedido gerado em: ").append(new Date()).append(".");
 						infosPedido.append("Cliente: ").append(cliente.getNome()).append(".");
 						infosPedido.append("Código Pedido: ").append(carrinho.id);
-						infosPedido.append("Total Pedido: ").append(carrinho.getValorTotalCompra());
+						infosPedido.append("Total Pedido: ").append(carrinho.getValorTotalCompra().add(frete.getValor()));
 						
-						resultPayPalService = payPalService.solicitarPagamento(cliente.getNome(), carrinho.getValorTotalCompra().doubleValue(), carrinho.id, infosPedido.toString());
+						resultPayPalService = payPalService.solicitarPagamento(cliente.getNome(), carrinho.getValorTotalCompra().add(frete.getValor()).doubleValue(), 
+																				carrinho.id, infosPedido.toString());
 						
 						if(payPalService.foiExecutadoComSucesso(resultPayPalService.getAck(), resultPayPalService.getErrors())) {
 							pagamento.setInformacoes(resultPayPalService.getToken());
@@ -536,11 +528,11 @@ public class Carrinho extends Controller {
 		if(carrinho!=null && session.get("clienteId")!=null) {
 			valorPagamentoComDesconto = new BigDecimal(Messages.get("application.valor.pedido.desconto", ""));
 			valorMinPagPayPal = new BigDecimal(Messages.get("application.minValue.gateways", ""));
-			frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra()));
 			
-			if(pedidoAssessor)
+			if(pedidoAssessor) {
 				clientes = Cliente.find("ativo = ?", Boolean.TRUE).fetch();
-			
+				frete = new Frete(0.0d);
+			}
 			validarValorCompra(carrinho.getValorTotalCompra());
 			
 			if(validation.hasErrors()) {
@@ -553,6 +545,8 @@ public class Carrinho extends Controller {
 				
 				if(!pedidoAssessor) {
 					Cliente cliente = Cliente.findById( Long.parseLong(session.get("clienteId")) );
+					
+					frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra(), cliente.estaNaCapital()));
 					
 					endereco = cliente.getEnderecos().get(0);
 					

@@ -256,7 +256,7 @@ public class Pedidos extends BaseController {
 		Pedido pedido = Pedido.findById(id);
 		
 		Logger.info("###### Pedido: %s: - Valor: %s ######", pedido.id, pedido.getValorPedido());
-		BigDecimal vlrFrete = Pedido.calcularFrete(pedido.getValorPedido());
+		BigDecimal vlrFrete = Pedido.calcularFrete(pedido.getValorPedido(), pedido.getCliente().estaNaCapital());
 		
 		for(ProdutoQuantidadeForm itemProdutoQuantidade : produtoQuantidade) {
 			laco_raiz:	

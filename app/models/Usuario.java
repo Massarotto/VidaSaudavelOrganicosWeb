@@ -217,4 +217,5 @@ public class Usuario extends Model {
 			}
 		return result;
 	}
+
 }

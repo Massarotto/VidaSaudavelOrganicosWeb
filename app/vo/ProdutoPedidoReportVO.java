@@ -267,7 +267,7 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 				
 				entity.setValor(new BigDecimal(produto.getProdutos().get(0).getValorVenda()));
 				entity.setDesconto(desconto);
-				entity.setFrete(Pedido.calcularFrete(valorPedido));
+				//entity.setFrete(Pedido.calcularFrete(valorPedido));
 				
 				//Observação
 				entity.setObservacao(produto.getPedido().getObservacao());
