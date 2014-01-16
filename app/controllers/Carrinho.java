@@ -517,7 +517,7 @@ public class Carrinho extends Controller {
 		Logger.debug("###### Início - Selecionar forma de pagamento... ######");
 		Endereco endereco = null;
 		CarrinhoProduto carrinho = Cache.get(sessionId, CarrinhoProduto.class);
-		Frete frete = null;
+		Frete frete = new Frete(0.0d);
 		List<Cliente> clientes = null;
 		Boolean pedidoAssessor = Boolean.TRUE.equals(isAssessor) && Boolean.parseBoolean(session.get("isAdmin"));
 		BigDecimal valorMinPagPayPal = null;
@@ -531,7 +531,6 @@ public class Carrinho extends Controller {
 			
 			if(pedidoAssessor) {
 				clientes = Cliente.find("ativo = ?", Boolean.TRUE).fetch();
-				frete = new Frete(0.0d);
 			}
 			validarValorCompra(carrinho.getValorTotalCompra());
 			

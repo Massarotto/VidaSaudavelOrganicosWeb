@@ -417,7 +417,7 @@ public class Pedidos extends BaseController {
 				if(payPalService.foiExecutadoComSucesso(confirmacaoTransacao.getAck(), confirmacaoTransacao.getErrors())) {
 					DoExpressCheckoutPaymentResponseType efetivacaoTransacao = payPalService.efetivarPagamento(token, 
 																												confirmacaoTransacao.getGetExpressCheckoutDetailsResponseDetails().getPayerInfo().getPayerID(),
-																												pedido.getValorPedido().doubleValue());
+																												pedido.getValorTotal().doubleValue());
 					
 					if(payPalService.foiExecutadoComSucesso(efetivacaoTransacao.getAck(), efetivacaoTransacao.getErrors())) {
 						pedido.setUltimoStatusEstadoPedido(pedido.getCodigoEstadoPedido());
@@ -589,7 +589,15 @@ public class Pedidos extends BaseController {
 			
 			debito = debito.add(_ped.getValorTotal()).setScale(BigDecimal.ROUND_HALF_UP);
 		}
-		render(pedidos, debito, pedido);
+		render(pedidos, debito, pedido, idCliente);
+	}
+	
+	@Transactional(readOnly=false)
+	public static void zerarDebitosCreditosDoCliente(Long idCliente) {
+		Query query = JPA.em().createQuery("update Pedido p set valorPago = NULL where p.cliente.id =:idCliente");
+		query.setParameter("idCliente", idCliente);
+		
+		renderText( query.executeUpdate() );
 	}
 	
 	/**

@@ -351,7 +351,7 @@ public class Cliente extends Model implements Serializable {
 		Boolean result = null;
 		
 		if(!this.getEnderecos().isEmpty()) {
-			result = "São Paulo".equalsIgnoreCase(this.getEnderecos().get(0).getCidade().trim());
+			result = "Sao Paulo".equalsIgnoreCase(this.getEnderecos().get(0).getCidade().trim()) || "São Paulo".equalsIgnoreCase(this.getEnderecos().get(0).getCidade().trim());
 			
 		}
 		return result;

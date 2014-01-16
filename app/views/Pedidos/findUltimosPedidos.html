@@ -6,10 +6,12 @@
 	#{/errors} 
 #{/ifErrors}
 <div class="boxConsultaDefault">
-	<div>&{'form.order.debitos'}&nbsp;<b>${debito.formatCurrency('BRL').raw()}</b></div>
+	<div align="left" style="width: 30%; float: left">&{'form.order.debitos'}&nbsp;<b>${debito.formatCurrency('BRL').raw()}</b></div>
+	<div align="right" style="width: 70%; float: left"><a href="javascript:atualizarDebitosCreditos()" class="a1">&{'form.order.creditosDebitos'}</a></div>
 	<table width="100%" cellpadding="1" cellspacing="0" border="0" class="fontGreen2">
 		<tr class="tr1">
 			<td align="center" width="9%">
+				<input type="hidden" name="idCliente" id="idCliente" value="${idCliente}" />
 				<span>&{'form.admin.pedido'}</span>
 			</td>
 			<td align="center" width="11%">Data</td>
@@ -56,3 +58,18 @@
 		</tr>
 	</table>
 </div>
+<script>
+function atualizarDebitosCreditos() {
+	try {
+		if(confirm("Deseja realmente atualizar os dados desse cliente?")) {
+			$.post('@{Pedidos.zerarDebitosCreditosDoCliente()}', {idCliente: document.getElementById('idCliente').value
+														}, 
+			function(data) {
+				alert("Registros atualizados ("+data+")")
+			})
+		}
+	}catch(e) {
+		alert("Erro: " + e);
+	}
+} 
+</script>
