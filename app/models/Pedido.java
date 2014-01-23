@@ -398,6 +398,17 @@ public class Pedido extends Model {
 		}
 		return result;
 	}
+	
+	@Transient
+	public static BigDecimal getDebitosCreditosTodosPedidosCliente(Long idCliente) {
+		BigDecimal result = BigDecimal.ZERO;
+		List<Pedido> pedidos = Pedido.find("cliente.id = ? AND valorPago IS NOT NULL", idCliente).fetch();
+		
+		for(Pedido pedido : pedidos) {
+			result = result.add(pedido.getValorPago().subtract(pedido.getValorTotal()));
+		}
+		return result;
+	}
 
 	/**
 	 * @return the dataAlteracao

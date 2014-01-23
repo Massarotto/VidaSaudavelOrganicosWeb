@@ -579,17 +579,19 @@ public class Pedidos extends BaseController {
 		Logger.debug("#### Carregar os últimos %s pedidos, para o cliente id %  #####", rows, idCliente);
 		List<Pedido> pedidos = Pedido.find("cliente.id = ? order by id desc", idCliente).fetch(rows);
 		BigDecimal debito = new BigDecimal(0);
+		BigDecimal credito = new BigDecimal(0);
 		Pedido pedido = Pedido.findById(id);
 
 		//Pedidos com débitos
 		List<Pedido> pedidosAbertos = Pedido.find("cliente.id = ? AND codigoEstadoPedido = ? order by id desc", idCliente, PedidoEstado.AGUARDANDO_PAGAMENTO).fetch();
+		credito = Pedido.getDebitosCreditosTodosPedidosCliente(idCliente);
 		
 		for(Pedido _ped : pedidosAbertos) {
 			Logger.info("##### Encontrado pedido %s aberto para o cliente % - valor: %s #####", _ped.id, _ped.getCliente().getNome(), _ped.getValorComDesconto());
 			
 			debito = debito.add(_ped.getValorTotal()).setScale(BigDecimal.ROUND_HALF_UP);
 		}
-		render(pedidos, debito, pedido, idCliente);
+		render(pedidos, debito, pedido, idCliente, credito);
 	}
 	
 	@Transactional(readOnly=false)

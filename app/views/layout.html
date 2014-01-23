@@ -38,7 +38,7 @@
 		
 		  (function() {
 		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
 		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 		  })();
 		</script>
@@ -60,11 +60,14 @@
 		#{include 'menuAdm.html' /}
 		<table border="0" cellpadding="0" cellspacing="0" align="center" width="100%">
 			<tr>
-				<td colspan="100%" valign="top">
-					<table border="0" cellpadding="0" cellspacing="0" align="center" width="967px" class="top_layout">
+				<td colspan="100%" valign="top">					
+					<table border="0" cellpadding="0" cellspacing="0" align="center" width="967px">
 						<tr height="110px">
 							<td colspan="100%">
-							
+								<div style="width:100%; 
+											border-radius: 10px; 
+											-moz-border-radius: 10px; 
+											-webkit-border-radius: 10px; float: left">
 								<table border="0" cellpadding="0" cellspacing="0" align="left">
 									<tr>
 										<td>
@@ -72,18 +75,18 @@
 												<img alt="Vida Saudável Orgânicos Logo" src="&{'application.static.content'}&{'application.path.public.images'}logo.jpg" border="0" />
 											</a>
 										</td>
-										<td width="65px"></td>
+										<td width="20px" style="background-color:#FFFFFF; color:#FFFFFF;"></td>
 										<td>
 											<form action="/search" accept-charset="UTF-8" id="searchForm">
 											<table border="0" cellpadding="0" cellspacing="0" align="center">
 												<tr>
-													<td colspan="100%" class="txt_titulo_02" align="left">&{'application.form.find'}</td>
+													<td style="padding-left: 10px;" colspan="100%" class="txt_titulo_02" align="left">&{'application.form.find'}</td>
 												</tr>
 												<tr>
-													<td>
+													<td style="padding-left: 10px;">
 														<input type="text" id="search" name="search" maxlength="100" value="${name}" />
 													</td>
-													<td>
+													<td align="center">
 														<table border="0" cellpadding="0" cellspacing="0" align="center" width="35px">
 															<tr height="18px">
 																<td colspan="100%">
@@ -154,7 +157,7 @@
 										</td>
 									</tr>
 								</table>
-							
+							</div>
 							</td>
 						</tr>
 						<tr>
@@ -195,7 +198,7 @@
 							</td>
 						</tr>
 					</table>
-				
+
 				</td>
 			</tr>
 			<tr>
@@ -207,9 +210,11 @@
 					</div>
 				</td>
 			</tr>
+			
 			<tr>
 				<td>
-					<table border="0" cellpadding="0" cellspacing="0" width="967px" align="center" style="background-color: #DDDDDD; ">
+					<div style="background-color:#DDDDDD; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px;">
+					<table border="0" cellpadding="0" cellspacing="0" width="967px" align="center">
 						<tr height="40px">
 							<td align="center" class="txt_titulo_02">
 								<img src="&{'application.static.content'}&{'application.path.public.images'}/ico_01.jpg" border="0" />
@@ -228,6 +233,7 @@
 							</td>
 						</tr>
 					</table>
+					</div>
 				</td>
 			</tr>
 		</table>

@@ -51,6 +51,9 @@ public class Frete extends Model {
 	 * @return the valor
 	 */
 	public BigDecimal getValor() {
+		if(this.valor==null)
+			this.valor = BigDecimal.ZERO;
+		
 		return valor;
 	}
 

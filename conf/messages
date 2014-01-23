@@ -261,7 +261,8 @@ form.order.produtoNaoEntregue=Faltou na Entrega?
 form.order.removerEntrega=Remover Entrega
 form.order.alterar.metodoPagamento=Forma de Pagamento
 form.order.last=Últimos Pedidos
-form.order.debitos=Débitos pendentes:
+form.order.debitos=Pedidos pendentes:
+form.order.creditos=Créditos pendentes:
 form.order.notaFiscal=Nota Fiscal
 form.order.outrasDespesas=Outras Despesas
 form.order.creditosDebitos=Atualizar Débitos/Créditos
@@ -353,11 +354,11 @@ form.oquesao.vantagens.topic9=<p>Você pode ter todas essas vantagens na sua cas
 form.politicaEntrega.order.title=<p><h3>Pedidos</h3></p>
 form.politicaEntrega.order=<p>Ao acessar a loja virtual da <strong>Vida Saudável Orgânicos</strong> pela primeira vez, você pode fazer seu cadastro antes de iniciar suas compras, ou no momento em que concluí-las. Se você já é nosso cliente, basta fazer seu <a href='/login'>login</a> utilizando o e-mail e senha cadastrados.</p>
 form.politicaEntrega.entrega.title=<p><h3>Entrega</h3></p>
-form.politicaEntrega.entrega=<p>Os pedidos fechados até Domingo, <b>23:00hs</b>, serão entregues na Terça-feira seguinte.</p><p>Já os pedidos que forem feitos após o Domingo, serão entregues somente na próxima semana, na Terça-Feira.</p><br /><p>O valor mínimo da compra é de <strong>R$ 50,00</strong> e será cobrada uma taxa de entrega de acordo com o município:<br /><ul><li class='li-1'><p><strong>São Paulo:</strong> R$7,00<p></li><li class='li-1'><p><strong>Campinas, Valinhos, Vinhedo e Jundiaí:</strong> R$9,00.</p></li></ul><br />Compras acima de <strong>R$ 200,00</strong> e com opção de pagamento <strong>Dinheiro</strong> ou <strong>Cheque</strong>, terão <b>%s</b> de desconto no valor do pedido.</p><br /><p><b><u>Importante</u>:</b> No ato da entrega poderá haver a falta de algum produto, em função de condições climáticas ou outros fatores, como por exemplo, imprevistos no transporte.</p>
+form.politicaEntrega.entrega=<p>Os pedidos fechados até Domingo, <b>23:00hs</b>, serão entregues na Terça-feira seguinte.<font color="#FF0000"><br /><b>Cancelamentos:</b> Eventuais cancelamentos deverão ser comunicados até Domingo, 23:00hs. O estorno será feito integralmente para os pedidos pagos com antecedência.</font></p><br /><p>Já os pedidos que forem feitos após o Domingo, serão entregues somente na próxima semana, na Terça-Feira.</p><br /><p>O valor mínimo da compra é de <strong>R$ 50,00</strong> e será cobrada uma taxa de entrega de acordo com o município:<br /><ul><li class='li-1'><p><strong>São Paulo:</strong> R$7,00<p></li><li class='li-1'><p><strong>Campinas, Valinhos, Vinhedo e Jundiaí:</strong> R$9,00.</p></li></ul><br />Compras acima de <strong>R$ 200,00</strong> e com opção de pagamento <strong>Dinheiro</strong> ou <strong>Cheque</strong>, terão <b>%s</b> de desconto no valor do pedido.</p><br /><p><b><u>Importante</u>:</b> No ato da entrega poderá haver a falta de algum produto, em função de condições climáticas ou outros fatores, como por exemplo, imprevistos no transporte.</p>
 form.politicaEntrega.bairros.title=<p><h3><a href='#bairros' class='txt_titulo_06'>Bairros Atendidos</a> (São Paulo)</h3></p>
 form.politicaEntrega.bairros=Bairros Atendidos
 form.politicaEntrega.pagamento.title=Forma de Pagamento
-form.politicaEntrega.pagamento=<p>Seu pedido pode ser pago de duas maneiras:</p><br /><ul><li class='li-1'><strong>Dinheiro</strong> ou <strong>Cheque</strong> no ato da entrega.</li><li class='li-1'>Pedidos acima de R$ 80,00 podem ser pagos usando o <strong>PayPal*</strong> ou o <strong>PagSeguro**</strong>.</li></ul> 
+form.politicaEntrega.pagamento=<p>Seu pedido pode ser pago de duas maneiras:</p><br /><ul><li class='li-1'><strong>Dinheiro</strong> ou <strong>Cheque</strong> no ato da entrega.</li><li class='li-1'>Pedidos acima de R$ 80,00 podem ser pagos usando o <strong>PayPal*</strong> ou o <strong>PagSeguro**</strong>.</li></ul><br />
 form.politicaEntrega.pagamento.paypal=<a href='https://www.paypal-brasil.com.br/' target='_blank'><img src='%s/images/paypal_logo.gif' alt='paypal logo' border='0' /></a><br />*Basta selecionar a opção PayPal na hora de fechar seu pedido, então você será redirecionado para a <b>área segura</b> do site para utilizar os dados da sua conta PayPal.<br /><br /><img src='%s/images/logo_pagseguro.gif' alt='pagseguro logo' border='0' /><br />**Basta selecionar a opção PagSeguro na hora de fechar seu pedido, então você será redirecionado para a <b>área segura</b> do site e poderá digitar seu cartão de crédito.
 form.politicaEntrega.baixada=<p>Seu <b>bairro</b> não está na lista? Clique <a href='/faleconosco?assunto=Meu bairro ainda não é atendido!'>aqui</a> e nos envie uma mensagem!</p>
 form.politicaEntrega.desconto=<i>(com %s de desconto)</i>

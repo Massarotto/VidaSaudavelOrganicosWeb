@@ -5,11 +5,17 @@
      	<a href="/produtos/secao/28/Cestas%20Prontas">
 			<img src="&{'application.static.content'}/images/banner/01.jpg" data-thumb="&{'application.static.content'}/images/banner/01.jpg" alt="" />
 		</a>
+		<a href="/produtos/secao/7/Hortaliças">
+			<img src="&{'application.static.content'}/images/banner/02.jpg" data-thumb="&{'application.static.content'}/images/banner/02.jpg" alt="" />
+		</a>
      </div>
 </div>
 
 <script type="text/javascript">
 $(window).load(function() {
-    $('#slider').nivoSlider();
+    $('#slider').nivoSlider({
+    						animSpeed:800, //Slide transition speed
+       						 pauseTime:5000
+       						 });
 });
 </script>
