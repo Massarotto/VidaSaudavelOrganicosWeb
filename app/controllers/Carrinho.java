@@ -303,7 +303,7 @@ public class Carrinho extends Controller {
 						
 						statusPedido = PedidoEstado.AGUARDANDO_PAGAMENTO;
 						
-						pagamento.setInformacoes(token);
+						pagamento.setInformacoes(String.valueOf(carrinho.id));
 						pagamento.setFormaPagamento(FormaPagamento.PAGSEGURO);
 					
 					}else if(FormaPagamento.PAYPAL.equals(FormaPagamento.getFormaPagamento(formaPagamento))) {

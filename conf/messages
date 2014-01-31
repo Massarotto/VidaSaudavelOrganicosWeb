@@ -171,6 +171,9 @@ form.imgBasket.alt=Adicionar ao carrinho
 form.product.isBasket=Cesta
 form.product.lastUpdate=Última Atualização
 form.product.dataValidade=Data de Validade
+form.product.envioCorreio=Pode enviar por Correio?
+form.product.imagemDetalhe=Imagem meramente ilustrativa.
+form.product.envioProdutoCorreio=Despachamos por Correio
 
 form.label.valorUnitario=Valor Unitário
 form.label.quantidade=Quantidade
@@ -266,6 +269,7 @@ form.order.creditos=Créditos pendentes:
 form.order.notaFiscal=Nota Fiscal
 form.order.outrasDespesas=Outras Despesas
 form.order.creditosDebitos=Atualizar Débitos/Créditos
+form.order.saldo=Saldo
 
 #Questionário
 form.questionario.title=Questionário
@@ -437,6 +441,7 @@ form.global.price=Preço
 form.report.title=Relatórios
 form.report.pedidoPorFornecedor=Produtos por Fornecedor
 form.report.pedidoAguardandoEntrega=Pedidos Aguardando Entrega
+form.report.enderecoPedidoAguardandoEntrega=Endereços
 application.form.export=Exportar
 application.form.report.format.excel=Excel
 application.form.report.format.csv=CSV
@@ -518,7 +523,7 @@ application.url.pagseguro=https://ws.pagseguro.uol.com.br/v2/checkout
 application.username.pagseguro=felipe@vidasaudavelorganicos.com.br
 application.token.pagseguro=8D96365337A04FC99809187EB0137863
 application.redirectUrl.pagseguro=https://pagseguro.uol.com.br/v2/checkout/payment.html?code=%s
-application.return.url.pagseguro=http://www.vidasaudavelorganicos.com.br/pedido/pagseguro/finalizar
+application.return.url.pagseguro=http://www.vidasaudavelorganicos.com.br/pedido/pagseguro/finalizar/%s
 
 application.minValue.gateways=80.00
 

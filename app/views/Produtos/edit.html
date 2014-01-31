@@ -71,6 +71,15 @@
 			</td>
 		</tr>
 		<tr>
+			<td align="right">&{'form.product.envioCorreio'}</td>
+			<td>
+				#{select 'produto.podeEnviarPorCorreio', value:produto.podeEnviarPorCorreio, class:"select1 fontGreen1"}
+					#{option 'true'}Sim#{/option}
+					#{option 'false'}N&atilde;o#{/option}						
+				#{/select}
+			</td>
+		</tr>
+		<tr>
 			<td align="right">&{'form.product.lastUpdate'}&nbsp;</td>
 			<td align="left">
 				<span>${produto.dataAlteracao?.format('dd/MM/yyyy HH:mm')}</span>

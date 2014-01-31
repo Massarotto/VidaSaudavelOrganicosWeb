@@ -634,4 +634,14 @@ public class Pedido extends Model {
 		this.valorPago = valorPago;
 	}
 	
+	public BigDecimal getSaldoPedido() {
+		BigDecimal saldo = BigDecimal.ZERO;
+		
+		if(this.getValorPago()!=null) {
+			saldo = this.getValorPago().subtract(this.getValorTotal());
+		}
+			
+		return saldo;
+	}
+	
 }

@@ -68,14 +68,20 @@ public class Relatorios extends BaseController {
 	
 	@SuppressWarnings("all")
 	public static void rotaEntregaPedido() {
-		render();
+		List<Endereco> enderecos = new ArrayList<Endereco>();
+		enderecos = consultaEnderecoRotaEntrega();
+		
+		render(enderecos);
 	}
 	
-	public static void renderRota(String origin, String destination) {
-		String rota = "";
-		String origem = StringUtils.isEmpty(origin) ? Messages.get("application.google.maps.origin", "") : origin.trim();
-		String destino = StringUtils.isEmpty(destination) ? Messages.get("application.google.maps.destination", "") : destination.trim();
-		
+	/**
+	 * Faz o export dos endereços dos pedidos no status 'Aguardando Entrega'
+	 */
+	public static void relatorioEnderecosEntregaCSV() {
+		renderBinary( new EnderecoGMapsParse(consultaEnderecoRotaEntrega()).buildEnderecoCSV(), "ENDERECOS_ENTREGA.csv" );
+	}
+	
+	private static List<Endereco> consultaEnderecoRotaEntrega() {
 		Query query = JPA.em().createQuery("select cliente.id from Pedido p where p.codigoEstadoPedido =:codigoEstadoPedido");
 		query.setParameter("codigoEstadoPedido", Pedido.PedidoEstado.AGUARDANDO_ENTREGA);
 		List<Long> clientes = query.getResultList();
@@ -84,7 +90,15 @@ public class Relatorios extends BaseController {
 		for(Long idCliente : clientes)
 			enderecos.add(Endereco.getEndereco(idCliente));
 		
-		rota = new EnderecoGMapsParse(enderecos).buildEnderecosJson(origem, destino);
+		return enderecos;
+	}
+	
+	public static void renderRota(String origin, String destination) {
+		String rota = "";
+		String origem = StringUtils.isEmpty(origin) ? Messages.get("application.google.maps.origin", "") : origin.trim();
+		String destino = StringUtils.isEmpty(destination) ? Messages.get("application.google.maps.destination", "") : destination.trim();
+		
+		rota = new EnderecoGMapsParse(consultaEnderecoRotaEntrega()).buildEnderecosJson(origem, destino);
 		
 		renderText(rota);
 	}

@@ -14,39 +14,6 @@
 				&nbsp;
 			</td>
 		</tr>
-		#{if (produto.ehCesta==true)}
-		<tr>
-			<td>
-				<table width="100%" border="0">
-					<tr>
-						<td width="43%">
-							<img src="&{'application.static.content'}&{'application.path.public.images'}${produto.imagemProduto}" 
-								alt="${produto.imagemProduto}"
-								width="&{'application.path.images.width'}"
-								height="&{'application.path.images.height'}" 
-								class="imgDetail" />
-						</td>
-						<td align="center">
-							<span class="fontBoldBrown">${produto.nome}</span><br /><br />
-							<span class="fontGreen3">${produto.valorVenda.formatCurrency('BRL').raw()}</span>
-							<input type="hidden" id="quantidade[${produto.id}]" name="quantidade[${produto.id}]" value="1" />&nbsp;
-							#{if (produto.produtoEstoque==null || produto.produtoEstoque.quantidade>0)}
-								<img src="&{'application.static.content'}&{'application.path.public.images'}&{'application.path.carrinho'}" 
-									style="cursor: pointer;" alt="&{'form.imgBasket.alt'}" title="&{'form.imgBasket.alt'}"
-									onclick="javascript:adicionarProdutoCarrinho(${produto.id}, document.getElementById('quantidade[${produto.id}]'), '${produto.valorVenda}')" />
-							#{/if}
-							#{else}
-								INDISPONÍVEL
-							#{/else}
-						</td>	
-					</tr>
-				</table>
-			</td>
-			<td width="45%">
-				&nbsp;<span class="fontGreen1">${produto.detalhe.raw()}</span>
-			</td>
-		</tr>
-		#{/if}
 		#{if (produto.ehCesta==false)}
 		<tr>
 			<td width="40%" align="center">
@@ -69,11 +36,16 @@
 				#{/else}
 				<br /><br />
 				<span class="fontGreen2"><b>&{'form.label.detail'}: </b></span><span class="fontBlackNormal">${produto.detalhe.raw()}</span>
+				<br /><br />
+				#{if (produto.podeEnviarPorCorreio)}
+				<img src="&{'application.static.content'}&{'application.path.public.images'}logo-correios.jpg" 
+						alt="&{'form.product.envioProdutoCorreio'}" title="&{'form.product.envioProdutoCorreio'}" />
+				#{/if}
 			</td>
 		</tr>
 		<tr>
 			<td align="center">
-				<span class="fontBlackNormal"><i>Imagem meramente ilustrativa.</i></span>
+				<span class="fontBlackNormal"><i>&{'form.product.imagemDetalhe'}</i></span>
 			</td>
 			<td>&nbsp;</td>
 		</tr>

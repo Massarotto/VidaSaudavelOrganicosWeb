@@ -92,6 +92,15 @@
 			</td>
 		</tr>
 		<tr>
+			<td align="right">&{'form.product.envioCorreio'}</td>
+			<td>
+				#{select 'produto.podeEnviarPorCorreio', id:"produto.podeEnviarPorCorreio", value:produto.podeEnviarPorCorreio, class:"select1 fontGreen1"}
+					#{option 'true'}Sim#{/option}
+					#{option 'false'}N&atilde;o#{/option}						
+				#{/select}
+			</td>
+		</tr>
+		<tr>
 			<td align="right">
 				&{'form.label.detail'}
 			</td>

@@ -124,7 +124,7 @@ GET		/cesta/detail/{id}/{nome}				Cestas.detail
 *		/pedido/paypal/cancelar					Pedidos.cancelarPedidoPayPal
 
 #PagSeguro Integration
-*		/pedido/pagseguro/finalizar				Pedidos.finalizarPedidoPagSeguro
+*		/pedido/pagseguro/finalizar/{token}		Pedidos.finalizarPedidoPagSeguro
 
 #CRM Funcionalidades
 GET		/relacionamento/cliente/cupom-desconto	RelacionamentoCliente.index

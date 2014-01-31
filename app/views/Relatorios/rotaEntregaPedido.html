@@ -20,6 +20,37 @@
 <div class="boxConsultaDefault" id="map_canvas">
 </div>
 <div id="passos" style="height: 100%;"></div>
+<br />
+<div id="listaEnderecoEntrega" style="height: 90%; visibility: hidden;">
+	<div align="left" style="float: left">
+		<a class="a1" href="@{Relatorios.relatorioEnderecosEntregaCSV()}" title="&{'application.form.export'}">&{'application.form.report.format.csv'}</span>
+	</div>
+	<table width="100%" border="1" cellpadding="2" cellspacing="0" class="fontGreen2" align="center">
+		<tr class="tr1">
+			<td>&{'form.admin.customer'}</td>
+			<td>&{'form.address.logradouro'}</td>
+			<td>&{'form.title.numero'}</td>
+			<td width="9%">&{'form.address.complemento'}</td>
+			<td width="5%">&{'form.address.bairro'}</td>
+			<td>&{'form.address.cidade'}</td>
+			<td>&{'form.address.uf'}</td>
+			<td>&{'form.address.cep'}</td>
+		</tr>
+		#{list items:enderecos, as:'endereco'}
+		<tr class="${produto_parity}">
+			<td>${endereco.cliente.nome}</td>
+			<td>${endereco.logradouro}</td>
+			<td>${endereco.numero}</td>
+			<td>${endereco.complemento}</td>
+			<td>${endereco.bairro}</td>
+			<td>${endereco.cidade}</td>
+			<td>${endereco.uf}</td>
+			<td>${endereco.cep}</td>
+		</tr>
+		#{/list}
+	</table>
+	<br />
+</div>
 <script type="text/javascript" charset="utf-8">
 inciarMapa('map_canvas', -23.5505233, -46.6342982);
 
@@ -29,8 +60,9 @@ function renderCalcRota(origem, destino) {
 	try {
 		$.post('@{Relatorios.renderRota()}', {origin: origem, destination: destino},
 			function( data ) {
-				if(data!="")
+				if(data!="") {
 					calcularRota(data);
+				}
 		})
 		
 	}catch(e) {

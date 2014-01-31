@@ -92,7 +92,7 @@ public class PagSeguroService implements GatewayService {
 			
 			checkout.setReference(carrinho.getId().toString());
 			checkout.setShipping(shipping);
-			checkout.setRedirectURL(Messages.get("application.return.url.pagseguro", ""));
+			checkout.setRedirectURL(Messages.get("application.return.url.pagseguro", carrinho.getId()));
 			//addProxySettings();
 			
 			this.url.append("?");
@@ -104,7 +104,7 @@ public class PagSeguroService implements GatewayService {
 			this.url.append("=");
 			this.url.append(this.token);
 			
-			Logger.info("Vai tentar realizar um checkout no Gateway PagSeguro: %s", this.url.toString());
+			Logger.info("Vai tentar realizar um checkout no Gateway PagSeguro: %s", cliente.getNome());
 			
 			HttpResponse response = WS.url(this.url.toString()).setHeader("Content-Type", "application/xml").body(logPayload(checkout)).post();
 
@@ -115,6 +115,8 @@ public class PagSeguroService implements GatewayService {
 			Document result = response.getXml();
 			
 			token = result.getElementsByTagName("code").item(0).getTextContent();
+			
+			Logger.info("Fim checkout no Gateway PagSeguro: %s", cliente.getNome());
 			
 		}catch(Exception e) {
 			Logger.error(e, "Ocorreu um erro ao tentar realizar um checkout no Gateway PagSeguro");

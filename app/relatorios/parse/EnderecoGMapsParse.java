@@ -3,6 +3,8 @@
  */
 package relatorios.parse;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -10,6 +12,7 @@ import java.util.List;
 
 import models.Endereco;
 import play.Logger;
+import play.i18n.Messages;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -31,6 +34,45 @@ public class EnderecoGMapsParse implements Serializable {
 			throw new IllegalStateException("Não é possível fazer o parse de endereços nulos.");
 		
 		this.enderecos = enderecos;
+	}
+	
+	public InputStream buildEnderecoCSV() {
+		InputStream result = null;
+		StringBuilder line = new StringBuilder();
+		
+		try {
+			if(!this.enderecos.isEmpty()) {
+				line.append(Messages.get("form.admin.customer", "")).append(";");
+				line.append(Messages.get("form.address.logradouro", "")).append(";");
+				line.append(Messages.get("form.title.numero", "")).append(";");
+				line.append(Messages.get("form.address.complemento", "")).append(";");
+				line.append(Messages.get("form.address.bairro", "")).append(";");
+				line.append(Messages.get("form.address.cidade", "")).append(";");
+				line.append(Messages.get("form.address.uf", "")).append(";");
+				line.append(Messages.get("form.address.cep", "")).append(";");
+				line.append("\r\n");
+				
+				for(Endereco ender : enderecos) {
+					line.append(ender.getCliente().getNome()).append(";");
+					line.append(ender.getLogradouro()).append(";");
+					line.append(ender.getNumero()).append(";");
+					line.append(ender.getComplemento()).append(";");
+					line.append(ender.getBairro()).append(";");
+					line.append(ender.getCidade()).append(";");
+					line.append(ender.getUf()).append(";");
+					line.append(ender.getCepFormatado()).append(";");
+					
+					line.append("\r\n");
+				}
+				
+				result = new ByteArrayInputStream(line.toString().getBytes("ISO-8859-1"));
+			}
+			
+		}catch(Exception e) {
+			Logger.error(e, "Erro ao tentar fazer o parse dos endereços para o formato CSV.");
+			throw new RuntimeException(e);
+		}
+		return result;
 	}
 	
 	public String buildEnderecosJson(String origin, String destination) {

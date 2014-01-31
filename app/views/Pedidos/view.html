@@ -13,7 +13,7 @@
 	<table width="98%" border="0" id="showProdutosCarrinho" cellpadding="0" cellspacing="2" align="center" style="border-bottom-width: 1px; border-bottom-style: dashed; border-bottom-style: solid;">
 		<tr class="tr1">
 			<td align="center">
-				<span>&{'form.title.numero'}</span>
+				<span>&{'form.admin.pedido'}</span>
 			</td>
 			<td align="center">
 				<span>&{'form.admin.mypage.date'}</span>
@@ -25,6 +25,12 @@
 				<span>&{'form.label.valorCompra'}</span>
 			</td>
 			<td align="center">
+				<span>&{'form.label.valorPago'}</span>
+			</td>
+			<td align="center">
+				<span>&{'form.order.saldo'}</span>
+			</td>
+			<td align="center">
 				<span>&{'form.date.delivery'}</span>
 			</td>
 			<td align="center">
@@ -32,35 +38,41 @@
 			</td>
 			<td align="center">
 			</td>
-			<td align="center">
-			</td>
 		</tr>
 		#{list items:pedidos, as:'pedido'}
 		<tr>
-			<td width="10%" align="center">
-				<span class="fontBlackMainHome">&nbsp;${pedido.id}</span>
+			<td width="8%" align="center">
+				<span class="fontBlackMainHome" title="&{'form.order.btnViewProducts'}">
+					<a href="/ajaxProdutos?height=520&width=750&id=${pedido.id}&somenteAtivos=1" class="thickbox fontBrown">${pedido.id}</a>
+				</span>
 			</td>
-			<td width="11%" align="center">
-				<span class="fontBlackMainHome">&nbsp;${pedido.dataPedido.format('dd/MM/yyyy HH:MM')}</span>
-			</td>
-			<td width="15%" align="center">
-				<span class="fontBlackMainHome">&nbsp;${pedido.codigoEstadoPedido.getEstado()}</span>
-			</td>
-			<td width="13%" align="center">
-				<span class="fontBlackMainHome">${pedido.valorPedido.formatCurrency('BRL')}</span>
+			<td width="9%" align="center">
+				<span class="fontBlackMainHome">&nbsp;${pedido.dataPedido.format('dd/MM/yyyy')}</span>
 			</td>
 			<td width="14%" align="center">
-				<span class="fontBlackMainHome">&nbsp;${pedido.dataEntrega?.format('dd/MM/yyyy HH:mm')}</span>
+				<span class="fontBlackMainHome">&nbsp;${pedido.codigoEstadoPedido.getEstado()}</span>
+			</td>
+			<td width="12%" align="center">
+				<span class="fontBlackMainHome">${pedido.valorPedido.formatCurrency('BRL')}</span>
+			</td>
+			<td width="11%" align="center">
+			#{if (pedido.valorPago!=null)}
+				<span class="fontBlackMainHome">${pedido.valorPago.formatCurrency('BRL')}</span>
+			#{/if}
+			#{else}
+				<span class="fontBlackMainHome">${pedido.valorPedido.formatCurrency('BRL')}</span>
+			#{/else}
+			</td>
+			<td width="9%" align="center">
+				<span class="fontBlackMainHome">${pedido.getSaldoPedido().formatCurrency('BRL')}</span>
+			</td>
+			<td width="14%" align="center">
+				<span class="fontBlackMainHome">&nbsp;${pedido.dataEntrega?.format('dd/MM/yyyy')}</span>
 			</td>
 			<td align="center">
 			#{if (pedido.pagamento.formaPagamento!=null)}
 				<span class="fontBlackMainHome">${pedido.pagamento.formaPagamento.getDescricao()}</span>
 			#{/if}
-			</td>
-			<td width="12%" align="center">
-				<a href="/ajaxProdutos?height=520&width=750&id=${pedido.id}&somenteAtivos=1" class="thickbox fontBrown">
-					&{'form.order.btnViewProducts'}
-				</a>
 			</td>
 			<td>
 				<a href="#" onclick="javascript:newOrder(${pedido.id});" class="fontBrown">&{'form.order.mypage.newOrder'}</a>

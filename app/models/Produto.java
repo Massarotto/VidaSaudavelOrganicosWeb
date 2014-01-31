@@ -55,7 +55,8 @@ import play.db.jpa.Model;
 		"ativo",
 		"ehPromocao",
 		"ehCesta",
-		"dataValidade"
+		"dataValidade",
+		"podeEnviarPorCorreio"
 })
 @XmlRootElement(name="Produto")
 @Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
@@ -203,6 +204,10 @@ public class Produto extends Model implements Comparable<Produto>, ProdutoCarrin
 	@XmlTransient
 	@Transient
 	private BigDecimal valorMargemLucro = BigDecimal.ZERO;
+	
+	@XmlElement(name="PodeEnviarPorCorreio", required=false)
+	@Column(name="FLAG_ENVIO_CORREIO", nullable=true)
+	private Boolean podeEnviarPorCorreio;
 	
 	/**
 	 * @return the valorMargemLucro
@@ -558,6 +563,23 @@ public class Produto extends Model implements Comparable<Produto>, ProdutoCarrin
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * @return the podeEnviarPorCorreio
+	 */
+	public Boolean getPodeEnviarPorCorreio() {
+		if(this.podeEnviarPorCorreio==null)
+			this.podeEnviarPorCorreio = Boolean.FALSE;
+		
+		return podeEnviarPorCorreio;
+	}
+
+	/**
+	 * @param podeEnviarPorCorreio the podeEnviarPorCorreio to set
+	 */
+	public void setPodeEnviarPorCorreio(Boolean podeEnviarPorCorreio) {
+		this.podeEnviarPorCorreio = podeEnviarPorCorreio;
 	}
 	
 }
