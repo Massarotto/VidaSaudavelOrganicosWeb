@@ -20,6 +20,15 @@ import business.produto.ProdutoControl;
  */
 public class Home extends BaseController {
 	
+	@play.mvc.Before(only={"index"})
+	static void getParameters(){
+		String codigoCupomDesconto = params.get("cp_code", String.class);
+		
+		if(codigoCupomDesconto!=null) {
+			session.put("cupom", codigoCupomDesconto);
+		}
+	}
+	
 	public static void index(String message) {
 		Logger.debug("###### Início - Home Vida Saudável...%s #######", "");
 		Boolean home = Boolean.TRUE;

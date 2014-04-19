@@ -3,20 +3,17 @@
  */
 package controllers;
 
-import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import models.CestaAssinatura;
-import models.CestaAssinaturaProduto;
 import models.Cliente;
+import models.CupomDesconto;
 import models.Pedido;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.mail.EmailAttachment;
 
 import play.Logger;
-import play.i18n.Messages;
 import play.mvc.Mailer;
 import exception.SystemException;
 
@@ -28,7 +25,7 @@ public class Mail extends Mailer {
 	
 	public static final String EMAIL_ADMIN = "Administrador<administrador@vidasaudavelorganicos.com.br>";
 	
-	public static final String EMAIL_CONTACT = "Contato<contato@vidasaudavelorganicos.com.br>";
+	public static final String EMAIL_CONTACT = "Vida Saudável Orgânicos<contato@vidasaudavelorganicos.com.br>";
 	
 	public static void sendEmail(String subject,
 								String from,
@@ -65,9 +62,18 @@ public class Mail extends Mailer {
 		}
 	}
 	
+	/**
+	 * @param subject
+	 * @param from
+	 * @param pedido
+	 * @param fileAbsolutePath - caminho absoluto da Nota Gerada
+	 * @param to
+	 * @throws SystemException
+	 */
 	public static void pedidoFinalizado(String subject,
 										String from,
 										Pedido pedido,
+										String fileAbsolutePath,
 										String... to) throws SystemException {
 		try {
 			setFrom(from);
@@ -75,6 +81,14 @@ public class Mail extends Mailer {
 			addRecipient(to[0]);
 			addBcc(to[to.length-1]);
 			setReplyTo(EMAIL_CONTACT);
+			
+			if(!StringUtils.isEmpty(fileAbsolutePath)) {
+				EmailAttachment attachments = new EmailAttachment();
+				attachments.setDescription("Nota Pedido");
+				attachments.setPath(fileAbsolutePath);
+				
+				addAttachment(attachments);
+			}
 			
 			send(pedido);
 			
@@ -164,7 +178,7 @@ public class Mail extends Mailer {
 			
 			Future<Boolean> sent = send(message, urlImagem);
 			
-			Logger.debug("Atingiu o timeout? %s",  sent.get(5, TimeUnit.SECONDS) );
+			Logger.debug("Atingiu o timeout? %s",  sent.get(60, TimeUnit.SECONDS) );
 			
 		}catch(Exception e) {
 			Logger.error(e, "Erro ao enviar e-mail com o Marketing.");
@@ -191,6 +205,33 @@ public class Mail extends Mailer {
 		
 	}
 	
+	public static void enviarCupomDescontoCliente(String subject, 
+													String from, 
+													CupomDesconto cupomDesconto,
+													String to) throws SystemException {
+		try {
+			setFrom(from);
+			setSubject(subject);
+			addRecipient(to);
+			
+//			if(!StringUtils.isEmpty(fileAbsolutePath)) {
+//				EmailAttachment attachments = new EmailAttachment();
+//				attachments.setDescription("Cupom de Desconto.");
+//				attachments.setPath(fileAbsolutePath);
+//				
+//				addAttachment(attachments);
+//			}
+			
+			Future<Boolean> sent = send(cupomDesconto);
+			
+			Logger.info("Atingiu timeout %s", sent.get(60, TimeUnit.SECONDS));
+			
+		}catch(Exception e) {
+			Logger.error(e, "Erro ao enviar e-mail com o cupom de desconto %s.", cupomDesconto.getCodigo());
+			throw new SystemException(e);
+		}
+	}
+	
 	public static void sendProdutosNaoEncontrados(String subject, String from, 
 											String fileAbsolutePath,
 											String message,
@@ -214,23 +255,6 @@ public class Mail extends Mailer {
 			Logger.error(e, "Erro ao enviar e-mail com os produtos não encontrados.");
 			throw new SystemException(e);
 		}
-	}
-	
-	public static void sendCestaAssinatura(CestaAssinatura cestaAssinatura,
-											String from,
-											String message,
-											String subject,
-											String email) {
-		List<CestaAssinaturaProduto> assinaturaProdutos = cestaAssinatura.getListCestaAssinaturaProduto();
-		
-		setFrom(from);
-		setSubject(subject);
-		addRecipient(email);
-		setReplyTo(EMAIL_CONTACT);
-		
-		String staticContent = Messages.get("application.static.content", "") + Messages.get("application.path.public.images", "");
-		
-		send(cestaAssinatura, assinaturaProdutos, message, staticContent);
 	}
 
 }

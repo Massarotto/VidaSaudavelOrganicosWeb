@@ -3,7 +3,6 @@
  */
 package business.pagamento.service;
 
-import java.io.Serializable;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -19,18 +18,17 @@ import javax.xml.ws.BindingProvider;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.soap.SOAPFaultException;
 
-import com.grepcepws.ws.GrepCepPortType;
-import com.sun.xml.internal.bind.api.JAXBRIContext;
-import com.sun.xml.internal.ws.developer.WSBindingProvider;
-import com.sun.xml.internal.ws.transport.Headers;
+import models.CarrinhoProduto;
+import models.Cliente;
 
 import play.Logger;
 import play.cache.Cache;
 import play.i18n.Messages;
-import types.ListaProduto;
-import ebay.api.paypalapi.BillUserReq;
-import ebay.api.paypalapi.BillUserRequestType;
-import ebay.api.paypalapi.BillUserResponseType;
+import business.pagamento.service.interfaces.GatewayService;
+
+import com.sun.xml.internal.bind.api.JAXBRIContext;
+import com.sun.xml.internal.ws.developer.WSBindingProvider;
+
 import ebay.api.paypalapi.DoExpressCheckoutPaymentReq;
 import ebay.api.paypalapi.DoExpressCheckoutPaymentRequestType;
 import ebay.api.paypalapi.DoExpressCheckoutPaymentResponseType;
@@ -39,40 +37,31 @@ import ebay.api.paypalapi.GetExpressCheckoutDetailsRequestType;
 import ebay.api.paypalapi.GetExpressCheckoutDetailsResponseType;
 import ebay.api.paypalapi.ObjectFactory;
 import ebay.api.paypalapi.PayPalAPIAAInterface;
-import ebay.api.paypalapi.PayPalAPIInterface;
 import ebay.api.paypalapi.PayPalAPIInterfaceService;
 import ebay.api.paypalapi.SetExpressCheckoutReq;
 import ebay.api.paypalapi.SetExpressCheckoutRequestType;
 import ebay.api.paypalapi.SetExpressCheckoutResponseType;
-import ebay.api.paypalapi.SetMobileCheckoutReq;
-import ebay.api.paypalapi.SetMobileCheckoutRequestType;
 import ebay.apis.corecomponenttypes.BasicAmountType;
 import ebay.apis.eblbasecomponents.AckCodeType;
-import ebay.apis.eblbasecomponents.BuyerDetailsType;
 import ebay.apis.eblbasecomponents.CurrencyCodeType;
 import ebay.apis.eblbasecomponents.CustomSecurityHeaderType;
-import ebay.apis.eblbasecomponents.DisplayControlDetailsType;
 import ebay.apis.eblbasecomponents.DoExpressCheckoutPaymentRequestDetailsType;
 import ebay.apis.eblbasecomponents.ErrorType;
-import ebay.apis.eblbasecomponents.ExternalPartnerTrackingDetailsType;
-import ebay.apis.eblbasecomponents.MerchantPullPaymentCodeType;
-import ebay.apis.eblbasecomponents.MerchantPullPaymentType;
 import ebay.apis.eblbasecomponents.PaymentActionCodeType;
 import ebay.apis.eblbasecomponents.PaymentDetailsItemType;
 import ebay.apis.eblbasecomponents.PaymentDetailsType;
 import ebay.apis.eblbasecomponents.SetExpressCheckoutRequestDetailsType;
-import ebay.apis.eblbasecomponents.ShippingServiceCodeType;
-import ebay.apis.eblbasecomponents.TotalType;
 import ebay.apis.eblbasecomponents.UserIdPasswordType;
-import ebay.apis.enhanceddatatypes.EnhancedCheckoutDataType;
-import exception.PayPalServiceException;
+import exception.GatewayServiceException;
 
 /**
- * @author hpadmin
+ * @author Felipe Guerra
  *
  */
-public class PayPalService implements Serializable {
-	
+public class PayPalService implements GatewayService{
+
+	private static final long serialVersionUID = 3485223699084668433L;
+
 	private String urlEndPoint = null;
 	
 	private String userService = null;
@@ -124,7 +113,7 @@ public class PayPalService implements Serializable {
 	 * @return
 	 */
 	public SetExpressCheckoutResponseType solicitarPagamento(String cliente, Double valorPedido, 
-															Long idCarrinho, String infosPedido) throws PayPalServiceException {
+															Long idCarrinho, String infosPedido) throws GatewayServiceException {
 		Logger.info("#### Iniciar pedido de pagamento para o cliente: %s no gateway PayPal ####", cliente);
 		
 		SetExpressCheckoutReq setExpressCheckoutReq = null;
@@ -177,11 +166,11 @@ public class PayPalService implements Serializable {
 			
 		}catch(SOAPFaultException soapex) {
 			Logger.error(soapex, "Erro ao tentar aprovar uma compra no PayPal.");
-			throw new PayPalServiceException(soapex);
+			throw new GatewayServiceException(soapex);
 			
 		}catch(WebServiceException wex) {
 			Logger.error(wex, "Erro ao tentar aprovar uma compra no PayPal.");
-			throw new PayPalServiceException(wex);
+			throw new GatewayServiceException(wex);
 			
 		}finally {
 			Logger.info("#### Fim do pedido de pagamento para o cliente: %s no gateway PayPal ####", cliente);
@@ -189,7 +178,7 @@ public class PayPalService implements Serializable {
 		return result;
 	}
 	
-	public GetExpressCheckoutDetailsResponseType confirmarPagamento(String token) throws PayPalServiceException {
+	public GetExpressCheckoutDetailsResponseType confirmarPagamento(String token) throws GatewayServiceException {
 		Logger.info("#### Iniciar confirmação de pagamento - token: %s no gateway PayPal ####", token);
 		GetExpressCheckoutDetailsReq getExpressCheckoutDetailsReq = null;
 		GetExpressCheckoutDetailsRequestType getExpressCheckoutDetailsRequest = null;
@@ -211,16 +200,16 @@ public class PayPalService implements Serializable {
 			
 			if(result.getErrors()!=null && !result.getErrors().isEmpty()) {
 				ErrorType error = result.getErrors().get(0);
-				throw new PayPalServiceException(error.getErrorCode() + " - " + error.getLongMessage());
+				throw new GatewayServiceException(error.getErrorCode() + " - " + error.getLongMessage());
 			}
 			
 		}catch(SOAPFaultException soapex) {
 			Logger.error(soapex, "Erro ao tentar confirmar uma compra no PayPal.");
-			throw new PayPalServiceException(soapex);
+			throw new GatewayServiceException(soapex);
 			
 		}catch(WebServiceException wex) {
 			Logger.error(wex, "Erro ao tentar confirmar uma compra no PayPal.");
-			throw new PayPalServiceException(wex);
+			throw new GatewayServiceException(wex);
 			
 		}finally {
 			Logger.info("#### Fim confirmação de pagamento - token: %s no gateway PayPal ####", token);
@@ -228,7 +217,7 @@ public class PayPalService implements Serializable {
 		return result;
 	}
 	
-	public DoExpressCheckoutPaymentResponseType efetivarPagamento(String token, String payerID, Double valorPedido) throws PayPalServiceException {
+	public DoExpressCheckoutPaymentResponseType efetivarPagamento(String token, String payerID, Double valorPedido) throws GatewayServiceException {
 		Logger.info("#### Vai efetivar o pagamento - token: %s no gateway PayPal ####", token);
 		
 		DoExpressCheckoutPaymentResponseType result = null;
@@ -267,11 +256,11 @@ public class PayPalService implements Serializable {
 			
 		}catch(SOAPFaultException soapex) {
 			Logger.error(soapex, "Erro ao tentar efetivar uma compra no PayPal.");
-			throw new PayPalServiceException(soapex);
+			throw new GatewayServiceException(soapex);
 			
 		}catch(WebServiceException wex) {
 			Logger.error(wex, "Erro ao tentar efetivar uma compra no PayPal.");
-			throw new PayPalServiceException(wex);
+			throw new GatewayServiceException(wex);
 			
 		}finally {
 			Logger.info("#### Fim efetivar o pagamento - token:%s no gateway PayPal ####", token);
@@ -369,6 +358,13 @@ public class PayPalService implements Serializable {
 			}
 		}
 		return result.toString();
+	}
+	
+	@Override
+	public String checkout(Cliente cliente, CarrinhoProduto carrinho, BigDecimal valorFrete)
+			throws GatewayServiceException {
+		return null;
+		
 	}
 	
 }

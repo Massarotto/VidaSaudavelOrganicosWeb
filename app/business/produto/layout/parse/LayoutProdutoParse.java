@@ -5,25 +5,22 @@ package business.produto.layout.parse;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
-
-import play.Logger;
-
-import business.produto.layout.LayoutArquivo;
 
 import models.Produto;
+import play.Logger;
 
 /**
  * @author Felipe G. de Oliveira
  * @version 1.0
  * @since 30/07/2012
  */
-public class LayoutProdutoParse implements ILayoutParse {
+public class LayoutProdutoParse implements ILayoutParse<Produto> {
+
+	private static final long serialVersionUID = 987656453456781L;
 
 	/* (non-Javadoc)
 	 * @see business.produto.layout.parse.ILayoutParse#parse(java.lang.Long)

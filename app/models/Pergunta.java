@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,21 +14,19 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import play.db.jpa.Model;
 
 /**
  * @author hpadmin
  *
  */
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Cacheable
+
 @Entity
 @Table(name="PERGUNTA")
 public class Pergunta extends Model implements Serializable {
 	
+	private static final long serialVersionUID = -7234761116705884365L;
+
 	public Pergunta() {
 	}
 	

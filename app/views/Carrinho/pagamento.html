@@ -3,12 +3,8 @@
 &{'application.subtilte'} Finalizar Pedido
 #{/set}
 
-#{form @Carrinho.finalizar(), id:"finalizarForm"}
+#{form @Carrinho.finalizar(), id:"finalizarForm",}
 <div class="defaultContentSize">
-	#{if (carrinho.itens.isEmpty())}
-		<span>&{'message.norecordfound'}</span>
-	#{/if}
-	#{else}
 	<br />
 	<table width="97%" border="0" id="showProdutosCarrinho" cellpadding="0" cellspacing="2" align="center" style="border-bottom-width: 1px; border-bottom-style: dashed; border-bottom-style: solid;">
 		<tr>
@@ -44,6 +40,23 @@
 				<span>&{'form.label.valorUnitario'}</span>
 			</td>
 		</tr>
+		#{list items:carrinho.cestas, as:'cesta'}
+		<tr>
+			<td width="12%">
+				<img width="50" height="43" src="${cesta.caminhoImagem}" 
+						title="${cesta.titulo}" alt="${cesta.titulo}" class="imgBasket" />
+			</td>
+			<td>
+				<span class="fontBlackMainHome">&nbsp;${cesta.titulo}</span><br />
+			</td>
+			<td width="16%" align="center">
+				<span class="fontBlackMainHome">1</span>
+			</td>
+			<td width="11%" align="center">
+				<span class="fontBlackMainHome">&nbsp;${cesta.valorVenda.formatCurrency('BRL').raw()}</span><br />
+			</td>
+		</tr>
+		#{/list}
 		#{list items:carrinho.itens, as:'item'}
 		<tr>
 			<td width="12%">
@@ -75,6 +88,18 @@
 				</div>
 			</td>
 		</tr>
+		#{if (credito > 0)}
+		<tr class="tr1">
+			<td>
+				<div style="width: 100%; float: left; position:relative;">
+					<div style="width:85%; float: left; border: 0px solid; position: relative; text-align: right;">&{'form.order.customer.credit'}</div>
+					<div style="width:10%; float: right; text-align: center; border: 0px solid; position: relative;">
+						<span class="fontBlackMainHome">${credito.formatCurrency('BRL').raw()}</span>&nbsp;
+					</div>
+				</div>
+			</td>
+		</tr>
+		#{/if}
 		<tr class="tr1">
 			<td>
 				<div style="width: 100%; float: left; position:relative;">
@@ -90,7 +115,14 @@
 				<div style="width: 100%; float: left; position:relative;">
 					<div style="width:85%; float: left; border: 0px solid; position: relative; text-align: right;">&{'form.label.total'}</div>
 					<div style="width:10%; float: right; text-align: center; border: 0px solid; position: relative;">
-						<span class="fontBlackMainHome">${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}</span>&nbsp;
+						<span class="fontBlackMainHome">
+							#{if (credito > 0)}
+								${(carrinho.valorTotalCompra + frete.valor - credito).formatCurrency('BRL').raw()}
+							#{/if}
+							#{else}
+								${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}
+							#{/else}
+						</span>&nbsp;
 					</div>
 				</div>
 			</td>
@@ -162,14 +194,61 @@
 						<td>
 							<img src="&{'application.static.content'}&{'application.path.public.images'}paypal_logo.gif" alt="paypal logo" />
 							<div id="valorPayPal" style="width: 65%; float: right; position: relative; margin-top: 8px;">
-								<span class="fontGreen3">${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}</span>
+								<span class="fontGreen3">
+									#{if (cupom!=null)}
+										#{if (credito > 0)}
+											${(valorComDesconto + frete.valor - credito).formatCurrency('BRL').raw()}
+										#{/if}
+										#{else}
+											${(valorComDesconto + frete.valor).formatCurrency('BRL').raw()}
+										#{/else} 
+										&{'form.politicaEntrega.desconto', cupom.desconto.porcentagem+'%'}
+									#{/if}
+									#{else}
+										#{if (credito > 0)}
+											${(carrinho.valorTotalCompra + frete.valor - credito).formatCurrency('BRL').raw()}
+										#{/if}
+										#{else}
+											${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}
+										#{/else}
+									#{/else}
+								</span>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td width="5%" align="center">
+							<input type="radio" name="formaPagamento" id="formaPagamento" value="${pagamento.getFormaPagamento('PagSeguro')}" />
+						</td>
+						<td>
+							<img src="&{'application.static.content'}&{'application.path.public.images'}logo_pagseguro.gif" alt="paypal logo" />
+							<div id="valorPayPal" style="width: 65%; float: right; position: relative; margin-top: 8px;">
+								<span class="fontGreen3">
+									#{if (cupom!=null)}
+										#{if (credito > 0)}
+											${(valorComDesconto + frete.valor - credito).formatCurrency('BRL').raw()}
+										#{/if}
+										#{else}
+											${(valorComDesconto + frete.valor).formatCurrency('BRL').raw()}
+										#{/else} 
+										&{'form.politicaEntrega.desconto', cupom.desconto.porcentagem+'%'}
+									#{/if}
+									#{else}
+										#{if (credito > 0)}
+											${(carrinho.valorTotalCompra + frete.valor - credito).formatCurrency('BRL').raw()}
+										#{/if}
+										#{else}
+											${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}
+										#{/else}
+									#{/else}
+								</span>
 							</div>
 						</td>
 					</tr>
 					#{/if}
 					<tr>
 						<td width="5%" align="center">
-							#{if (valorMinPagPayPal > (carrinho.valorTotalCompra))}
+							#{if (valorMinPagPayPal >= (carrinho.valorTotalCompra))}
 								<input type="radio" name="formaPagamento" id="formaPagamento" checked="checked" value="${pagamento.getFormaPagamento('Dinheiro')}" />
 							#{/if}
 							#{else}
@@ -178,11 +257,37 @@
 						</td>
 						<td>
 							<span class="fontBlackMainHome">${pagamento.getFormaPagamento('DINHEIRO').descricao}</span>
-							#{if (carrinho.valorTotalCompra > valorMinPagPayPal)}
+							#{if (cupom!=null)}
 							<div id="valorDinheiroCheque" style="width: 65%; float: right; position: relative;">
-								<span class="fontGreen3">${(valorComDesconto+ frete.valor).formatCurrency('BRL').raw()} &{'form.politicaEntrega.desconto', '5%'}</span>
+								<span class="fontGreen3">${(valorComDesconto+ frete.valor).formatCurrency('BRL').raw()} &{'form.politicaEntrega.desconto', cupom.desconto.porcentagem+'%'}</span>
 							</div>
 							#{/if}
+							#{else}
+								#{if (carrinho.valorTotalCompra > valorPagamentoComDesconto)}
+									<div id="valorDinheiroCheque" style="width: 65%; float: right; position: relative;">
+										<span class="fontGreen3">
+										#{if (credito > 0)}
+											${(valorComDesconto+ frete.valor - credito).formatCurrency('BRL').raw()}
+										#{/if}
+										#{else}
+											${(valorComDesconto+ frete.valor).formatCurrency('BRL').raw()}
+										#{/else}
+										&{'form.politicaEntrega.desconto', '5%'}</span>
+									</div>
+								#{/if}
+								#{else}
+								<div id="valorDinheiroCheque" style="width: 65%; float: right; position: relative;">
+									<span class="fontGreen3">
+										#{if (credito > 0)}
+											${(carrinho.valorTotalCompra + frete.valor - credito).formatCurrency('BRL').raw()}
+										#{/if}
+										#{else}
+											${(carrinho.valorTotalCompra + frete.valor).formatCurrency('BRL').raw()}
+										#{/else}
+									</span>
+								</div>
+								#{/else}
+							#{/else}
 						</td>
 					</tr>
 				</tbody>
@@ -191,6 +296,7 @@
 	</div>
 	<br />
 	#{/ifnot}
+	<br />
 	<div align="right" style="width: 97%;">
 		<div id="btn-end">
 			<a href="javascript:finalizarPedido();"><span>&nbsp;</span></a>
@@ -200,28 +306,31 @@
 		</div>
 	</div>
 	<br /><br />
-	#{/else}
 </div>
 #{/form}
 <br />
 <script type="text/javascript" charset="UTF-8">
 	function finalizarPedido() {
 		try {
+			loadingAnimation();
+			
 			var pagamentoSolicitado = $("input[type=radio]:checked").val();
 		
 			if(pagamentoSolicitado==undefined) {
+				unloadingAnimation();
 				alert("&{'application.error.paymentMethod'}");
 				
 			}else {
 				if(pagamentoSolicitado=="DINHEIRO") {
 					document.getElementById("finalizarForm").submit();
 					
-				}else if(pagamentoSolicitado=="PAYPAL") {
-					window.open("/carrinho/loading/${sessionId}", "_self");
+				}else {
+					window.open("/carrinho/loading/${sessionId}?pagamentoSolicitado="+pagamentoSolicitado, "_self");
 				}
 			}
 			
 		}catch(e) {
+			unloadingAnimation();
 			alert("Erro ao tentar finalizar o pedido:" + e.description);
 		}
 	}

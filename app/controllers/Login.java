@@ -5,15 +5,11 @@ package controllers;
 
 import java.util.List;
 
-import models.Cliente;
 import models.Usuario;
 import play.Logger;
 import play.cache.Cache;
 import play.data.validation.Valid;
-import play.libs.Crypto;
-import play.mvc.Controller;
 import play.mvc.Http.Cookie;
-import play.mvc.results.Error;
 
 /**
  * @author guerrafe
@@ -74,16 +70,14 @@ public class Login extends BaseController {
 		}else {
 			usuario.decryptPassword();
 			
+			session.put("estaNaCapital", usuario.getCliente().getEnderecos().get(0));
 			session.put("usuarioAutenticado", usuario);
 			session.put("clienteId", usuario.getCliente().getId());
 			session.put("isAdmin", usuario.isAdmin());
-			session.put("isPartner", usuario.isPartner());
+			session.put("isEmployee", usuario.isEmployee());
 
 			if(session.get("carrinho")!=null)
 				redirect("/pagamento/"+ ((Cookie)request.cookies.get("vidasaudavel")).value);
-			
-			else if(session.get("assinatura")!=null)
-				redirect(session.get("assinatura"));
 			
 			Home.index(null);
 		}
@@ -95,6 +89,7 @@ public class Login extends BaseController {
 		session.remove("usuarioAutenticado");
 		session.remove("clienteId");
 		session.remove("isAdmin");
+		session.remove("cupom");
 		
 		session.clear();
 		

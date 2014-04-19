@@ -22,8 +22,8 @@ import play.templates.FastTags;
 import play.templates.GroovyTemplate.ExecutableTemplate;
 
 /**
- * @author guerrafe
- *
+ * @author Felipe Guerra
+ * @version 1.0
  */
 @FastTags.Namespace("vidasaudavel.tag")
 public class MenuTag extends FastTags {
@@ -34,20 +34,28 @@ public class MenuTag extends FastTags {
 
 	public static void _menu(Map<?, ?> args, Closure body, PrintWriter out,
 							ExecutableTemplate template, int fromLine) {
-		
+		for(NoSecao _no : menu())
+			out.print(_no.buildMenu());
+	}
+	
+	public static void _foot(Map<?, ?> args, Closure body, PrintWriter out,
+			ExecutableTemplate template, int fromLine) {
+		for(NoSecao _no : menu())
+			out.print(_no.buildFootMenu());
+	}
+	
+	public static List<NoSecao> menu() {
 		List<Secao> secoes = Cache.get("menu", List.class);
-		 
-		if(secoes==null || secoes.isEmpty())
+		
+		if(secoes==null || secoes.isEmpty()) {
 			secoes = SecaoProdutos.loadAll();
-		 
+			Cache.add("menu", secoes, "24h");
+		}
 		List<NoSecao> nos = load(secoes);
-
+		
 		Logger.debug("#### Fim renderizar menu... ####","");
 		
-		Cache.add("menu", secoes, "480mn");
-		
-		for(NoSecao _no : nos)
-			out.print(_no.buildMenu());
+		return nos;
 	}
 	
 	private static List<NoSecao> load(List<Secao> secoes) {

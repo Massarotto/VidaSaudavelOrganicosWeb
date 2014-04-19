@@ -4,14 +4,12 @@
 package relatorios.parse;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
+import models.ProdutoLoteEstoque;
 import play.Logger;
-
-import models.ProdutoEstoque;
 
 /**
  * @author hpadmin
@@ -19,7 +17,12 @@ import models.ProdutoEstoque;
  */
 public class EstoqueParse implements Serializable {
 	
-	public static String buildHtmlLayout(List<ProdutoEstoque> estoque) {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1089768574651L;
+
+	public static String buildHtmlLayout(List<ProdutoLoteEstoque> estoque) {
 		StringBuffer build = new StringBuffer();
 		NumberFormat numberFormat = null;
 		
@@ -27,7 +30,7 @@ public class EstoqueParse implements Serializable {
 			if(estoque!=null && !estoque.isEmpty()) {
 				numberFormat = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
 				
-				for(ProdutoEstoque produtoEstoque : estoque) {
+				for(ProdutoLoteEstoque produtoEstoque : estoque) {
 					build.append("<tr>");
 					build.append("<td align='center'>");
 					build.append(produtoEstoque.getProduto().getNome());
@@ -36,10 +39,10 @@ public class EstoqueParse implements Serializable {
 					build.append(produtoEstoque.getQuantidade());
 					build.append("</td>");
 					build.append("<td align='center'>");
-					build.append(numberFormat.format(produtoEstoque.getPreco()));
+					build.append(numberFormat.format(produtoEstoque.getProduto().getValorPago()));
 					build.append("</td>");
 					build.append("<td align='center'>");
-					build.append(produtoEstoque.getProduto().getDataValidade()==null ? " - " : produtoEstoque.getProduto().getDataValidade());
+					build.append(produtoEstoque.getDataValidadeLote()==null ? " - " : produtoEstoque.getDataValidadeLote());
 					build.append("</td>");
 					build.append("</tr>");
 				}

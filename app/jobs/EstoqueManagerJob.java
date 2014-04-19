@@ -5,28 +5,25 @@ package jobs;
 
 import java.util.List;
 
-import models.ProdutoEstoque;
+import models.ProdutoLoteEstoque;
 
 import org.apache.commons.lang.StringUtils;
 
-import controllers.Mail;
-import exception.SystemException;
-
-import business.estoque.EstoqueControl;
 import play.Logger;
 import play.i18n.Messages;
 import play.jobs.Every;
 import play.jobs.Job;
-import play.jobs.On;
-import play.jobs.OnApplicationStart;
 import relatorios.parse.EstoqueParse;
+import business.estoque.EstoqueControl;
+import controllers.Mail;
+import exception.SystemException;
 
 /**
  * 
  * @author Felipe Guerra
  * @since 29/05/2012
  */
-@Every("6h")
+@Every("12h")
 public class EstoqueManagerJob extends Job {
 	
 	@Override
@@ -38,7 +35,7 @@ public class EstoqueManagerJob extends Job {
 		if(StringUtils.isEmpty(minEstoque))
 			minEstoque = "1";
 		
-		List<ProdutoEstoque> estoque = EstoqueControl.findProdutoEstoque(Integer.parseInt(minEstoque));
+		List<ProdutoLoteEstoque> estoque = EstoqueControl.findProdutoEstoque(Integer.parseInt(minEstoque));
 		
 		if(!estoque.isEmpty())
 			Mail.estoqueControl("Relatório de Posição de Estoque", Mail.EMAIL_ADMIN, staticContent, EstoqueParse.buildHtmlLayout(estoque), destinatarios.split(","));

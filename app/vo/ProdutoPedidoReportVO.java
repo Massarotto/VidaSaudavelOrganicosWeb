@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import models.Pedido;
 import models.PedidoItem;
 import models.Produto;
+import business.estoque.EstoqueControl;
 
 /**
- * @author guerrafe
- *
+ * @author Felipe Guerra
+ * @version 1.0
  */
 public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPedidoReportVO> {
 
@@ -28,8 +28,9 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 	private BigDecimal valorPedido;
 	private String fornecedor;
 	private String codigoProduto;
-	private BigDecimal desconto = new BigDecimal(0);
-	private BigDecimal frete = new BigDecimal(0);
+	private BigDecimal desconto = BigDecimal.ZERO;
+	private BigDecimal frete = BigDecimal.ZERO;
+	private BigDecimal creditoDebito = BigDecimal.ZERO;
 	
 	private String observacao;
 
@@ -214,7 +215,8 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 	public static List<ProdutoPedidoReportVO> fillProdutos(Collection<Produto> produtos, BigDecimal valorPedido, 
 														BigDecimal desconto, 
 														String observacao,
-														BigDecimal frete) {
+														BigDecimal frete,
+														BigDecimal creditoDebito) {
 		List<ProdutoPedidoReportVO> result = new ArrayList<ProdutoPedidoReportVO>();
 		ProdutoPedidoReportVO entity = null;
 		Long idAnterior = null;
@@ -235,6 +237,7 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 					entity.setFornecedor(produto.getFornecedor().getNome());
 					entity.setValor(new BigDecimal(produto.getValorVenda()));
 					entity.setDesconto(desconto);
+					entity.setCreditoDebito(creditoDebito);
 					entity.setFrete(frete);
 					
 					//Observação
@@ -267,7 +270,7 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 				
 				entity.setValor(new BigDecimal(produto.getProdutos().get(0).getValorVenda()));
 				entity.setDesconto(desconto);
-				entity.setFrete(Pedido.calcularFrete(valorPedido));
+				//entity.setFrete(Pedido.calcularFrete(valorPedido));
 				
 				//Observação
 				entity.setObservacao(produto.getPedido().getObservacao());
@@ -324,7 +327,7 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 				entity.setFornecedor(item.getProdutos().get(0).getFornecedor().getNome());
 			
 			entity.setValor(new BigDecimal(item.getProdutos().get(0).getValorVenda()));
-			entity.setDesconto(item.getPedido().getDesconto().getValorDesconto());
+			entity.setDesconto(item.getPedido().getValorDesconto());
 			
 			//Observação
 			entity.setObservacao(item.getPedido().getObservacao());
@@ -350,7 +353,7 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 			produto = item.getProdutos().get(0);
 			
 			//Tem que ser oriundo do estoque e o produto precisa estar associado ao estoque...
-			if(estoque.equals(produto.getProdutoEstoque()!=null)) {
+			if(estoque.equals(EstoqueControl.loadEstoque(null, produto.id) !=null)) {
 				entity = new ProdutoPedidoReportVO();
 				
 				entity.setCodigoProduto(produto.getCodigoProduto());
@@ -363,7 +366,7 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 					entity.setFornecedor(produto.getFornecedor().getNome());
 				
 				entity.setValor(new BigDecimal(produto.getValorVenda()));
-				entity.setDesconto(item.getPedido().getDesconto().getValorDesconto());
+				entity.setDesconto(item.getPedido().getValorDesconto());
 				
 				//Observação
 				entity.setObservacao(item.getPedido().getObservacao());
@@ -441,4 +444,15 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 		this.frete = frete;
 	}
 	
+	public BigDecimal getCreditoDebito() {
+		if(creditoDebito==null)
+			creditoDebito = BigDecimal.ZERO;
+		
+		return creditoDebito;
+	}
+
+	public void setCreditoDebito(BigDecimal creditoDebito) {
+		this.creditoDebito = creditoDebito;
+	}
+
 }

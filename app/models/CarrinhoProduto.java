@@ -9,19 +9,16 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import play.data.validation.Required;
 import play.db.jpa.Model;
@@ -30,8 +27,6 @@ import play.db.jpa.Model;
  * @author guerrafe
  *
  */
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Cacheable
 @Entity
 @Table(name="CARRINHO_PRODUTO")
 public class CarrinhoProduto extends Model {
@@ -54,6 +49,41 @@ public class CarrinhoProduto extends Model {
 	@Required
 	@OneToMany(fetch=FetchType.EAGER, mappedBy="carrinho")
 	private List<CarrinhoItem> itens = null;
+	
+	@ManyToMany(mappedBy="carrinhos")
+	private List<CestaPronta> cestas = null;
+	
+	/**
+	 * @return the cestas
+	 */
+	public List<CestaPronta> getCestas() {
+		if(cestas==null)
+			this.cestas = new ArrayList<CestaPronta>();
+			
+		return cestas;
+	}
+	/**
+	 * @param cestas the cestas to set
+	 */
+	public void setCestas(List<CestaPronta> cestas) {
+		this.cestas = cestas;
+	}
+	
+	public boolean addCestaPronta(CestaPronta cestaPronta) {
+		if(cestaPronta==null)
+			return false;
+		
+		cestaPronta.getCarrinhos().add(this);
+		
+		return this.getCestas().add(cestaPronta);
+	}
+	
+	public boolean contains(CestaPronta cestaPronta) {
+		if(cestaPronta==null)
+			return false;
+		
+		return getCestas().contains(cestaPronta);
+	}
 	
 	/**
 	 * @return the valorTotalCompra

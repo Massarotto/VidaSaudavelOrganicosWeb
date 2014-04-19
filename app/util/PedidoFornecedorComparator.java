@@ -8,14 +8,14 @@ import java.util.Comparator;
 
 import vo.ProdutoPedidoReportVO;
 
-import models.Pedido;
-
 /**
  * Classe utilitária que compara uma lista de <code>ProdutoPedidoReportVO</code> através do nome do fornecedor. 
  * @author Felipe G. de Oliveira
  *
  */
 public class PedidoFornecedorComparator implements Comparator<ProdutoPedidoReportVO>, Serializable {
+	
+	private static final long serialVersionUID = -7009117161863826745L;
 	
 	private boolean decrescente = false;
 	

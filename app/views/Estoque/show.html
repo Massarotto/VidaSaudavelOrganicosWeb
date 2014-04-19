@@ -32,62 +32,47 @@
 <div class="boxConsultaDefault">
 	<table width="100%" cellpadding="1" cellspacing="0" border="0" class="fontGreen2">
 		<tr class="tr1">
-			<td align="center" width="5%">Id</td>
-			<td align="center">&{'form.product.title'}</td>
-			<td align="center" width="8%">Validade</td>
-			<td align="center" width="10%">
-				<a href="/estoque/order/quantidade/1" title="Ordernar" class="a1">&{'form.label.quantidade'}</a>
-			</td>
-			<td align="center" width="12%">&{'form.global.price'}</td>
-			<td align="center" width="16%">&{'form.admin.mypage.date'}</td>
-			<td align="center" width="16%">&{'form.estoque.date.lastUpdate'}</td>
-			<td align="center" width="10%">&{'form.estoque.user.lastUpdate'}</td>
-			<td align="center" width="10%">&{'form.label.status'}</td>
+			<td align="center" width="16%">&{'form.lote.title'}</td>
+			<td align="center">&{'form.order.date'}</td>
+			<td align="center" width="19%">&{'form.estoque.user.lastUpdate'}</td>
+			<td align="center" width="19%">&{'form.product.lastUpdate'}</td>
+			<td align="center" width="22%">&{'form.product.title'}(s)</td>
 		</tr>
 		<tr>
-			<td colspan="10">
+			<td colspan="7">
 				<div style="position:relative; height: 340px; overflow: auto;">
 					<table width="100%" border="0" cellpadding="2">
 					#{paginate.list items:posicaoEstoque, as:'estoque'}
-					<tr class="${produto_parity}">
-						<td width="5%" align="center">
-							<a href="/estoque/editar/${estoque.id}" class="a1" title="Editar">
-								<span>${estoque.id}</span>
+						<tr class="${estoque_parity}">
+							<td align="center" width="16%">
+							<a href="@{Estoque.consultarLote(estoque.id)}" class="a1">
+								<span>${estoque.codigo}</span>
 							</a>
-						</td>
-						<td align="left">
-							#{if (estoque.produto?.nome.length()>=15)}
-								<span title="${estoque.produto?.nome}">${estoque.produto?.nome.substring(0, 15)}...</span>
-							#{/if}
-							#{else}
-								<span title="${estoque.produto?.nome}">${estoque.produto?.nome}</span>
-							#{/else}
-						</td>
-						<td width="8%" align="left">${estoque.produto?.dataValidade?.format('dd/MM/yyyy')}</td>
-						<td width="10%" align="center">${estoque.quantidade}</td>
-						<td width="12%" align="center">${estoque.preco.formatCurrency('BRL').raw()}</td>
-						<td width="15%" align="left">${new Date(estoque.dataCadastro.getTime()).format('dd/MM/yyyy HH:mm')}</td>
-						<td width="15%" align="left">
-							#{if (estoque.dataAlteracao!=null)}
-								${new Date(estoque.dataAlteracao.getTime()).format('dd/MM/yyyy HH:mm')}
-							#{/if}
-						<td width="10%" align="left">
-							<span title="${estoque.usuarioAlteracao}">${estoque.usuarioAlteracao.substring(0, 9)}...</span>
-						</td>
-						<td width="10%" align="center">
-							<a href="/estoque/changestatus/${estoque.id}" class="a1">
-								${estoque.ativo ? 'Ativo' : 'Inativo'}
-							</a>
-						</td>
-					</tr>
+							</td>
+							<td align="center">
+								<span>${estoque.dataCadastro?.format('dd/MM/yyyy HH:mm')}</span>
+							</td>
+							<td align="center" width="23%">
+								<span>${estoque.usuarioAlteracao}</span>
+							</td>
+							<td align="center" width="19%">
+								<span>${estoque.dataAlteracao?.format('dd/MM/yyyy HH:mm')}</span>
+							</td>
+							<td align="center" width="10%">
+								<span>${estoque.itens.size()}</span>
+							</td>
+							<td align="right">
+								<a href="@{Estoque.excluirLote(estoque.id)}">&{'form.excluir'}</a>
+							</td>
+						</tr>
 					#{/paginate.list}
 					</table>
 				</div>
 			</td>
 		</tr>
 		<tr class="tr1">
-			<td colspan="4" align="center">#{paginate.summary items:posicaoEstoque /}</td>
-			<td colspan="6" align="center">#{paginate.controls items:posicaoEstoque /}</td>
+			<td colspan="2" align="center">#{paginate.summary items:posicaoEstoque /}</td>
+			<td colspan="4" align="center">#{paginate.controls items:posicaoEstoque /}</td>
 		</tr>
 	</table>
 </div>

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import models.Pedido;
+import controllers.Pedidos;
 import controllers.Relatorios;
 
 public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<PedidoProdutoEntregaReportVO> {
@@ -27,10 +28,16 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 	private String telefone;
 	private String prefixoCelular;
 	private String telefoneCelular;
-	
+	private BigDecimal valorPedidoHistorico = BigDecimal.ZERO;
+	private BigDecimal valorPedidoHistoricoPago = BigDecimal.ZERO;
+	private BigDecimal valorPago = BigDecimal.ZERO;
+	private String statusPedido;
+	private String formaPagamento;
 	private String observacao;
 	
 	private List<ProdutoPedidoReportVO> produtos;
+	
+	private List<PedidoProdutoEntregaReportVO> ultimosPedidos;
 	
 	/**
 	 * @return the id
@@ -255,6 +262,8 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 				entity.setCep(pedido.getCliente().getEnderecos().get(0).getCep());
 				entity.setPrefixoTelefone(pedido.getCliente().getTelefones().get(0).getPrefixo());
 				entity.setTelefone(pedido.getCliente().getTelefones().get(0).getNumero());
+				entity.setFormaPagamento(pedido.getPagamento().getFormaPagamento().getDescricao());
+				//entity.setCreditoDebito(pedido.getOutrasDespesas());
 				
 				//2º telefone
 				if(pedido.getCliente().getTelefones().size()>1) {
@@ -269,11 +278,45 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 				entity.setObservacao(pedido.getObservacao());
 				entity.setProdutos( ProdutoPedidoReportVO.fillProdutos(Relatorios.findProdutosAguardandoEntrega(pedido.id), 
 																	pedido.getValorPedido(), 
-																	pedido.getDesconto().getValorDesconto(),
+																	pedido.getValorDesconto(),
 																	pedido.getObservacao(),
-																	pedido.getFrete()==null ? BigDecimal.ZERO : pedido.getFrete().getValor()));
+																	pedido.getFrete()==null ? BigDecimal.ZERO : pedido.getFrete().getValor(),
+																	pedido.getOutrasDespesas()) );
+				
+				entity.setUltimosPedidos(fillPedidosHistorico(Pedidos.getPedidosAbertosEFinalizados(pedido.getCliente().id, 4)));
 
 				result.add(entity);
+			}
+		}
+		return result;
+	}
+	
+	public static List<PedidoProdutoEntregaReportVO> fillPedidosHistorico(List<Pedido> pedidosHistorico) {
+		List<PedidoProdutoEntregaReportVO> result = new ArrayList<PedidoProdutoEntregaReportVO>();
+		
+		if(pedidosHistorico!=null && !pedidosHistorico.isEmpty()) {
+			PedidoProdutoEntregaReportVO pedidoVO = null;
+			
+			for(Pedido _pedido : pedidosHistorico) {
+				pedidoVO = new PedidoProdutoEntregaReportVO();
+				
+				pedidoVO.setId(_pedido.id);
+				pedidoVO.setDataPedido(_pedido.getDataPedido());
+				pedidoVO.setValorPedidoHistorico(_pedido.getValorTotal());
+				pedidoVO.setStatusPedido(_pedido.getCodigoEstadoPedido().getEstado());
+				pedidoVO.setValorPago(_pedido.getValorPago()==null ? _pedido.getValorTotal() : _pedido.getValorPago());
+				
+				switch (_pedido.getCodigoEstadoPedido()) {
+					case AGUARDANDO_PAGAMENTO:
+						pedidoVO.setValorPedidoHistoricoPago(_pedido.getValorTotal().negate());
+						break;
+					case FINALIZADO:
+						pedidoVO.setValorPedidoHistoricoPago(_pedido.getValorPago()!=null ? _pedido.getValorPago().subtract(_pedido.getValorTotal()) : BigDecimal.ZERO);
+						break;
+					default:
+						break;
+				}
+				result.add(pedidoVO);
 			}
 		}
 		return result;
@@ -380,4 +423,90 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 		this.prefixoCelular = prefixoCelular;
 	}
 
+	/**
+	 * @return the ultimosPedidos
+	 */
+	public List<PedidoProdutoEntregaReportVO> getUltimosPedidos() {
+		if(ultimosPedidos==null)
+			ultimosPedidos = new ArrayList<PedidoProdutoEntregaReportVO>();
+		
+		return ultimosPedidos;
+	}
+
+	/**
+	 * @param ultimosPedidos the ultimosPedidos to set
+	 */
+	public void setUltimosPedidos(List<PedidoProdutoEntregaReportVO> ultimosPedidos) {
+		this.ultimosPedidos = ultimosPedidos;
+	}
+
+	/**
+	 * @return the valorPedidoHistorico
+	 */
+	public BigDecimal getValorPedidoHistorico() {
+		return valorPedidoHistorico.setScale(2, BigDecimal.ROUND_HALF_UP);
+	}
+
+	/**
+	 * @param valorPedidoHistorico the valorPedidoHistorico to set
+	 */
+	public void setValorPedidoHistorico(BigDecimal valorPedidoHistorico) {
+		this.valorPedidoHistorico = valorPedidoHistorico;
+	}
+
+	/**
+	 * @return the valorPedidoHistoricoPago
+	 */
+	public BigDecimal getValorPedidoHistoricoPago() {
+		return valorPedidoHistoricoPago.setScale(2, BigDecimal.ROUND_HALF_UP);
+	}
+
+	/**
+	 * @param valorPedidoHistoricoPago the valorPedidoHistoricoPago to set
+	 */
+	public void setValorPedidoHistoricoPago(BigDecimal valorPedidoHistoricoPago) {
+		this.valorPedidoHistoricoPago = valorPedidoHistoricoPago;
+	}
+
+	/**
+	 * @return the statusPedido
+	 */
+	public String getStatusPedido() {
+		return statusPedido;
+	}
+
+	/**
+	 * @param statusPedido the statusPedido to set
+	 */
+	public void setStatusPedido(String statusPedido) {
+		this.statusPedido = statusPedido;
+	}
+
+	/**
+	 * @return the formaPagamento
+	 */
+	public String getFormaPagamento() {
+		return formaPagamento;
+	}
+
+	/**
+	 * @param formaPagamento the formaPagamento to set
+	 */
+	public void setFormaPagamento(String formaPagamento) {
+		this.formaPagamento = formaPagamento;
+	}
+
+	/**
+	 * @return the valorPago
+	 */
+	public BigDecimal getValorPago() {
+		return valorPago;
+	}
+
+	/**
+	 * @param valorPago the valorPago to set
+	 */
+	public void setValorPago(BigDecimal valorPago) {
+		this.valorPago = valorPago;
+	}
 }

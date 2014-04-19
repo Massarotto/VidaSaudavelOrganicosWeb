@@ -5,7 +5,6 @@ package models;
 
 import java.io.Serializable;
 
-import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,9 +13,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import play.data.validation.Required;
 import play.db.jpa.Model;
 
@@ -24,8 +20,6 @@ import play.db.jpa.Model;
  * @author Felipe G. de Oliveira
  * @since 12/09/2011
  */
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Cacheable
 @Entity
 @Table(name="TELEFONE")
 public class Telefone extends Model implements Serializable {

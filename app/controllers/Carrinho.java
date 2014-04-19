@@ -3,6 +3,9 @@
  */
 package controllers;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,7 +13,9 @@ import java.util.List;
 
 import models.CarrinhoItem;
 import models.CarrinhoProduto;
+import models.CestaPronta;
 import models.Cliente;
+import models.CupomDesconto;
 import models.Desconto;
 import models.Endereco;
 import models.FormaPagamento;
@@ -27,16 +32,17 @@ import play.mvc.Before;
 import play.mvc.Catch;
 import play.mvc.Controller;
 import business.estoque.EstoqueControl;
+import business.pagamento.service.PagamentoServiceFactory;
 import business.pagamento.service.PayPalService;
+import business.pagamento.service.interfaces.GatewayService;
 import ebay.api.paypalapi.SetExpressCheckoutResponseType;
-import exception.PayPalServiceException;
 import exception.ProdutoEstoqueException;
 import exception.SystemException;
 import form.ProdutoQuantidadeForm;
 
 /**
- * @author guerrafe
- *
+ * @author Felipe Guerra
+ * @version 1.0
  */
 public class Carrinho extends Controller {
 	
@@ -53,7 +59,7 @@ public class Carrinho extends Controller {
 	public static void erroCarrinho(Exception e) {
 		Logger.error(e, "Houve um erro na posição do estoque.");
 
-		Mail.sendError("Insuficiência no Estoque", Mail.EMAIL_ADMIN, Mail.EMAIL_ADMIN, e);
+		Mail.sendError("Falta no Estoque", Mail.EMAIL_ADMIN, Mail.EMAIL_ADMIN, e);
 		
 		Home.index(Messages.get("application.error.estoque", e.getMessage()));
 	}
@@ -166,6 +172,36 @@ public class Carrinho extends Controller {
 		renderJSON(adicionarProdutoCarrinho(sessionId, idProduto, quantidade, valorProduto));
 	}
 	
+	/**
+	 * <p>Metodo para inserir a cesta no carrinho.</p>
+	 * @param sessionId
+	 * @param idProduto
+	 * @param quantidade
+	 * @param valorProduto
+	 */
+	public static void adicionarCesta(String sessionId, Long idProduto, Integer quantidade, Double valorProduto) {
+		CarrinhoProduto carrinho = Cache.get(sessionId, CarrinhoProduto.class);
+		CestaPronta cesta = CestaPronta.findById(idProduto);
+		BigDecimal valorTotalCache = BigDecimal.ZERO;
+		
+		if(carrinho==null)
+			carrinho = new CarrinhoProduto();
+		
+		if(!carrinho.contains(cesta)) {
+			if(Cache.get("valorTotal."+sessionId, BigDecimal.class)!=null)
+				valorTotalCache = Cache.get("valorTotal."+sessionId, BigDecimal.class);
+			
+			valorTotalCache = valorTotalCache.add( BigDecimal.valueOf(valorProduto*quantidade).setScale(2, BigDecimal.ROUND_HALF_UP) );
+			
+			Cache.set("valorTotal."+sessionId, valorTotalCache, "40mn");
+			
+			carrinho.addCestaPronta(cesta);
+			
+			Cache.set(sessionId, carrinho, "40mn");
+		}
+		renderJSON(valorTotalCache);
+	}
+	
 	public static void valorTotalCompra(String sessionId) {
 		BigDecimal result = null;
 		
@@ -178,7 +214,7 @@ public class Carrinho extends Controller {
 		Logger.debug("######## Início - Ver Produtos do Carrinho... ########");
 		CarrinhoProduto carrinho = Cache.get(sessionId, CarrinhoProduto.class);
 		
-		if(carrinho!=null && !carrinho.getItens().isEmpty()) {
+		if(carrinho!=null && (!carrinho.getItens().isEmpty() || !carrinho.getCestas().isEmpty())) {
 			BigDecimal valorTotalCompra = Cache.get("valorTotal."+sessionId, BigDecimal.class);
 			
 			carrinho.setDataCompra(new Date());
@@ -207,188 +243,279 @@ public class Carrinho extends Controller {
 	}
 	
 	@Transactional(readOnly=false)
-	public static void finalizar(String sessionId) throws ProdutoEstoqueException, PayPalServiceException {
+	public static void finalizar(String sessionId) {
 		CarrinhoProduto carrinho = Cache.get(sessionId, CarrinhoProduto.class);
 		Boolean isAssessor = null;
 		Boolean responderQuestionario = Boolean.FALSE;
 		String formaPagamento = null;
 		SetExpressCheckoutResponseType resultPayPalService = null;
-		String urlCheckoutPayPal = null;
+		String urlCheckout = null;
 		PedidoEstado statusPedido = null;
+		BigDecimal credito = BigDecimal.ZERO;
 		
-		if(carrinho!=null && session.get("clienteId")!=null) {
-			Frete frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra()));
-			
-			validarValorCompra(carrinho.getValorTotalCompra());
-			
-			if(Boolean.parseBoolean(session.get("isAdmin")) && "-1".equalsIgnoreCase(params.get("cliente"))) {
-				validation.addError("cliente", "message.basket.order.assessor.required", "");
-				isAssessor = Boolean.TRUE;
-			}
-			
-			formaPagamento = params.get("formaPagamento");
-			
-			if(validation.hasErrors()) {
-				params.flash();
-				validation.keep();
+		try {
+			if(carrinho!=null && session.get("clienteId")!=null) {
+				validarValorCompra(carrinho.getValorTotalCompra());
 				
-				Logger.debug("###### Não foi possível finalizar o pedido: %s ######", validation.errors());
+				if(Boolean.parseBoolean(session.get("isAdmin")) && "-1".equalsIgnoreCase(params.get("cliente"))) {
+					validation.addError("cliente", "message.basket.order.assessor.required", "");
+					isAssessor = Boolean.TRUE;
+				}
 				
-				pagamento(sessionId, isAssessor);
+				formaPagamento = params.get("formaPagamento");
 				
-			}else {
-				//Validar o Estoque	
-				EstoqueControl.atualizarEstoque(carrinho.getItens());
-				
-				Pagamento pagamento = new Pagamento();
-				
-				Long idCliente = params.get("cliente")==null ? Long.parseLong(session.get("clienteId")) : Long.parseLong(params.get("cliente"));
-				
-				Cliente cliente = Cliente.findById(idCliente);
-				
-				carrinho.setCliente(cliente);
-				
-				if(carrinho.id==null)
-					carrinho.save();
-				else
-					carrinho.merge();
-				
-				Pedido pedido = new Pedido();
-				
-				if(FormaPagamento.PAYPAL.equals(FormaPagamento.getFormaPagamento(formaPagamento))) {
-					StringBuffer infosPedido = new StringBuffer();
-					pagamento.setFormaPagamento(FormaPagamento.PAYPAL);
+				if(validation.hasErrors()) {
+					params.flash();
+					validation.keep();
 					
-					PayPalService payPalService = PayPalService.newInstance(Messages.get("application.service.url.paypal", ""), 
-																			Messages.get("application.username.url.paypal", ""), 
-																			Messages.get("application.password.url.paypal", ""), 
-																			Messages.get("application.signature.url.paypal", ""));
-					infosPedido.append("Pedido gerado em: ").append(new Date()).append(".");
-					infosPedido.append("Cliente: ").append(cliente.getNome()).append(".");
-					infosPedido.append("Código Pedido: ").append(carrinho.id);
-					infosPedido.append("Total Pedido: ").append(carrinho.getValorTotalCompra());
+					Logger.debug("###### Não foi possível finalizar o pedido: %s ######", validation.errors());
 					
-					resultPayPalService = payPalService.solicitarPagamento(cliente.getNome(), carrinho.getValorTotalCompra().doubleValue(), carrinho.id, infosPedido.toString());
+					pagamento(sessionId, isAssessor);
 					
-					if(payPalService.foiExecutadoComSucesso(resultPayPalService.getAck(), resultPayPalService.getErrors())) {
-						pagamento.setInformacoes(resultPayPalService.getToken());
+				}else {
+					//Validar o Estoque	
+					EstoqueControl.atualizarEstoque(carrinho.getItens());
+
+					Long idCliente = params.get("cliente")==null ? Long.parseLong(session.get("clienteId")) : Long.parseLong(params.get("cliente"));
+					
+					Cliente cliente = Cliente.findById(idCliente);
+					
+					Frete frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra(), cliente.estaNaCapital()));
+					
+					Pagamento pagamento = new Pagamento();
+
+					carrinho.setCliente(cliente);
+					
+					credito = Pedido.getDebitosCreditosTodosPedidosCliente(cliente.id);
+					
+					//Adiciona o crédito se, e somente se, for positivo...valores negativos precisam ser vistos no processo (a entrega)
+					if(credito.doubleValue()>0) {
+						carrinho.setValorTotalCompra(carrinho.getValorTotalCompra().subtract(credito));
+						Pedidos.zerarDebitosCreditos(null, cliente.id);
+						Logger.info("####### Cr�dito R$ %s utilizado para o cliente: %s #######", credito, cliente.getNome());
+					}
+					
+					if(carrinho.id==null)
+						carrinho.save();
+					else
+						carrinho.merge();
+					
+					Pedido pedido = new Pedido();
+					
+					Desconto desconto = CupomDesconto.getDescontoDoCupom(session.get("cupom"), cliente);
+					
+					if(FormaPagamento.PAGSEGURO.equals(FormaPagamento.getFormaPagamento(formaPagamento))) {
+						GatewayService pagSeguroService = PagamentoServiceFactory.getInstance().getGatewayServiceImpl(FormaPagamento.PAGSEGURO);
 						
-						urlCheckoutPayPal = Messages.get("application.checkout.url.paypal", "");
-						urlCheckoutPayPal += resultPayPalService.getToken();
+						String token = pagSeguroService.checkout(cliente, carrinho, frete.getValor());
+						
+						urlCheckout = Messages.get("application.redirectUrl.pagseguro", token);
 						
 						statusPedido = PedidoEstado.AGUARDANDO_PAGAMENTO;
 						
-					}else {
-						Logger.info("#### O pedido de pagamento no Paypal não foi aprovado: %s ####", PayPalService.getInformacoesErro(resultPayPalService.getErrors()));
-					}
+						pagamento.setInformacoes(String.valueOf(carrinho.id));
+						pagamento.setFormaPagamento(FormaPagamento.PAGSEGURO);
 					
-				}else if(FormaPagamento.DINHEIRO.equals(FormaPagamento.getFormaPagamento(formaPagamento))){
-					BigDecimal valorPedidoComDesconto = new BigDecimal(Messages.get("application.minValue.paypal", ""));
-					
-					pagamento.setFormaPagamento(FormaPagamento.DINHEIRO);
-					
-					if(carrinho.getValorTotalCompra().doubleValue()>valorPedidoComDesconto.doubleValue()) {
-						Desconto desconto = new Desconto(new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
-						desconto.setDataDesconto(new Date());
-						desconto.setPedido(pedido);
+					}else if(FormaPagamento.PAYPAL.equals(FormaPagamento.getFormaPagamento(formaPagamento))) {
+						StringBuffer infosPedido = new StringBuffer();
+						pagamento.setFormaPagamento(FormaPagamento.PAYPAL);
 						
-						pedido.setDesconto(desconto);
+						PayPalService payPalService = PayPalService.newInstance(Messages.get("application.service.url.paypal", ""), 
+																				Messages.get("application.username.url.paypal", ""), 
+																				Messages.get("application.password.url.paypal", ""), 
+																				Messages.get("application.signature.url.paypal", ""));
+						infosPedido.append("Pedido gerado em: ").append(new Date()).append(".");
+						infosPedido.append("Cliente: ").append(cliente.getNome()).append(".");
+						infosPedido.append("Código Pedido: ").append(carrinho.id);
+						infosPedido.append("Total Pedido: ").append(carrinho.getValorTotalCompra().add(frete.getValor()));
+						
+						resultPayPalService = payPalService.solicitarPagamento(cliente.getNome(), carrinho.getValorTotalCompra().add(frete.getValor()).doubleValue(), 
+																				carrinho.id, infosPedido.toString());
+						
+						if(payPalService.foiExecutadoComSucesso(resultPayPalService.getAck(), resultPayPalService.getErrors())) {
+							pagamento.setInformacoes(resultPayPalService.getToken());
+							
+							urlCheckout = Messages.get("application.checkout.url.paypal", "");
+							urlCheckout += resultPayPalService.getToken();
+							
+							statusPedido = PedidoEstado.AGUARDANDO_PAGAMENTO;
+							
+						}else {
+							Logger.info("#### O pedido de pagamento no Paypal não foi aprovado: %s ####", PayPalService.getInformacoesErro(resultPayPalService.getErrors()));
+						}
+						
+					}else if(FormaPagamento.DINHEIRO.equals(FormaPagamento.getFormaPagamento(formaPagamento))){
+						BigDecimal valorPedidoComDesconto = new BigDecimal(Messages.get("application.valor.pedido.desconto", ""));
+						
+						pagamento.setFormaPagamento(FormaPagamento.DINHEIRO);
+						
+						if(desconto==null && carrinho.getValorTotalCompra().doubleValue()>valorPedidoComDesconto.doubleValue()) {
+							desconto = new Desconto(new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
+							desconto.setDataDesconto(new Date());
+							desconto.getPedidos().add(pedido);
+						}
+						
+						statusPedido = Pedido.setPedidoEstado();
+					}
+					//D� baixa no cupom utilizado
+					CupomDesconto.atualizarCupomDesconto(session.get("cupom"), cliente);
+					
+					// Gerar Pedido
+					pedido.addCesta(carrinho.getCestas());
+					
+					if(!carrinho.getCestas().isEmpty())
+						pedido.setObservacao(carrinho.getCestas().get(0).getTitulo());
+					
+					pedido.setCodigoPedido(String.valueOf(carrinho.getId()));
+					pedido.addPedidoItem(carrinho.getItens());
+					pedido.setCliente(cliente);
+					pedido.setDataPedido(new Date());
+					pedido.setValorPedido(carrinho.getValorTotalCompra());
+					pedido.setCodigoEstadoPedido(statusPedido);
+					pedido.setArquivado(Boolean.FALSE);
+					pagamento.setPedido(pedido);
+					pagamento.setValorPagamento(pedido.getValorPedido());
+					pedido.setPagamento(pagamento);
+					pedido.setOutrasDespesas(credito);
+					
+					if(desconto!=null) {
+						pedido.setDesconto(new Desconto(desconto.getPorcentagem(), cliente.getUsuario(), pedido));
+						pedido.calcularDesconto();
 					}
 					
-					statusPedido = PedidoEstado.AGUARDANDO_ENTREGA;
-				}
-				// Gerar Pedido
-				
-				pedido.setCodigoPedido(String.valueOf(carrinho.getId()));
-				pedido.addPedidoItem(carrinho.getItens());
-				pedido.setCliente(cliente);
-				pedido.setDataPedido(new Date());
-				pedido.setValorPedido(carrinho.getValorTotalCompra());
-				pedido.setCodigoEstadoPedido(statusPedido);
-
-				pagamento.setPedido(pedido);
-				pagamento.setValorPagamento(pedido.getValorPedido());
-				pedido.setPagamento(pagamento);
-				
-				frete.addPedido(pedido);
-				frete.save();
-				pedido.save();
-				
-				Logger.info("Valor Desconto %s", pedido.getDesconto().getValorDesconto());
-				Logger.info("###### E-mail de confirmação do pedido para: %s #######", cliente.getUsuario().getEmail());
-				try {
-					StringBuffer email = new StringBuffer();
-					email.append("Vida Saudável Orgânicos");
-					email.append("<").append("contato@vidasaudavelorganicos.com.br").append(">");
+					frete.addPedido(pedido);
+					frete.save();
+					pedido.save();
 					
-					Mail.pedidoFinalizado(
-							"Pedido Finalizado",
-							email.toString(), 
-							pedido,
-							cliente.getUsuario().getEmail(), Mail.EMAIL_CONTACT);
-
-					Logger.info("###### E-mail de confirmação do pedido para: %s enviado. #######", cliente.getUsuario().getEmail());
-										
-				} catch (SystemException ex) {
-					Logger.error("Erro ao enviar o e-mail de confirmação para %s", cliente.getUsuario().getEmail(), ex);
+					gerarNotaPedidoEnviarPorEmail(pedido, cliente);
 					
+					Cache.safeDelete(sessionId);
+					Cache.safeDelete("valorTotal." + sessionId);
+					session.remove("cupom");
+					Logger.debug("######## Cache limpo e Pedido gerado: %s ########", pedido.id);
+	
+					if(urlCheckout==null) {
+						String pedidoFinalizado = String.valueOf(pedido.id);
+	
+						responderQuestionario = Questionarios.haQuestionarioPendente(cliente.getUsuario().getId());
+						
+						render(pedidoFinalizado, cliente, responderQuestionario);
+					}
+					redirect(urlCheckout);
 				}
-				Cache.safeDelete(sessionId);
-				Cache.safeDelete("valorTotal." + sessionId);
-
-				Logger.debug("######## Cache limpo e Pedido gerado: %s ########", pedido.id);
-
-				if(urlCheckoutPayPal==null) {
-					String pedidoFinalizado = String.valueOf(pedido.id);
-
-					responderQuestionario = Questionarios.haQuestionarioPendente(cliente.getUsuario().getId());
-					
-					render(pedidoFinalizado, cliente, responderQuestionario);
-				}
-				redirect(urlCheckoutPayPal);
+				
+			}else {
+				Home.index(Messages.get("application.message.basket.empty", ""));
 			}
 			
-		}else {
-			Home.index(Messages.get("application.message.basket.empty", ""));
+		}catch(Exception ex) {
+			EstoqueControl.reporEstoque(carrinho.getItens());
+			
+			validation.addError("cliente", ex.getMessage(), "");
+			params.flash();
+			validation.keep();
+			
+			pagamento(sessionId, isAssessor);
 		}
-
-	}	
+	}
 	
-	public static void excluirProdutos(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade) {
+	private static void gerarNotaPedidoEnviarPorEmail(Pedido pedido, Cliente cliente) {
+		String caminhoArquivo = null;
+		FileOutputStream fis = null;
+		File tempFile = null;
+		
+		try {
+			StringBuffer email = new StringBuffer();
+			email.append("Vida Saudável Orgânicos");
+			email.append("<").append("contato@vidasaudavelorganicos.com.br").append(">");
+			
+//			tempFile = File.createTempFile(Relatorios.REPORT_TITLE, ".pdf");
+//			tempFile.deleteOnExit();
+//			fis = new FileOutputStream(tempFile);
+//			
+//			IOUtils.copy(Relatorios.gerarNotaFiscalPedido(pedido.id), fis);
+//			caminhoArquivo = tempFile.getAbsolutePath();
+			
+			Logger.info("Valor Desconto %s", pedido.getValorDesconto());
+			Logger.info("###### E-mail de confirmação do pedido para: %s #######", cliente.getUsuario().getEmail());
+			
+			Mail.pedidoFinalizado(
+					"Pedido Finalizado",
+					email.toString(), 
+					pedido,
+					caminhoArquivo,
+					cliente.getUsuario().getEmail(), Mail.EMAIL_CONTACT);
+
+			Logger.info("###### E-mail de confirmação do pedido para: %s enviado. #######", cliente.getUsuario().getEmail());
+			
+//		}catch(IOException ioex) {
+//			Logger.error(ioex, "Erro ao gerar a nota para o cliente %s", cliente.getUsuario().getEmail());
+								
+		}catch(SystemException ex) {
+			Logger.error(ex, "Erro ao enviar o e-mail de confirmação para %s", cliente.getUsuario().getEmail());
+			
+		}finally {
+			if(fis!=null)
+				try {
+					fis.close();
+				}catch(IOException ex) {
+					//ignore
+				}
+		}
+	}
+	
+	public static void excluirProdutos(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade, List<CestaPronta> cestas) {
 		Logger.debug("##### Início - Excluir produtos do carrinho. #####");
 		
 		CarrinhoProduto carrinho = Cache.get(sessionId, CarrinhoProduto.class);
 		String message = null;
 		
-		if(produtoQuantidade==null || produtoQuantidade.isEmpty()) {
+		if( (produtoQuantidade==null || produtoQuantidade.isEmpty()) && (cestas==null || cestas.isEmpty()) ) {
 			validation.addError("", Messages.get("message.product.required", ""));
 			
 			validation.keep();
 			
 		}else {
-			for(ProdutoQuantidadeForm prod : produtoQuantidade) {
-				Produto tempProduto = new Produto(prod.getId());
+			if(produtoQuantidade!=null) {
+				for(ProdutoQuantidadeForm prod : produtoQuantidade) {
+					Produto tempProduto = new Produto(prod.getId());
+					
+					laco_carrinho:
+					for(CarrinhoItem item : carrinho.getItens()) {
+						if(item.getProdutos().get(0).id.equals(tempProduto.id)) {
+							//Subtrair o valor dos produtos
+							BigDecimal result = Cache.get("valorTotal."+sessionId, BigDecimal.class);
+							BigDecimal newValue = result.subtract(new BigDecimal( item.getQuantidade() * item.getProdutos().get(0).getValorVenda() ).setScale(2, BigDecimal.ROUND_HALF_UP));
+							
+							carrinho.setValorTotalCompra(newValue);
+							Logger.debug("#### Novo valor do carrinho: %s ####", newValue);
+							
+							carrinho.getItens().remove(item);
+							
+							Cache.set("valorTotal."+sessionId, newValue, "40mn");
+							break laco_carrinho;
+						}
+					}
+				}
+			}
+			if(cestas!=null) {
+				BigDecimal result = Cache.get("valorTotal."+sessionId, BigDecimal.class);
 				
-				laco_carrinho:
-				for(CarrinhoItem item : carrinho.getItens()) {
-					if(item.getProdutos().get(0).id.equals(tempProduto.id)) {
-						//Subtrair o valor dos produtos
-						BigDecimal result = Cache.get("valorTotal."+sessionId, BigDecimal.class);
-						BigDecimal newValue = result.subtract(new BigDecimal( item.getQuantidade() * item.getProdutos().get(0).getValorVenda() ).setScale(2, BigDecimal.ROUND_HALF_UP));
-						
+				for(CestaPronta cesta : cestas) {
+					BigDecimal valorCesta = CestaPronta.find("select valorVenda from CestaPronta where id = ?", cesta.id).first();
+					
+					BigDecimal newValue = result.subtract(valorCesta).setScale(2, BigDecimal.ROUND_HALF_UP);
+					
+					if(carrinho.getCestas().remove(cesta)) {
 						carrinho.setValorTotalCompra(newValue);
-						Logger.debug("#### Novo valor do carrinho: %s ####", newValue);
 						
-						carrinho.getItens().remove(item);
-						
-						Cache.set("valorTotal."+sessionId, newValue, "40mn");
-						break laco_carrinho;
+						Cache.set("valorTotal."+sessionId, newValue, "40mn");					
 					}
 				}
 			}
 			message = Messages.get("validation.data.success", "");
 		
-			if(carrinho.getItens().isEmpty())
+			if(carrinho.getCestas().isEmpty() && carrinho.getItens().isEmpty())
 				limparCarrinho(sessionId);
 		}
 		
@@ -401,38 +528,49 @@ public class Carrinho extends Controller {
 		Logger.debug("###### Início - Selecionar forma de pagamento... ######");
 		Endereco endereco = null;
 		CarrinhoProduto carrinho = Cache.get(sessionId, CarrinhoProduto.class);
-		Frete frete = null;
+		Frete frete = new Frete(0.0d);
 		List<Cliente> clientes = null;
 		Boolean pedidoAssessor = Boolean.TRUE.equals(isAssessor) && Boolean.parseBoolean(session.get("isAdmin"));
 		BigDecimal valorMinPagPayPal = null;
 		BigDecimal valorComDesconto = null;
+		BigDecimal valorPagamentoComDesconto = null;
+		BigDecimal credito = BigDecimal.ZERO;
+		CupomDesconto cupom = null;
 		
 		if(carrinho!=null && session.get("clienteId")!=null) {
-			valorMinPagPayPal = new BigDecimal(Messages.get("application.minValue.paypal", ""));
-			frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra()));
+			valorPagamentoComDesconto = new BigDecimal(Messages.get("application.valor.pedido.desconto", ""));
+			valorMinPagPayPal = new BigDecimal(Messages.get("application.minValue.gateways", ""));
 			
-			if(pedidoAssessor)
+			if(pedidoAssessor) {
 				clientes = Cliente.find("ativo = ?", Boolean.TRUE).fetch();
-			
+			}
 			validarValorCompra(carrinho.getValorTotalCompra());
 			
 			if(validation.hasErrors()) {
 				validation.keep();
 				
 				Logger.info("###### Não foi possível finalizar o pedido: %s ######", validation.errors());
-				
 			}else {
 				carrinho.setDataCompra(new Date());
 				
 				if(!pedidoAssessor) {
 					Cliente cliente = Cliente.findById( Long.parseLong(session.get("clienteId")) );
 					
+					frete = new Frete(Pedido.calcularFrete(carrinho.getValorTotalCompra(), cliente.estaNaCapital()));
+					
 					endereco = cliente.getEnderecos().get(0);
 					
 					carrinho.setCliente(cliente);
+					
+					cupom = CupomDesconto.pesquisarPorCodigoCupom(session.get("cupom"), cliente);
+					
+					credito = Pedido.getDebitosCreditosTodosPedidosCliente(cliente.id);
 				}
 				
-				valorComDesconto = Pedido.calcularDesconto(carrinho.getValorTotalCompra(), new BigDecimal(Messages.get("application.pedido.paypal.desconto", ""))).setScale(2, BigDecimal.ROUND_HALF_DOWN);
+				if(cupom!=null)
+					valorComDesconto = CupomDesconto.calcularDescontoCarrinhoComCupom(cupom, carrinho);
+				else
+					valorComDesconto = Pedido.calcularDesconto(carrinho.getValorTotalCompra(), new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
 			}
 			
 		}else {
@@ -443,14 +581,15 @@ public class Carrinho extends Controller {
 		
 		FormaPagamento pagamento = FormaPagamento.DINHEIRO; 
 		
-		render(carrinho, sessionId, frete, endereco, clientes, isAssessor, pagamento, valorMinPagPayPal, valorComDesconto);
+		render(carrinho, sessionId, frete, endereco, clientes, isAssessor, pagamento, valorMinPagPayPal, 
+				valorComDesconto, valorPagamentoComDesconto, cupom, credito);
 	}
 	
-	public static void atualizar(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade) {
+	public static void atualizar(String sessionId, List<ProdutoQuantidadeForm> produtoQuantidade, List<CestaPronta> cestas) {
 		Logger.debug("###### Início - Atualizar Produtos...%s ######", sessionId);
 		BigDecimal valorTotalCache = Cache.get("valorTotal."+sessionId, BigDecimal.class);
 		String message = null;
-		
+
 		if(produtoQuantidade==null || produtoQuantidade.isEmpty()) {
 			validation.addError("", Messages.get("message.product.required", ""));
 			
@@ -486,8 +625,10 @@ public class Carrinho extends Controller {
 		view(sessionId, message);
 	}
 	
-	public static void loading(String sessionId) {
-		render(sessionId);
+	public static void loading(String sessionId, String pagamentoSolicitado) {
+		String formaPagamento = FormaPagamento.getFormaPagamento(pagamentoSolicitado).getDescricao();
+		
+		render(sessionId, formaPagamento);
 	}
 	
 	private static void validarValorCompra(BigDecimal valorCompra) {

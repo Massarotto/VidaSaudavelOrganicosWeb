@@ -4,19 +4,18 @@
 package models;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -39,6 +38,9 @@ import org.hibernate.search.annotations.Store;
 import play.data.validation.Min;
 import play.data.validation.Required;
 import play.db.jpa.Model;
+import business.estoque.EstoqueControl;
+
+import com.google.gson.annotations.Expose;
 
 /**
  * @author guerrafe
@@ -55,7 +57,8 @@ import play.db.jpa.Model;
 		"ativo",
 		"ehPromocao",
 		"ehCesta",
-		"dataValidade"
+		"dataValidade",
+		"podeEnviarPorCorreio"
 })
 @XmlRootElement(name="Produto")
 @Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
@@ -63,7 +66,7 @@ import play.db.jpa.Model;
 @Entity
 @Table(name="PRODUTO")
 @Indexed(index="Produto")
-public class Produto extends Model implements Comparable<Produto> {
+public class Produto extends Model implements Comparable<Produto>, ProdutoCarrinho {
 
 	private static final long serialVersionUID = -3392437480740820408L;
 
@@ -107,28 +110,33 @@ public class Produto extends Model implements Comparable<Produto> {
 		this.detalhe = detalhe;
 	}
 	
+	@Expose
 	@XmlElement(name="CodigoProduto", required=true)
 	@Required(message="message.required.product.codigo")
 	@Column(name="CODIGO_PRODUTO", length=60, nullable=false, unique=true)
 	private String codigoProduto;
 	
+	@Expose
 	@Field(index=Index.TOKENIZED, store=Store.YES, analyzer=@org.hibernate.search.annotations.Analyzer(impl=BrazilianAnalyzer.class))
 	@XmlElement(name="Nome", required=true)
 	@Required(message="message.required.product.nome")
 	@Column(name="NOME", length=80, nullable=false)
 	private String nome;
 	
+	@Expose
 	@Field(index=Index.TOKENIZED, store=Store.NO, analyzer=@org.hibernate.search.annotations.Analyzer(impl=BrazilianAnalyzer.class))
 	@XmlElement(name="Descricao", required=false)
 	@Required(message="message.required.product.descricao")
 	@Column(name="DESCRICAO", length=150, nullable=false)
 	private String descricao;
 	
+	@Expose
 	@XmlTransient
 	@Required(message="message.required.product.valorPago")
 	@Column(name="VALOR_PAGO", nullable=false)
 	private Double valorPago = 0.0;
 	
+	@Expose
 	@Min(0.01)
 	@XmlElement(name="Preco", required=true)
 	@Required(message="message.required.product.valorVenda")
@@ -148,11 +156,6 @@ public class Produto extends Model implements Comparable<Produto> {
 	@Column(name="DATA_CADASTRO", nullable=false)
 	private Date dataCadastro;
 	
-	@XmlElement(name="DataValidade", required=true)
-	@Temporal(TemporalType.DATE)
-	@Column(name="DATA_VALIDADE", nullable=true)
-	private Date dataValidade;
-	
 	@Field(index=Index.UN_TOKENIZED, store=Store.YES)
 	@XmlElement(name="Ativo", required=true)
 	@Column(name="FLAG_ATIVO", nullable=false)
@@ -161,11 +164,7 @@ public class Produto extends Model implements Comparable<Produto> {
 	@XmlElement(name="EhPromocao", required=false)
 	@Column(name="FLAG_PROMOCAO", nullable=false)
 	private Boolean ehPromocao = Boolean.FALSE;
-	
-	@XmlTransient
-	@OneToOne(fetch=FetchType.EAGER)
-	private ProdutoEstoque produtoEstoque = null;
-	
+		
 	@XmlTransient
 	@ManyToOne(fetch=FetchType.EAGER)
 	private Secao secao;
@@ -180,15 +179,15 @@ public class Produto extends Model implements Comparable<Produto> {
 	private Boolean ehCesta = Boolean.FALSE;
 	
 	@XmlTransient
-	@ManyToMany(mappedBy="produtos")
+	@ManyToMany(mappedBy="produtos", fetch=FetchType.LAZY)
 	private List<PedidoItem> listPedidoItem = null;
 
 	@XmlTransient
-	@ManyToMany(mappedBy="produtos")
+	@ManyToMany(mappedBy="produtos", fetch=FetchType.LAZY)
 	private List<CarrinhoItem> listCarrinhoItem = null;
 	
 	@XmlTransient
-	@ManyToOne(fetch=FetchType.EAGER)
+	@ManyToOne(fetch=FetchType.LAZY)
 	private Fornecedor fornecedor;
 	
 	@XmlTransient
@@ -201,9 +200,31 @@ public class Produto extends Model implements Comparable<Produto> {
 	private List<CestaProduto> listCestaProdutos = null;
 	
 	@XmlTransient
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="produto")
-	private List<CestaAssinaturaProduto> listCestaAssinaturaProduto;
+	@Transient
+	private BigDecimal valorMargemLucro = BigDecimal.ZERO;
 	
+	@XmlElement(name="PodeEnviarPorCorreio", required=false)
+	@Column(name="FLAG_ENVIO_CORREIO", nullable=true)
+	private Boolean podeEnviarPorCorreio;
+	
+	/**
+	 * @return the valorMargemLucro
+	 */
+	public BigDecimal getValorMargemLucro() {
+		if(this.valorPago>0) {
+			valorMargemLucro = BigDecimal.valueOf( (this.valorVenda * 100) / this.valorPago );
+			valorMargemLucro = valorMargemLucro.subtract(BigDecimal.valueOf(100.0));
+		}
+		return valorMargemLucro.setScale(2, BigDecimal.ROUND_HALF_DOWN);
+	}
+
+	/**
+	 * @param valorMargemLucro the valorMargemLucro to set
+	 */
+	public void setValorMargemLucro(BigDecimal valorMargemLucro) {
+		this.valorMargemLucro = valorMargemLucro;
+	}
+
 	/**
 	 * @return the nome
 	 */
@@ -314,20 +335,6 @@ public class Produto extends Model implements Comparable<Produto> {
 	 */
 	public void setAtivo(Boolean ativo) {
 		this.ativo = ativo;
-	}
-
-	/**
-	 * @return the produtoEstoque
-	 */
-	public ProdutoEstoque getProdutoEstoque() {
-		return produtoEstoque;
-	}
-
-	/**
-	 * @param produtoEstoque the produtoEstoque to set
-	 */
-	public void setProdutoEstoque(ProdutoEstoque produtoEstoque) {
-		this.produtoEstoque = produtoEstoque;
 	}
 	
 	/**
@@ -451,20 +458,6 @@ public class Produto extends Model implements Comparable<Produto> {
 	}
 
 	/**
-	 * @return the dataValidade
-	 */
-	public Date getDataValidade() {
-		return dataValidade;
-	}
-
-	/**
-	 * @param dataValidade the dataValidade to set
-	 */
-	public void setDataValidade(Date dataValidade) {
-		this.dataValidade = dataValidade;
-	}
-
-	/**
 	 * @return the listCarrinhoItem
 	 */
 	public List<CarrinhoItem> getListCarrinhoItem() {
@@ -490,13 +483,14 @@ public class Produto extends Model implements Comparable<Produto> {
 	@Transient
 	public Boolean isAvailable() {
 		Boolean result = Boolean.FALSE;
+		ProdutoLoteEstoque estoque = EstoqueControl.loadEstoque(null, this.getId());
 		
-		if(this.getProdutoEstoque()==null || !this.getProdutoEstoque().getAtivo()) {
+		if(estoque==null)
 			result = Boolean.TRUE;
+		else
+			if(estoque.getQuantidade()>0)
+				result = Boolean.TRUE;
 		
-		}else if(this.getProdutoEstoque().getAtivo() && this.getProdutoEstoque().getQuantidade()>0) {
-			result = Boolean.TRUE;
-		}
 		return result;
 	}
 
@@ -510,25 +504,7 @@ public class Produto extends Model implements Comparable<Produto> {
 	public void setListCestaProdutos(List<CestaProduto> listCestaProdutos) {
 		this.listCestaProdutos = listCestaProdutos;
 	}
-
-	/**
-	 * @return the listCestaAssinaturaProduto
-	 */
-	public List<CestaAssinaturaProduto> getListCestaAssinaturaProduto() {
-		if(this.listCestaAssinaturaProduto==null)
-			this.listCestaAssinaturaProduto = new ArrayList<CestaAssinaturaProduto>();
-		
-		return listCestaAssinaturaProduto;
-	}
-
-	/**
-	 * @param listCestaAssinaturaProduto the listCestaAssinaturaProduto to set
-	 */
-	public void setListCestaAssinaturaProduto(
-			List<CestaAssinaturaProduto> listCestaAssinaturaProduto) {
-		this.listCestaAssinaturaProduto = listCestaAssinaturaProduto;
-	}
-
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -545,5 +521,36 @@ public class Produto extends Model implements Comparable<Produto> {
 
 	}
 
-	
+	/**
+	 * @param produtos
+	 * @return valor de custo para uma lista de produtos
+	 */
+	public static BigDecimal getValorCustoProdutos(List<Produto> produtos) {
+		BigDecimal result = BigDecimal.ZERO;
+		
+		if(produtos!=null && !produtos.isEmpty()) { 
+			for(Produto produto : produtos) {
+				result = result.add(BigDecimal.valueOf(produto.getValorPago()));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * @return the podeEnviarPorCorreio
+	 */
+	public Boolean getPodeEnviarPorCorreio() {
+		if(this.podeEnviarPorCorreio==null)
+			this.podeEnviarPorCorreio = Boolean.FALSE;
+		
+		return podeEnviarPorCorreio;
+	}
+
+	/**
+	 * @param podeEnviarPorCorreio the podeEnviarPorCorreio to set
+	 */
+	public void setPodeEnviarPorCorreio(Boolean podeEnviarPorCorreio) {
+		this.podeEnviarPorCorreio = podeEnviarPorCorreio;
+	}
+
 }

@@ -4,7 +4,6 @@
 package models;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Cacheable;
@@ -38,7 +37,7 @@ public class PedidoItem extends Model {
 	
 	@Required
 	@Column(name="QUANTIDADE", nullable=false)
-	private Integer quantidade;
+	private Integer quantidade = Integer.valueOf(0);
 	
 	@ManyToMany(fetch=FetchType.LAZY)
 	private List<Produto> produtos;
@@ -121,28 +120,6 @@ public class PedidoItem extends Model {
 		this.excluido = excluido;
 	}
 	
-	/**
-	 * @param produtos
-	 * @return
-	 */
-	public static List<PedidoItem> buildItemPedido(List<CestaAssinaturaProduto> produtos, Pedido pedido) {
-		List<PedidoItem> result = new ArrayList<PedidoItem>();
-		
-		if(!produtos.isEmpty()) {
-			Collections.sort(produtos);
-			
-			for(CestaAssinaturaProduto _prod : produtos) {
-				PedidoItem item = newPedidoItem(pedido, Boolean.FALSE);
-				
-				item.getProdutos().add(_prod.getProduto());
-				item.setQuantidade(_prod.getQuantidade());
-				
-				result.add(item);
-			}
-		}
-		return result;
-	}
-	
 	public static PedidoItem newPedidoItem(Pedido pedido, Boolean excluido) {
 		PedidoItem pedidoItem = new PedidoItem();
 		pedidoItem.setExcluido(excluido);
@@ -151,4 +128,28 @@ public class PedidoItem extends Model {
 		return pedidoItem;
 	}
 	
+	public static List<PedidoItem> buildListPedidoItem(List<CestaProduto> produtos, Pedido pedido) {
+		List<PedidoItem> result = new ArrayList<PedidoItem>();
+		PedidoItem item = null;
+		
+		for(CestaProduto cestaProduto : produtos) {
+			item = new PedidoItem();
+			item.setPedido(pedido);
+			item.getProdutos().add(cestaProduto.getProduto());
+			item.setQuantidade(1);
+			
+			result.add(item);
+		}
+		return result;
+	}
+	
+	public void addProduto(Produto produto, Integer quantidade) {
+		int i = 0;
+		
+		while(i<quantidade) {
+			this.getProdutos().add(produto);
+			i++;
+		}
+	}
+
 }

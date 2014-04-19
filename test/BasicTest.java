@@ -1,5 +1,4 @@
-import org.junit.*;
-import java.util.*;
+import java.util.List;
 
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -7,21 +6,26 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.Metamodel;
+
+import models.Desconto;
+import models.Fornecedor;
+import models.Pedido;
+import models.PedidoItem;
+import models.Produto;
+
+import org.junit.Test;
 
 import play.db.jpa.JPA;
-import play.test.*;
-import models.*;
+import play.test.UnitTest;
 
 public class BasicTest extends UnitTest {
 
     @Test
     public void aVeryImportantThingToTest() {
-        assertEquals(2, 1 + 1);
+        System.out.println( Pedido.getDataAproximadaEntrega() );
+        assertTrue(true);
     }
-    
-    @Test
+
     public void testQueryProdutosComplexa() {
     	try {
     		CriteriaBuilder builder = JPA.em().getCriteriaBuilder();
@@ -46,6 +50,18 @@ public class BasicTest extends UnitTest {
     		e.printStackTrace();
     		fail("error");
     	}
+    }
+    
+   
+    public void testCupomDesconto() {
+    	try {
+    		List<Desconto> result = Desconto.find("cupons <> ?", "").fetch();
+    		
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    		fail(e.getMessage());
+    	}
+    	
     }
 
 }

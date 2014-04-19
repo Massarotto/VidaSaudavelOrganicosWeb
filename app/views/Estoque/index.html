@@ -24,7 +24,7 @@
 		<tr>
 			<td align="right" width="35%">&{'form.global.price'}</td>
 			<td align="left">
-				<input type="text" class="textBox1" name="estoque.preco" id="estoque.preco" 
+				<input type="text" readonly="readonly" disabled="disabled" class="textBox1" name="estoque.preco" id="estoque.preco" 
 						size="15" maxlength="8" value="${estoque.preco}" />*
 			</td>
 		</tr>
@@ -91,6 +91,17 @@
 			var formulario = document.getElementById('formCadastroEstoque')
 			
 			formulario.submit();
+		
+		}catch(e) {
+			alert(e);
+		}
+	}
+	
+	function consultarPreco() {
+		try {
+			var = #{jsAction @Produtos.consultarPreco(':id') /}
+			
+			alert($("#estoque.produto.id"));
 		
 		}catch(e) {
 			alert(e);

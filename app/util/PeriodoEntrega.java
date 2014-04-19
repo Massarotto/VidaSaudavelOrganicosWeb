@@ -8,7 +8,7 @@ package util;
  *
  */
 public enum PeriodoEntrega {
-	MANHA("Manh√£"),
+	MANHA("Manh„"),
 	TARDE("Tarde");
 
 	private PeriodoEntrega(String periodo) {

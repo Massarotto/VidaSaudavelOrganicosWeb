@@ -5,10 +5,9 @@ package models;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
@@ -19,7 +18,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.Query;
 import javax.persistence.QueryHint;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -29,23 +27,20 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import play.Logger;
 import play.data.validation.MaxSize;
 import play.data.validation.Required;
-import play.db.jpa.JPA;
 import play.db.jpa.Model;
 import play.i18n.Messages;
-import util.CestaAssinaturaProdutoComparator;
 
 /**
- * @author guerrafe
+ * @author Felipe Guerra
  *
  */
 @Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Cacheable
 @Entity
 @Table(name="PEDIDO")
-@NamedQuery(name="findAllOrderByDataPedidoAndCodigoEstado", query="from Pedido order by dataPedido desc, codigoEstadoPedido desc", 
+@NamedQuery(name="findAllOrderByDataPedidoAndCodigoEstado", query="from Pedido where arquivado =:arquivado order by dataPedido desc, codigoEstadoPedido desc", 
 		hints={@QueryHint(value="true", name="org.hibernate.cacheable")})
 public class Pedido extends Model {
 
@@ -58,7 +53,8 @@ public class Pedido extends Model {
 		FINALIZADO(4, "Finalizado"),
 		ARQUIVADO(5, "Arquivado"),
 		PAGO(6, "Pago"),
-		AGUARDANDO_ENTREGA(7, "Aguardando Entrega");
+		AGUARDANDO_ENTREGA(7, "Aguardando Entrega"),
+		EM_ANALISE(8, "Em Analise");
 		
 		private Integer codigo;
 		private String estado;
@@ -109,6 +105,9 @@ public class Pedido extends Model {
 	@Column(name="VALOR_PEDIDO", nullable=false, scale=2, precision=8)
 	private BigDecimal valorPedido;
 	
+	@Column(name="VALOR_PAGO", nullable=true, scale=2, precision=8)
+	private BigDecimal valorPago;
+	
 	/**
 	 * √Ä partir de 29/05/2012, o valor do c√≥digo do pedido ser√° o id do carrinho, 
 	 * para quest√µes de rastreabilidade. 
@@ -126,7 +125,7 @@ public class Pedido extends Model {
 	@Column(name="DATA_ENTREGA")
 	private Date dataEntrega;
 	
-	@Column(name="OBSERVACAO", nullable=true, length=180)
+	@Column(name="OBSERVACAO", nullable=true, length=880)
 	private String observacao;
 	
 	@Required
@@ -136,12 +135,15 @@ public class Pedido extends Model {
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="pedido")
 	private List<PedidoItem> itens = null;
 	
-	@OneToOne(cascade=CascadeType.ALL, fetch=FetchType.EAGER, orphanRemoval=true)
+	@OneToOne(cascade=CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval=true)
 	private Pagamento pagamento = null;
 	
 	@Required
-	@OneToOne(cascade=CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval=true)
+	@ManyToOne(fetch=FetchType.EAGER, cascade=CascadeType.PERSIST)
 	private Desconto desconto = null;
+	
+	@Column(name="USUARIO_ALTERACAO", nullable=true, length=80)
+	private String usuarioAlteracao;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="DATA_ALTERACAO", nullable=true)
@@ -154,6 +156,26 @@ public class Pedido extends Model {
 	@ManyToOne(fetch=FetchType.EAGER, cascade=CascadeType.ALL)
 	private Frete frete;
 	
+	@Column(name="PEDIDO_ARQUIVADO", nullable=true)
+	private Boolean arquivado = Boolean.FALSE;
+	
+	@Column(name="OUTRAS_DESPESAS", nullable=true, scale=2, precision=8)
+	private BigDecimal outrasDespesas = BigDecimal.ZERO;
+	
+	/**
+	 * @return the outrasDespesas
+	 */
+	public BigDecimal getOutrasDespesas() {
+		return outrasDespesas;
+	}
+
+	/**
+	 * @param outrasDespesas the outrasDespesas to set
+	 */
+	public void setOutrasDespesas(BigDecimal outrasDespesas) {
+		this.outrasDespesas = outrasDespesas;
+	}
+
 	/**
 	 * @return the codigoEstadoPedido
 	 */
@@ -284,7 +306,15 @@ public class Pedido extends Model {
 			}
 		}
 	}
-
+	
+	public void addCesta(List<CestaPronta> cestas) {
+		if(cestas!=null && !cestas.isEmpty()) {
+			for(CestaPronta cesta : cestas) {
+				this.getItens().addAll( PedidoItem.buildListPedidoItem(cesta.getProdutosAtivos(), this) );
+			}
+		}
+	}
+	
 	/**
 	 * @return the desconto
 	 */
@@ -322,12 +352,19 @@ public class Pedido extends Model {
 	 */
 	@Transient
 	public void calcularDesconto() {
-		if(this.getDesconto().getValorDesconto().doubleValue()>0) {
-			this.getDesconto().setPorcentagem( new BigDecimal(this.getDesconto().getValorDesconto().doubleValue() / this.getValorPedido().doubleValue()).multiply(Desconto.CEM_PORCENTO).setScale(2, BigDecimal.ROUND_HALF_UP));
+		if(getDesconto().getValorDesconto().doubleValue()>0) {
+			this.getDesconto().setPorcentagem( new BigDecimal(getDesconto().getValorDesconto().doubleValue() / this.getValorPedido().doubleValue()).multiply(Desconto.CEM_PORCENTO).setScale(2, BigDecimal.ROUND_HALF_UP));
 			
 		}else if(this.getDesconto().getPorcentagem().doubleValue()>0) {
-			this.valorPedido.subtract( this.desconto.getPorcentagem().divide(Desconto.CEM_PORCENTO).multiply(this.valorPedido) ).setScale(2, BigDecimal.ROUND_HALF_UP);
+			this.getDesconto().setValorDesconto( this.desconto.getPorcentagem().divide(Desconto.CEM_PORCENTO).multiply(this.valorPedido).setScale(2, BigDecimal.ROUND_HALF_UP) );
 		}
+	}
+	
+	public BigDecimal getValorDesconto() {
+		if(this.desconto==null)
+			return BigDecimal.ZERO;
+		
+		return getDesconto().getPorcentagem().divide(Desconto.CEM_PORCENTO).multiply(getValorPedido()).setScale(2, BigDecimal.ROUND_HALF_DOWN);
 	}
 	
 	/**
@@ -345,10 +382,10 @@ public class Pedido extends Model {
 	
 	@Transient
 	public BigDecimal getValorComDesconto() {
-		if(getDesconto().getValorDesconto().doubleValue()>0)
-			return this.valorPedido.subtract( this.desconto.getValorDesconto() ).setScale(2, BigDecimal.ROUND_HALF_DOWN);
+		if(getValorDesconto().doubleValue()>0)
+			return this.valorPedido.subtract( getValorDesconto() ).setScale(2, BigDecimal.ROUND_HALF_DOWN);
 		else
-			return this.valorPedido.subtract( this.desconto.getPorcentagem().divide(Desconto.CEM_PORCENTO).multiply(this.valorPedido) ).setScale(2, BigDecimal.ROUND_HALF_DOWN);
+			return this.valorPedido.subtract( getDesconto().getPorcentagem().divide(Desconto.CEM_PORCENTO).multiply(this.valorPedido) ).setScale(2, BigDecimal.ROUND_HALF_DOWN);
 	}
 	
 	@Transient
@@ -356,10 +393,21 @@ public class Pedido extends Model {
 		BigDecimal result = null;
 		
 		if(pedidos!=null && !pedidos.isEmpty()) {
-			result = new BigDecimal(0.0d);
+			result = BigDecimal.ZERO;
 			
 			for(Pedido pedido : pedidos)
 				result = result.add(pedido.getValorPedido());
+		}
+		return result;
+	}
+	
+	@Transient
+	public static BigDecimal getDebitosCreditosTodosPedidosCliente(Long idCliente) {
+		BigDecimal result = BigDecimal.ZERO;
+		List<Pedido> pedidos = Pedido.find("cliente.id = ? AND valorPago IS NOT NULL", idCliente).fetch();
+		
+		for(Pedido pedido : pedidos) {
+			result = result.add(pedido.getValorPago().subtract(pedido.getValorTotal()));
 		}
 		return result;
 	}
@@ -404,159 +452,26 @@ public class Pedido extends Model {
 		return result;
 	}
 	
-	public static BigDecimal calcularFrete(BigDecimal valorTotalCompra) {
+	public static BigDecimal calcularFrete(BigDecimal valorTotalCompra, Boolean estaNaCapital) {
 		BigDecimal result = new BigDecimal(0);
 		
 		Double valorCompraSemFrete = Double.valueOf(Messages.get("application.frete.valor", ""));
 		
 		if(valorCompraSemFrete!=null && valorTotalCompra.doubleValue()<valorCompraSemFrete) {
-			Frete frete = Frete.findById(1L);
-			result = frete.getValor();
+			if(estaNaCapital) {
+				Frete frete = Frete.findById(1L);
+				result = frete.getValor();
+			}else {
+				result = new BigDecimal(Double.valueOf(Messages.get("application.frete.interior.valor", "")));
+			}
 		}
 		return result;
 	}
 	
 	public void addFrete() {
-		this.valorPedido = this.getValorPedido().add(calcularFrete(this.getValorPedido())).setScale(2, BigDecimal.ROUND_HALF_UP);
+		this.valorPedido = this.getValorPedido().add(calcularFrete(this.getValorPedido(), this.cliente.estaNaCapital())).setScale(2, BigDecimal.ROUND_HALF_UP);
 	}
 	
-	/**
-	 * <p>
-	 * 	Gerar um pedido de acordo com uma assinatura de cesta
-	 * </p>
-	 * @param cestaAssign
-	 * @return novo pedido (necess√°rio persistir)
-	 */
-	public static Pedido newPedido(CestaAssinatura cestaAssign) {
-		Pedido pedido = null;
-		int size = 0;
-		
-		try {
-			//A cesta precisa estar ativa
-			if(cestaAssign!=null && cestaAssign.getAtivo()) {
-				Secao secao = null;
-				List<CestaAssinaturaProduto> produtosCestaPedido = new ArrayList<CestaAssinaturaProduto>();
-				Integer produtosPrimeiraOpcao = Integer.valueOf(0);
-
-				Collections.sort(cestaAssign.getListCestaAssinaturaProduto(), new CestaAssinaturaProdutoComparator(Boolean.FALSE));
-				
-				pedido = new Pedido();
-				pedido.setCodigoEstadoPedido(Pedido.PedidoEstado.AGUARDANDO_ENTREGA);
-				pedido.setDataPedido(new Date());
-				pedido.setCliente(cestaAssign.getCliente());
-				pedido.setValorPedido(cestaAssign.getValorCesta());
-
-				BigDecimal valorPedidoComDesconto = new BigDecimal(Messages.get("application.minValue.paypal", ""));
-				
-				if(pedido.getValorPedido().doubleValue()>valorPedidoComDesconto.doubleValue()) {
-					Desconto desconto = new Desconto(new BigDecimal(Messages.get("application.pedido.paypal.desconto", "")));
-					desconto.setDataDesconto(new Date());
-					desconto.setPedido(pedido);
-					
-					pedido.setDesconto(desconto);
-				}
-				
-				Pagamento _pag = new Pagamento();
-				_pag.setFormaPagamento(cestaAssign.getPagamento().getFormaPagamento());
-				_pag.setValorPagamento(pedido.getValorComDesconto());
-				
-				pedido.setPagamento(_pag);
-				
-				pedido.setCodigoPedido("CESTA_"+cestaAssign.id + "_" + new Date().getTime());
-				pedido.setObservacao("Pedido gerado automaticamente para assinatura de cesta " + cestaAssign.getPeriodo().getDescricao());
-				pedido.setEhPedidoDeCesta(Boolean.TRUE);
-
-				secao = cestaAssign.getListCestaAssinaturaProduto().get(0).getProduto().getSecao();
-				
-				for(CestaAssinaturaProduto cestaAssinaturaProduto : cestaAssign.getListCestaAssinaturaProduto()) {
-					size++;
-					
-					if(size==1 || !secao.equals(cestaAssinaturaProduto.getProduto().getSecao())) {
-						produtosPrimeiraOpcao = getQuantidadeProdutosSecao(cestaAssign.id, cestaAssinaturaProduto.getProduto().getSecao());
-						List<CestaAssinaturaProduto> listProdutosPrimeiraOpcao = produtosAssinaturaPrimeiraOpcao(cestaAssign.id, cestaAssinaturaProduto.getProduto().getSecao());
-						
-						if(!listProdutosPrimeiraOpcao.isEmpty() && produtosPrimeiraOpcao>listProdutosPrimeiraOpcao.size())
-							produtosCestaPedido.addAll(produtosAssinaturaOpcional(cestaAssign.id, cestaAssinaturaProduto.getProduto().getSecao(), produtosPrimeiraOpcao-listProdutosPrimeiraOpcao.size()));
-						
-						produtosCestaPedido.addAll(listProdutosPrimeiraOpcao);
-					}
-					secao = cestaAssinaturaProduto.getProduto().getSecao();
-				}
-				pedido.getItens().addAll(PedidoItem.buildItemPedido(produtosCestaPedido, pedido));
-				
-				pedido.getFrete().setValor(Pedido.calcularFrete(pedido.getValorPedido()));
-			}
-			
-		}catch(Exception e) {
-			Logger.error(e, "Erro ao tentar gerar um novo pedido para a cesta: %s", cestaAssign.id);
-			throw new RuntimeException(e);
-		}
-		return pedido;
-	}
-	
-	private static Integer getQuantidadeProdutosSecao(Long idCestaAssinatura, Secao secao) {
-		List<Map<Long, String>> listCestaAssinaturaProduto = new ArrayList<Map<Long,String>>();
-		Integer result = null;
-		
-		Query query = JPA.em().createQuery("select new map(count(sec.id) as qtd, sec.descricao as secao) from Produto as prd, Secao as sec, CestaAssinaturaProduto as cap " +
-				"where prd.secao.id = sec.id AND prd.id = cap.produto.id AND " +
-				"cap.cestaAssinatura.id =:id AND cap.opcional =:isOpcional " +
-				"AND sec.id =:idSecao " +
-				"group by sec.id, sec.descricao " +
-				"order by sec.descricao ASC");
-		query.setParameter("id", idCestaAssinatura);
-		query.setParameter("isOpcional", Boolean.FALSE);
-		query.setParameter("idSecao", secao.id);
-	
-		listCestaAssinaturaProduto = query.getResultList();
-
-		if(!listCestaAssinaturaProduto.isEmpty())
-			result = Integer.valueOf( listCestaAssinaturaProduto.get(0).values().toArray()[0].toString() );
-		
-		Logger.info("#### Quantidade de produtos por se√ß√£o %s, idCestaAssinatura%s: %s  #####", secao.getDescricao(), idCestaAssinatura, listCestaAssinaturaProduto.size());
-		
-		return result;
-	}
-	
-	private static List<CestaAssinaturaProduto> produtosAssinaturaOpcional(Long idCestaAssinaturaProduto, Secao secao, Integer results) {
-		List<CestaAssinaturaProduto> result = new ArrayList<CestaAssinaturaProduto>();
-		
-		Query query = JPA.em().createQuery("select cap from Produto as prd, Secao as sec, CestaAssinaturaProduto as cap " +
-				"where prd.secao.id = sec.id AND prd.id = cap.produto.id AND " +
-				"cap.cestaAssinatura.id =:id AND cap.opcional =:isOpcional " +
-				"AND sec.id =:idSecao");
-		
-		query.setParameter("id", idCestaAssinaturaProduto);
-		query.setParameter("isOpcional", Boolean.TRUE);
-		query.setMaxResults(results);
-		query.setParameter("idSecao", secao.id);
-		
-		Logger.info("#### Quantidade de produtos segunda op√ß√£o para se√ß√£o %s, idCestaAssinatura%s: %s  #####", secao.getDescricao(), idCestaAssinaturaProduto, result.size());
-	
-		result = query.getResultList();
-		
-		return result;
-	}
-	
-	private static List<CestaAssinaturaProduto> produtosAssinaturaPrimeiraOpcao(Long idCestaAssinatura, Secao secao) {
-		List<CestaAssinaturaProduto> result = new ArrayList<CestaAssinaturaProduto>();
-		
-		Query query = JPA.em().createQuery("select cap from Produto as prd, Secao as sec, CestaAssinaturaProduto as cap " +
-				"where prd.secao.id = sec.id AND prd.id = cap.produto.id AND " +
-				"cap.cestaAssinatura.id =:id AND cap.opcional =:isOpcional " +
-				"AND sec.id =:idSecao AND prd.ativo = 1");
-		
-		query.setParameter("id", idCestaAssinatura);
-		query.setParameter("isOpcional", Boolean.FALSE);
-		query.setParameter("idSecao", secao.id);
-	
-		result = query.getResultList();
-		
-		Logger.info("#### Quantidade de produtos primeira op√ß√£o para se√ß√£o %s, idCestaAssinatura%s: %s  #####", secao.getDescricao(), idCestaAssinatura, result.size());
-		
-		return result;
-	}
-
 	/**
 	 * @return the ehPedidoDeCesta
 	 */
@@ -632,7 +547,7 @@ public class Pedido extends Model {
 		}
 		Pedido other = (Pedido) obj;
 		
-		if (this.id != other.id) {
+		if (!this.id.equals(other.id)) {
 			return false;
 		}
 		if (codigoEstadoPedido != other.codigoEstadoPedido) {
@@ -669,5 +584,134 @@ public class Pedido extends Model {
 		return true;
 	}
 
+	/**
+	 * @return the arquivado
+	 */
+	public Boolean getArquivado() {
+		return arquivado;
+	}
+
+	/**
+	 * @param arquivado the arquivado to set
+	 */
+	public void setArquivado(Boolean arquivado) {
+		this.arquivado = arquivado;
+	}
+	
+	public BigDecimal getValorCustoPedido() {
+		BigDecimal result = BigDecimal.ZERO;
+		
+		for(PedidoItem item : this.itens) {
+			if(!item.getExcluido())
+				result = result.add(Produto.getValorCustoProdutos(item.getProdutos()));
+		}
+		return result;
+	}
+
+	/**
+	 * @return the usuarioAlteracao
+	 */
+	public String getUsuarioAlteracao() {
+		return usuarioAlteracao;
+	}
+
+	/**
+	 * @param usuarioAlteracao the usuarioAlteracao to set
+	 */
+	public void setUsuarioAlteracao(String usuarioAlteracao) {
+		this.usuarioAlteracao = usuarioAlteracao;
+	}
+
+	/**
+	 * @return the valorPago
+	 */
+	public BigDecimal getValorPago() {
+		return valorPago;
+	}
+
+	/**
+	 * @param valorPago the valorPago to set
+	 */
+	public void setValorPago(BigDecimal valorPago) {
+		this.valorPago = valorPago;
+	}
+	
+	public BigDecimal getSaldoPedido() {
+		BigDecimal saldo = BigDecimal.ZERO;
+		
+		if(this.getValorPago()!=null) {
+			saldo = this.getValorPago().subtract(this.getValorTotal());
+		}
+			
+		return saldo;
+	}
+	
+	/**
+	 * <p>
+	 * 	MÈtodo respons·vel por calcular o dia aproximado da entrega.
+	 *  A regra atual È: pedidos fechados atÈ Domingo, 23hs, ser„o entregues na prÛxima TerÁa-feira.
+	 *  Para pedidos fechados entre Domingo, 23hs, e TeÁa-feira, 22hs, a entrega ser· realizada na Quinta-feira seguinte.
+	 * </p>
+	 * @return
+	 */
+	public static Date getDataAproximadaEntrega() {
+		Calendar dataAproximadaEntrega = null;
+		
+		dataAproximadaEntrega = Calendar.getInstance();
+		
+		switch(dataAproximadaEntrega.get(Calendar.DAY_OF_WEEK)) {
+			case Calendar.MONDAY:
+				dataAproximadaEntrega.add(Calendar.DAY_OF_MONTH, 3);
+				break;
+			case Calendar.WEDNESDAY:
+				dataAproximadaEntrega.add(Calendar.DAY_OF_MONTH, 6);
+				break;
+			case Calendar.THURSDAY:
+				dataAproximadaEntrega.add(Calendar.DAY_OF_MONTH, 5);
+				break;
+			case Calendar.FRIDAY:
+				dataAproximadaEntrega.add(Calendar.DAY_OF_MONTH, 4);
+				break;
+			case Calendar.SATURDAY:
+				dataAproximadaEntrega.add(Calendar.DAY_OF_MONTH, 3);
+				break;
+			case Calendar.TUESDAY:
+				if(dataAproximadaEntrega.get(Calendar.HOUR_OF_DAY)>=22 && dataAproximadaEntrega.get(Calendar.MINUTE)>0) {
+					dataAproximadaEntrega.add(Calendar.DAY_OF_MONTH, 7);
+				}else {
+					dataAproximadaEntrega.add(Calendar.DAY_OF_MONTH, 2);
+				}
+				break;
+			case Calendar.SUNDAY:
+				if(dataAproximadaEntrega.get(Calendar.HOUR_OF_DAY)>=23 && dataAproximadaEntrega.get(Calendar.MINUTE)>0) {
+					dataAproximadaEntrega.add(Calendar.DAY_OF_MONTH, 4);
+				}else {
+					dataAproximadaEntrega.add(Calendar.DAY_OF_MONTH, 2);
+				}
+				break;
+		}
+		return dataAproximadaEntrega.getTime();
+	}
+	
+	public static PedidoEstado setPedidoEstado() {
+		Calendar dataEntrega = Calendar.getInstance();
+		PedidoEstado result = PedidoEstado.AGUARDANDO_ENTREGA;
+		
+		switch(dataEntrega.get(Calendar.DAY_OF_WEEK)) {
+			case Calendar.TUESDAY:
+				if(dataEntrega.get(Calendar.HOUR_OF_DAY)==22 && dataEntrega.get(Calendar.MINUTE)>0) {
+					result = PedidoEstado.EM_ANALISE;
+				}
+				break;
+				
+			case Calendar.SUNDAY:
+				if(dataEntrega.get(Calendar.HOUR_OF_DAY)==23 && dataEntrega.get(Calendar.MINUTE)>0) {
+					result = PedidoEstado.EM_ANALISE;
+				}
+				break;
+		}
+			
+		return result;
+	}
 	
 }

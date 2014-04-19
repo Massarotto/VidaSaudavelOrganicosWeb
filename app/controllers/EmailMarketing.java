@@ -66,7 +66,7 @@ public class EmailMarketing extends BaseController {
 													to,
 													pathImage);
 				
-					Thread.sleep(150);
+					Thread.sleep(50);
 					
 				}catch(InterruptedException e) {
 					//ignore

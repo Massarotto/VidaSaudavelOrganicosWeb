@@ -5,17 +5,17 @@ package controllers;
 
 import java.util.List;
 
-import javax.swing.text.StyledEditorKit.BoldAction;
+import org.apache.commons.lang.StringUtils;
 
 import models.Secao;
 import play.Logger;
+import play.cache.Cache;
 import play.data.validation.Error;
 import play.data.validation.Required;
 import play.data.validation.Valid;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
 import play.mvc.Before;
-import play.mvc.Controller;
 
 /**
  * @author guerrafe
@@ -27,7 +27,9 @@ public class SecaoProdutos extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || Boolean.valueOf(session.get("isAdmin"))==Boolean.FALSE) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+				&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+			{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");
@@ -55,6 +57,8 @@ public class SecaoProdutos extends BaseController {
 			
 			index(secao, null);
 		}
+		
+		Cache.safeDelete("menu");
 		
 		secao.save();
 		
@@ -94,6 +98,8 @@ public class SecaoProdutos extends BaseController {
 				secao.setSecaoPai(null);
 			}
 			secao.save();
+			
+			Cache.safeDelete("menu");
 			
 			Logger.debug("########## Fim - Atualizar Seção %s ##########", descricao);
 		}

@@ -5,16 +5,17 @@ package business.cliente.service;
 
 import java.io.Serializable;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.Map;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.WebServiceException;
-import javax.xml.ws.handler.MessageContext;
+
+import org.w3c.dom.Document;
 
 import play.Logger;
 import play.cache.Cache;
+import play.libs.WS;
 
 import com.grepcepws.entity.xsd.Cep;
 import com.grepcepws.entity.xsd.ObterCepResponse;
@@ -22,11 +23,13 @@ import com.grepcepws.ws.GrepCep;
 import com.grepcepws.ws.GrepCepPortType;
 
 /**
- * @author hpadmin
+ * @author Felipe Guerra
  *
  */
 public class EnderecoService implements Serializable {
-	
+
+	private static final long serialVersionUID = -8089352392001330630L;
+
 	public static final String TOKEN = "201208173556399O8EEZCMGIDEVCYOWVPKH";
 	
 	private String urlEndPoint;
@@ -34,6 +37,31 @@ public class EnderecoService implements Serializable {
 	private GrepCepPortType portType;
 	
 	private EnderecoService() {}
+	
+	private EnderecoService(String url) {
+		//addProxySettings();
+		this.urlEndPoint = url;
+	}
+	
+	public Cep consultarEnderecoWSCep() {
+		Cep cep = null;
+		
+		try {
+			Document document = WS.url(this.urlEndPoint).get().getXml();
+			
+			cep = new Cep();
+			
+			cep.setBairro(new JAXBElement<String>(new QName("http://entity.grepcepws.com/xsd"), String.class, document.getElementsByTagName("bairro").item(0).getTextContent()));
+			cep.setLogradouro(new JAXBElement<String>(new QName("http://entity.grepcepws.com/xsd"), String.class, document.getElementsByTagName("logradouro").item(0).getTextContent()));
+			cep.setCidade(new JAXBElement<String>(new QName("http://entity.grepcepws.com/xsd"), String.class, document.getElementsByTagName("cidade").item(0).getTextContent()));
+			cep.setEstado(new JAXBElement<String>(new QName("http://entity.grepcepws.com/xsd"), String.class, document.getElementsByTagName("uf").item(0).getTextContent()));
+			
+		}catch(Exception e) {
+			Logger.error(e, "Ocorreu um erro no serviço de consulta de CEP. [%s]", this.urlEndPoint);
+			throw new RuntimeException("Ocorreu um erro no serviço de consulta de CEP. ["+this.urlEndPoint+"]");
+		}
+		return cep;
+	}
 
 	private EnderecoService(String url, String token) {
 		try {
@@ -93,10 +121,15 @@ public class EnderecoService implements Serializable {
 		return new EnderecoService(endPoint, token);
 	}
 	
+	public static EnderecoService newInstance(String endPoint) {
+		return new EnderecoService(endPoint);
+	}
+	
 	private void addProxySettings() {
 		System.setProperty("http.proxyHost", "proxy.houston.hp.com");
         System.setProperty("http.proxyPort", "8080");
         System.setProperty("https.proxyHost", "proxy.houston.hp.com");
         System.setProperty("https.proxyPort", "8080");
 	}
+	
 }

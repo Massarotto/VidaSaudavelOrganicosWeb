@@ -8,19 +8,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import play.data.validation.MaxSize;
 import play.data.validation.MinSize;
@@ -32,8 +30,16 @@ import play.db.jpa.Model;
  * @version 1.0
  * @since 01/07/2011
  */
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Cacheable
+@NamedQueries(value={
+	@NamedQuery(name="pesquisarClienteComAlgumPedidoValido", query="select DISTINCT(cli) from Cliente cli inner join cli.pedidos as ped " +
+																	"inner join cli.usuario as user " +
+																	"WHERE user.recebeMail = true " +
+																	"AND cli.id NOT IN (SELECT cliente.id FROM CupomDesconto as cp WHERE cp.ativo = true) " +
+																	"AND ped.codigoEstadoPedido IN (:parameters) " +
+																	"ORDER BY cli.id DESC"
+				)
+	}
+)
 @Entity
 @Table(name="CLIENTE")
 public class Cliente extends Model implements Serializable {
@@ -90,7 +96,7 @@ public class Cliente extends Model implements Serializable {
 	private List<Telefone> telefones;
 	
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="cliente")
-	private List<CestaAssinatura> listCestaAssinatura = null;
+	private List<CupomDesconto> cupons = null;
 	
 	public Cliente(String nome, Date dataNascimento) {
 		this.nome = nome;
@@ -318,21 +324,50 @@ public class Cliente extends Model implements Serializable {
 	}
 
 	/**
-	 * @return the listCestaAssinatura
+	 * @return the cupons
 	 */
-	public List<CestaAssinatura> getListCestaAssinatura() {
-		if(this.listCestaAssinatura==null)
-			this.listCestaAssinatura = new ArrayList<CestaAssinatura>();
+	public List<CupomDesconto> getCupons() {
+		if(cupons==null)
+			this.cupons = new ArrayList<CupomDesconto>();
 			
-		return listCestaAssinatura;
+		return cupons;
 	}
 
 	/**
-	 * @param listCestaAssinatura the listCestaAssinatura to set
+	 * @param cupons the cupons to set
 	 */
-	public void setListCestaAssinatura(List<CestaAssinatura> listCestaAssinatura) {
-		this.listCestaAssinatura = listCestaAssinatura;
+	public void setCupons(List<CupomDesconto> cupons) {
+		this.cupons = cupons;
 	}
 
+	/**
+	 * @param enderecos the enderecos to set
+	 */
+	public void setEnderecos(List<Endereco> enderecos) {
+		this.enderecos = enderecos;
+	}
+
+	public Boolean estaNaCapital() {
+		Boolean result = null;
+		
+		if(!this.getEnderecos().isEmpty()) {
+			result = "Sao Paulo".equalsIgnoreCase(this.getEnderecos().get(0).getCidade().trim()) || "São Paulo".equalsIgnoreCase(this.getEnderecos().get(0).getCidade().trim());
+			
+		}
+		return result;
+	}
+	
+	public static Telefone getTelefoneCelular(Long idCliente) {
+		Cliente cliente = Cliente.findById(idCliente);
+		Telefone result = null;
+		
+		for(Telefone fone : cliente.getTelefones()) {
+			if(fone.getTipo().equals(Telefone.TelefoneTipo.CELULAR)) {
+				result = fone;
+				break;
+			}
+		}
+		return result;
+	}
 	
 }

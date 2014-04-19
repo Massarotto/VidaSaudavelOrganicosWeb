@@ -15,7 +15,11 @@ import javax.persistence.Query;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import org.apache.commons.lang.StringUtils;
+
+import models.CestaPronta;
 import models.Fornecedor;
+import models.Pedido;
 import models.Produto;
 import models.Secao;
 import play.Logger;
@@ -43,7 +47,9 @@ public class Produtos extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || Boolean.valueOf(session.get("isAdmin"))==Boolean.FALSE) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+				&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+			{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");
@@ -86,7 +92,6 @@ public class Produtos extends BaseController {
 		}
 		produto.setDataCadastro(new Date());
 		produto.setAtivo(true);
-		produto.setDataValidade(dataValidade);
 		
 		moveImage(produto);
 		produto.save();
@@ -112,7 +117,7 @@ public class Produtos extends BaseController {
 		}
 
 		produto.setDataAlteracao(new Date());
-		produto.setDataValidade(dataValidade);
+
 		produto.save();
 		
 		Produtos.show(null);
@@ -127,8 +132,6 @@ public class Produtos extends BaseController {
 		
 		Produto produto = Produto.findById(id);
 		render(produto);
-		
-		Logger.debug("######### Fim - Visualização de produto %s... #########", id);
 	}
 	
 	public static void edit(Long id, String message) {
@@ -239,19 +242,31 @@ public class Produtos extends BaseController {
 	}
 	
 	public static void findBySecao(Long id, String nome) {
-		List<Produto> prods = Produto.find("secao.id = ? AND ativo = ?", id, Boolean.TRUE).fetch();
 		Secao secao = Secao.findById(id);
 		
 		flash.success(buildProdutosSecao(secao));
 		
-		Logger.debug("######## Fim - Pesquisa da seção %s, foram econtrado(s) %s produto(s).########", id, prods.size());
-		
-		Collections.sort(prods, new ProdutoComparator(true));
-		
-		ValuePaginator<Produto> produtos = new ValuePaginator<Produto>(prods);
-		produtos.setPageSize(50);
-		
-		renderTemplate("Home/search.html", produtos);
+		if(nome.toLowerCase().trim().contains("cestas prontas")) {
+			List<CestaPronta> cestas = Cache.get("cestasAtivas", List.class);
+			
+			if(cestas==null) {
+				cestas = CestaPronta.find("ativo = ?", Boolean.TRUE).fetch();
+				Cache.add("cestasAtivas", cestas, "24h");
+			}
+			renderTemplate("Cestas/cestaProdutos.html", cestas);
+			
+		}else {
+			List<Produto> prods = Produto.find("secao.id = ? AND ativo = ?", id, Boolean.TRUE).fetch();
+			
+			Logger.debug("######## Fim - Pesquisa da seção %s, foram econtrado(s) %s produto(s).########", id, prods.size());
+			
+			Collections.sort(prods, new ProdutoComparator(true));
+			
+			ValuePaginator<Produto> produtos = new ValuePaginator<Produto>(prods);
+			produtos.setPageSize(50);
+			
+			renderTemplate("Home/search.html", produtos);
+		}
 	}
 	
 	/**
@@ -284,31 +299,38 @@ public class Produtos extends BaseController {
 	}
 	
 	public static void detail(Long id, String nome) {
-		Produto produto = Produto.findById(id);
+		Produto produto = Produto.find("id = ? AND ativo = ?", id, Boolean.TRUE).first();
 		
-		flash.success(buildProdutosSecao(produto.getSecao()));
+		if(produto!=null) {
+			flash.success(buildProdutosSecao(produto.getSecao()));
 		
-		render(produto);
+			render(produto);
+		}else {
+			Home.index(Messages.get("message.notfound.product", ""));
+		}
 	}
 	
 	@SuppressWarnings("all")
 	public static void atualizarProdutosFornecedores() {
 		Logger.debug("######### Início - Atualizar todos os produtos do site com as tabelas enviadas. ##########");
+		ProdutoControl control = new ProdutoControl();
+		/*
 		Integer updates = 0;
 		List<Long> fornecedores = Fornecedor.find("select id from Fornecedor order by id ASC", null).fetch();
-		ProdutoControl control = new ProdutoControl();
+		
 		
 		for(Long idFornecedor : fornecedores) {
 			control.atualizarProdutos(idFornecedor);
 			
 			updates++;
 		}
+		*/
 		//Rebuild dos índices
 		control.generateLuceneIndex();
 		
 		Logger.debug("######### Fim - Atualizar todos os produtos do site com as tabelas enviadas. ##########");
 		
-		Home.index("Os produtos de  " + updates + " fornecedores foram atualizados, verifique se alguns produtos não estão cadastrados.");
+		Home.index("Os produtos foram atualizados para o mecanismo de busca do site.");
 	}
 	
 	@Transactional(readOnly=false)
@@ -321,6 +343,21 @@ public class Produtos extends BaseController {
 		Logger.debug("#### %s produtos com status de promoção alterado(s). ####", query.executeUpdate());
 		
 		show(null);
+	}
+	
+	@Transactional(readOnly=false)
+	public static void excluir(Long id) {
+		int removed = Produto.delete("id = ?", id);
+		
+		Logger.info("Produto removido: %s ", removed);
+		
+		show(null);
+	}
+	
+	public static void consultarPreco(Long id) {
+		Pedido pedido = Produto.find("select valorPago from Pedido where id = ?", id).first();
+		
+		renderJSON(pedido.getValorPago());
 	}
 	
 	public static void getProdutosAtivos() {
@@ -373,29 +410,39 @@ public class Produtos extends BaseController {
 	}
 	
 	private static String buildProdutosSecao(Secao secao) {
-		List<Secao> secoes = new ArrayList<Secao>();
-		StringBuilder path = new StringBuilder();
-		boolean test = true;
+		StringBuilder path = null;
 		
-		while(test) {
-			if(secao.getSecaoPai()==null) {
-				secoes.add(secao);
-				test = !test;
-			}else {
-				secoes.add(secao);
-				
-				secao = Secao.findById(secao.getSecaoPai().id);
-			}
-		}
-		
-		for(int i=secoes.size()-1; i>=0; i--) {
-			Secao _secao = secoes.get(i);
-			path.append("<a href=\"/produtos/secao/").append(_secao.id).append("/").append(_secao.getDescricao()).append("\">");
-			path.append(_secao.getDescricao());
-			path.append("</a>");
+		if(Cache.get("secao:" + secao.id)==null) {
+			List<Secao> secoes = new ArrayList<Secao>();
+			path = new StringBuilder();
+			boolean test = true;
 			
-			if(i>0)
-				path.append(" > ");
+			while(test) {
+				if(secao.getSecaoPai()==null) {
+					secoes.add(secao);
+					test = !test;
+				}else {
+					secoes.add(secao);
+					
+					secao = Secao.findById(secao.getSecaoPai().id);
+				}
+			}
+			
+			for(int i=secoes.size()-1; i>=0; i--) {
+				Secao _secao = secoes.get(i);
+				path.append("<a class=\"a1\" href=\"/produtos/secao/").append(_secao.id).append("/").append(_secao.getDescricao()).append("\">");
+				path.append(_secao.getDescricao());
+				path.append("</a>");
+				
+				if(i>0)
+					path.append(" > ");
+			}
+			
+			Cache.add("secao:" + secao.id, path, "24h");
+			
+		}else {
+			path = (StringBuilder) Cache.get("secao:" + secao.id);
+			
 		}
 		return path.toString();
 	}

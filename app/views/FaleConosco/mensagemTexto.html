@@ -1,0 +1,39 @@
+<div>
+	#{form @FaleConosco.enviarMensagemTexto(), id:"formEnviarMensagemTexto", method:"POST"}
+	<table width="100%" cellpadding="4" cellspacing="4" border="0">
+		<tr>
+			<td colspan="2" align="center">
+				 <span>&{'application.form.sendMessage'}</span>
+			</td>
+		</tr>
+		<tr>
+			<td width="13%">
+				<span class="txt_padrao">&{'form.phone'}</span>
+			</td>
+			<td align="left">
+				#{select 'telefone', items:telefones, valueProperty:'id', labelProperty:'numero', size:'10', style:'width:150px'}
+				#{/select}
+			</td>
+		</tr>
+		<tr>
+			<td width="13%">
+				<span class="txt_padrao">&{'form.faleConosco.message'}</span>
+			</td>
+			<td align="left">
+				<textarea cols="45" rows="3" name="mensagem" id="mensagem">${mensagem}</textarea>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" align="center">
+				 <br />
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" align="right">
+				<input type="hidden" value="${clientes}" id="clientes" />
+				<input type="submit" value="&{'form.button.enviar'}" />
+			</td>
+		</tr>
+	</table>
+	#{/form}
+</div>

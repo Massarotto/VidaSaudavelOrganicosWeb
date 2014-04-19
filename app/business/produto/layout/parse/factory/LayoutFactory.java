@@ -14,7 +14,7 @@ import business.produto.layout.parse.LayoutProdutosParse;
  */
 public abstract class LayoutFactory {
 	
-	public static ILayoutParse getLayout(LayoutArquivo layoutArquivo) {
+	public static ILayoutParse<?> getLayout(LayoutArquivo layoutArquivo) {
 		if(layoutArquivo.equals(LayoutArquivo.CSV))
 			return new LayoutProdutoParse();
 		else if(layoutArquivo.equals(LayoutArquivo.PRODUTO_CSV))

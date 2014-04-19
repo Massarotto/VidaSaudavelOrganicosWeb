@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.File;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -17,17 +18,23 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import models.Endereco;
 import models.Fornecedor;
 import models.Pedido;
 import models.PedidoItem;
 import models.Produto;
+
+import org.apache.commons.lang.StringUtils;
+
 import play.Logger;
-import play.data.binding.As;
 import play.db.jpa.JPA;
 import play.i18n.Messages;
 import play.modules.paginate.ValuePaginator;
 import play.mvc.Before;
 import relatorios.BaseJasperReport;
+import relatorios.parse.EnderecoGMapsParse;
+import relatorios.parse.PedidoReportParse;
+import relatorios.parse.ProdutoFornecedorParse;
 import relatorios.parse.ProdutoPedidoReportParse;
 import relatorios.parse.ProdutoReportParse;
 import util.PedidoFornecedorComparator;
@@ -37,17 +44,20 @@ import vo.ProdutoPedidoReportVO;
 public class Relatorios extends BaseController {
 	
 	private static final String RELATORIO_PEDIDOS_ABERTO_VENDAS		=	"PedidoClienteEntrega.jasper";
-	private static final String REPORT_TITLE						=	"RELATÓRIO DE PEDIDO";
+	public static final String REPORT_TITLE						=	"RELATÓRIO DE PEDIDO";
 	private static final String SUBREPORT_DIR						= 	Messages.get("application.path.report", "");
 	public static final String RELATORIO_PRODUTO_FORNECEDOR			=	"RELATORIO_PRODUTOS_FORNECEDOR";
 	public static final String RELATORIO_PRODUTO_ESTOQUE			=	"RELATORIO_PRODUTOS_ESTOQUE_ENTREGA";
 	public static final String RELATORIO_PRODUTOS					=	"RELATORIO_PRODUTOS_ATIVOS";
+	public static final String RELATORIO_ENTREGA_PEDIDO				=	"Entrega_Pedidos.xls";
 	
 	@Before
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || Boolean.valueOf(session.get("isAdmin"))==Boolean.FALSE) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+			&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+		{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");
@@ -56,6 +66,43 @@ public class Relatorios extends BaseController {
 	
 	public static void index() {
 		render();
+	}
+	
+	@SuppressWarnings("all")
+	public static void rotaEntregaPedido() {
+		List<Endereco> enderecos = new ArrayList<Endereco>();
+		enderecos = consultaEnderecoRotaEntrega();
+		
+		render(enderecos);
+	}
+	
+	/**
+	 * Faz o export dos endereços dos pedidos no status 'Aguardando Entrega'
+	 */
+	public static void relatorioEnderecosEntregaCSV() {
+		renderBinary( new EnderecoGMapsParse(consultaEnderecoRotaEntrega()).buildEnderecoCSV(), "ENDERECOS_ENTREGA.csv" );
+	}
+	
+	private static List<Endereco> consultaEnderecoRotaEntrega() {
+		Query query = JPA.em().createQuery("select cliente.id from Pedido p where p.codigoEstadoPedido =:codigoEstadoPedido");
+		query.setParameter("codigoEstadoPedido", Pedido.PedidoEstado.AGUARDANDO_ENTREGA);
+		List<Long> clientes = query.getResultList();
+		List<Endereco> enderecos = new ArrayList<Endereco>();
+		
+		for(Long idCliente : clientes)
+			enderecos.add(Endereco.getEndereco(idCliente));
+		
+		return enderecos;
+	}
+	
+	public static void renderRota(String origin, String destination) {
+		String rota = "";
+		String origem = StringUtils.isEmpty(origin) ? Messages.get("application.google.maps.origin", "") : origin.trim();
+		String destino = StringUtils.isEmpty(destination) ? Messages.get("application.google.maps.destination", "") : destination.trim();
+		
+		rota = new EnderecoGMapsParse(consultaEnderecoRotaEntrega()).buildEnderecosJson(origem, destino);
+		
+		renderText(rota);
 	}
 	
 	public static void relatorioProdutosCadastrados() {
@@ -98,10 +145,33 @@ public class Relatorios extends BaseController {
 		renderBinary(generateRelatorioProdutoFornecedorCSV(), RELATORIO_PRODUTO_FORNECEDOR+".csv");
 	}
 	
+	public static void exportarRelatorioProdutoFornecedorExcel() {
+		renderBinary(generateRelatorioProdutoFornecedorExcel());
+	}
+	
+	public static File generateRelatorioProdutoFornecedorExcel() {
+		List<ProdutoPedidoReportVO> result = null;
+		String caminhoRelatorio = Messages.get("application.path.upload.archives", ""); 
+		
+		List<Produto> produtos = findProdutosAguardandoEntrega(null);
+		
+		Collections.sort(produtos);
+		
+		result = ProdutoPedidoReportVO.fillProdutos(produtos);
+		
+		Collections.sort(result, new PedidoFornecedorComparator());
+
+		ProdutoFornecedorParse parse = new ProdutoFornecedorParse(result, caminhoRelatorio);
+		
+		return parse.createReport();
+	}
+	
 	public static InputStream generateRelatorioProdutoFornecedorCSV() {
 		List<ProdutoPedidoReportVO> result = null;
 		
 		List<Produto> produtos = findProdutosAguardandoEntrega(null);
+		
+		Collections.sort(produtos);
 		
 		result = ProdutoPedidoReportVO.fillProdutos(produtos);
 		
@@ -152,23 +222,8 @@ public class Relatorios extends BaseController {
 	}
 	
 	public static void gerarNotaFiscal(Long idPedido) {
-		Map parametros = new HashMap();
-		List<Pedido> pedidos = new ArrayList<Pedido>();
-		Pedido pedido = null;
-		
 		try {
-			StringBuilder pathStaticContent = new StringBuilder(Messages.get("application.path.report", ""));
-			pathStaticContent.append(RELATORIO_PEDIDOS_ABERTO_VENDAS);
-		
-			parametros.put("REPORT_TITLE", REPORT_TITLE);
-			parametros.put("SUBREPORT_DIR", SUBREPORT_DIR);
-			
-			pedido = Pedido.findById(idPedido);
-			pedidos.add(pedido);
-			
-			List<PedidoProdutoEntregaReportVO> dados = PedidoProdutoEntregaReportVO.fillListReport(pedidos);
-			
-			renderBinary(BaseJasperReport.generatePdfReport(pathStaticContent.toString(), "NOTA_FISCAL_PEDIDO", parametros, dados), "NotaFiscalPedido.pdf");
+			renderBinary(gerarNotaFiscalPedido(idPedido), "NotaFiscalPedido.pdf");
 			
 		}catch(Exception e) {
 			Logger.error(e, "Erro ao tentar exportar o relatório.");
@@ -176,8 +231,32 @@ public class Relatorios extends BaseController {
 		}
 	}
 	
+	public static InputStream gerarNotaFiscalPedido(Long idPedido) {
+		Map<String, String> parametros = new HashMap<String, String>();
+		List<Pedido> pedidos = new ArrayList<Pedido>();
+		Pedido pedido = null;
+		StringBuffer nomeArquivo = new StringBuffer();
+		
+		StringBuilder pathStaticContent = new StringBuilder(Messages.get("application.path.report", ""));
+		pathStaticContent.append(RELATORIO_PEDIDOS_ABERTO_VENDAS);
+	
+		parametros.put("REPORT_TITLE", REPORT_TITLE);
+		parametros.put("SUBREPORT_DIR", SUBREPORT_DIR);
+		
+		pedido = Pedido.findById(idPedido);
+		pedidos.add(pedido);
+		
+		nomeArquivo.append("NOTA PEDIDO");
+		nomeArquivo.append(" - ");
+		nomeArquivo.append(pedido.id);
+		
+		List<PedidoProdutoEntregaReportVO> dados = PedidoProdutoEntregaReportVO.fillListReport(pedidos);
+		
+		return BaseJasperReport.generatePdfReport(pathStaticContent.toString(), nomeArquivo.toString(), parametros, dados);
+	}
+	
 	public static void exportarRelatorioMSExcel() {
-		Map parametros = new HashMap();
+		Map<String, String> parametros = new HashMap<String, String>();
 		
 		try {
 			StringBuilder pathStaticContent = new StringBuilder(Messages.get("application.path.report", ""));
@@ -194,6 +273,12 @@ public class Relatorios extends BaseController {
 			Logger.error(e, "Erro ao tentar exportar o relatório em modo MS Excel.");
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public static void exportarRelatorioPedidosAguardandoEntrega() {
+		PedidoReportParse parse = new PedidoReportParse(findPedidosAguardandoEntrega(null, null));
+		
+		renderBinary(parse.createReport(RELATORIO_ENTREGA_PEDIDO));
 	}
 	
 	private static List<ProdutoPedidoReportVO> findProdutosPorFornecedor(Date inicio, Date fim) {

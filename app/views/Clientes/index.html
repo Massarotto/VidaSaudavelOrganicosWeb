@@ -79,7 +79,7 @@
 			<td align="right">&{'form.customer.dataNascimento'}</td>
 			<td align="left">
 				<input type="text" class="textBox1" name="cliente.dataNascimento" 
-						id="cliente.dataNascimento" size="11" maxlength="10" onkeyup="mascaraData(this);" value="${cliente.dataNascimento}" />*
+						id="cliente.dataNascimento" size="11" maxlength="10" onkeyup="mascaraData(this);" value="${cliente.dataNascimento?.format('dd/MM/yyyy')}" />*
 				<span><i>&{'form.customer.mask.dataNascimento'}</i></span>
 			</td>
 		</tr>

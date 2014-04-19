@@ -6,7 +6,6 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,11 +17,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import play.data.validation.Email;
-import play.data.validation.Min;
 import play.data.validation.MinSize;
 import play.data.validation.Required;
 import play.db.jpa.Model;
@@ -32,8 +28,6 @@ import play.libs.Crypto;
  * @author guerrafe
  *
  */
-@Cache(usage=CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Cacheable
 @Entity
 @Table(name="USUARIO")
 public class Usuario extends Model {
@@ -51,7 +45,7 @@ public class Usuario extends Model {
 	}
 	
 	@Transient
-	private static final String CRYPTO_KEY = "GFsdjhgyu56s09-1";
+	public static final String CRYPTO_KEY = "GFsdjhgyu56s09-1";
 
 	@MinSize(message="message.user.password.minsize", value=6)
 	@Required(message="message.required.login.password")
@@ -159,6 +153,13 @@ public class Usuario extends Model {
 		return this.grupo.getNome().equalsIgnoreCase(Grupo.ROLE_PARTNER);
 	}
 	
+	public boolean isEmployee() {
+		if(this.grupo==null || this.grupo.getNome()==null)
+			return false;
+			
+		return this.grupo.getNome().equalsIgnoreCase(Grupo.ROLE_EMPLOYEE);
+	}
+	
 	@Transient
 	public void encryptPassword() {
 		if(!StringUtils.isEmpty(this.senha)) {
@@ -213,4 +214,5 @@ public class Usuario extends Model {
 			}
 		return result;
 	}
+
 }

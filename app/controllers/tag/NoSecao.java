@@ -78,6 +78,37 @@ public class NoSecao {
 		return _menu.toString();
 	}
 	
+	public String buildFootMenu() {
+		StringBuilder _menu = new StringBuilder();
+		
+		if(!this.hasNoPai()) {
+			_menu.append(	"<a class=\"a1\" href=\"/produtos/secao/").append(this.secao.id).append("/").append(secao.getDescricao()).append("\">")
+			.append(secao.getDescricao())
+			.append("</a><br />");
+		}else {
+			_menu.append(	"<div style=\"float:left; width: 23%;padding: 5px;\"><span class=\"fontGreen2").append("\">")
+			.append(secao.getDescricao())
+			.append("</span><br />");
+		}
+		buildFootChilds(_menu, getFilhos());
+		_menu.append("</div>");
+		
+		return _menu.toString();
+	}
+	
+	private void buildFootChilds(StringBuilder _menu, List<NoSecao> filhos) {
+		if(!filhos.isEmpty()) {
+			for(NoSecao _no : filhos) {
+				if(!_no.hasNoPai())
+					_menu.append("<a class=\"a1\" href=\"/produtos/secao/").append(_no.getSecao().id).append("/").append(_no.getSecao().getDescricao()).append("\">").append(_no.getSecao().getDescricao()).append("</a><br />");
+				else
+					_menu.append(	"<div style=\"float:left\"><span class=\"fontGreen2").append("\">").append(_no.getSecao().getDescricao()).append("</span><br />");
+			
+				buildFootChilds(_menu, _no.getFilhos());
+			}
+		}
+	}
+	
 	private void buildChilds(StringBuilder _menu, List<NoSecao> filhos) {
 		if(!filhos.isEmpty()) {
 			_menu.append("<ul>");

@@ -5,6 +5,7 @@ package controllers;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,15 +15,22 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import models.Lote;
 import models.Produto;
-import models.ProdutoEstoque;
+import models.ProdutoLoteEstoque;
+
+import org.apache.commons.lang.StringUtils;
+
 import play.Logger;
-import play.data.binding.As;
+import play.data.validation.Valid;
 import play.db.jpa.Transactional;
 import play.modules.paginate.ValuePaginator;
 import play.mvc.Before;
 import types.EstoqueService;
 import business.estoque.EstoqueControl;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * @author hpadmin
@@ -34,114 +42,124 @@ public class Estoque extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || Boolean.valueOf(session.get("isAdmin"))==Boolean.FALSE) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+				&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+			{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");
 		}
 	}
-	
-	public static void index() {
-		ProdutoEstoque estoque = new ProdutoEstoque();
-		List<Produto> produtos = Produto.find("ativo = ? order by descricao asc", Boolean.TRUE).fetch();
 		
-		render(estoque, produtos);
-	}
-	
 	public static void show() {
-		List<ProdutoEstoque> listaEstoque = ProdutoEstoque.findAll();
+		List<Lote> listaEstoque = Lote.findAll();
 		
-		ValuePaginator<ProdutoEstoque> posicaoEstoque = new ValuePaginator<ProdutoEstoque>(listaEstoque);
+		ValuePaginator<Lote> posicaoEstoque = new ValuePaginator<Lote>(listaEstoque);
 		posicaoEstoque.setPageSize(30);
 		
 		render(posicaoEstoque);
 	}
 	
-	@Transactional(readOnly=false)
-	public static void cadastrar(ProdutoEstoque estoque, @As("dd/MM/yyyy") Date dataValidade) {
-		Logger.debug("#### Início - Cadastrar Estoque para o produto id: %s ####", estoque.getProduto().id);
+	public static void lote(Lote lote, List<ProdutoLoteEstoque> itens) {
+		if(lote==null) {
+			lote = new Lote();
+			itens = new ArrayList<ProdutoLoteEstoque>();
+		}
+		ProdutoLoteEstoque produtoLote = new ProdutoLoteEstoque();
 		
-		if(ProdutoEstoque.find("produto.id = ?", estoque.getProduto().id).first()!=null)
-			validation.addError("estoque.produto", "message.error.estoque.produto", "");
+		render(lote, produtoLote, itens);
+	}
+	
+	public static void consultarLote(Long id) {
+		Lote lote = Lote.findById(id);
+		ProdutoLoteEstoque produtoLote = new ProdutoLoteEstoque();
+		List<ProdutoLoteEstoque> itens = lote.getItens();
+		
+		render("Estoque/lote.html", lote, produtoLote, itens);
+	}
+	
+	@Transactional(readOnly=false)
+	public static void excluirLote(Long id) {
+		ProdutoLoteEstoque.delete("lote.id = ?", id);
+		Logger.info("####### O Lote [id: %s] foi exclu�do? %s #######", id, Lote.delete("id = ?", id));
+		
+		show();
+	}
+	
+	@Transactional(readOnly=false)
+	public static void cadastarLote(@Valid Lote lote, 
+								@Valid ProdutoLoteEstoque produtoLote, 
+								@Valid(message="message.required.product.nome") String nomeProduto, 
+								@Valid(message="message.required.product.codigo") String codigoProduto) {
+		Produto produto = null;
+		List<ProdutoLoteEstoque> itens = null;
+		
+		if(lote.id==null && Lote.find("codigo = ?", lote.getCodigo().trim()).first()!=null)
+			validation.addError("lote.codigo", "message.error.lote.codigo", "");
 		
 		if(validation.hasErrors()) {
 			validation.keep();
-			
-			index();
+		
+			lote(lote, null);
 			
 		}else {
-			Produto produto = Produto.findById(estoque.getProduto().id);
-			produto.setProdutoEstoque(estoque);
-			produto.setDataValidade(dataValidade);
-			estoque.setProduto(produto);
-			estoque.setDataCadastro(new Date());
-			estoque.setUsuarioAlteracao(session.get("usuarioAutenticado"));
+			produto = Produto.find("codigoProduto = ? AND nome = ?", codigoProduto, nomeProduto).first();
 			
-			estoque.save();
-		}
-		Logger.debug("#### Fim - Cadastrar Estoque para o produto id: %s ####", estoque.getProduto().id);
-		
-		show();
-	}
-	
-	@Transactional(readOnly=false)
-	public static void changeStatus(Long id) {
-		ProdutoEstoque _estoque = EstoqueControl.loadEstoque(id, null);
-		
-		_estoque.setAtivo(!_estoque.getAtivo());
-		
-		_estoque.save();
-		
-		show();
-	}
-	
-	public static void edit(Long id) {
-		ProdutoEstoque estoque = ProdutoEstoque.findById(id);
-		
-		render(estoque);
-	}
-	
-	@Transactional(readOnly=false)
-	public static void atualizar(ProdutoEstoque estoque, @As("dd/MM/yyyy") Date dataValidade) {
-		Logger.debug("#### Início - Cadastrar Estoque para o produto id: %s ####", estoque.getProduto().id);
-		
-		if(validation.hasErrors()) {
-			validation.keep();
-			
-			edit(estoque.getProduto().id);
-			
-		}else {
-			Produto produto = Produto.findById(estoque.getProduto().id);
-			produto.setProdutoEstoque(estoque);
-			
-			if(dataValidade!=null)
-				produto.setDataValidade(dataValidade);	
-			
-			estoque.setProduto(produto);
-			
-			EstoqueControl.atualizarEstoque(estoque, estoque.getQuantidade(), session.get("usuarioAutenticado"));
-		}
-		Logger.debug("#### Fim - Cadastrar Estoque para o produto id: %s ####", estoque.getProduto().id);
-		
-		show();
-	}
+			if(produto!=null) {
+				produtoLote.setProduto(produto);
 
-	@SuppressWarnings("all")
-	public static void order(String order, Boolean asc) {
-		StringBuffer params = new StringBuffer();
-		params.append("order by ").append(order).append(" ").append(asc ? "ASC" : "DESC");
+				lote.setUsuarioAlteracao(session.get("usuarioAutenticado"));
+				lote.addProdutoLoteEstoque(produtoLote);
+				
+				if(lote.id==null)
+					lote.setDataCadastro(new Date());
+				else
+					lote.setDataAlteracao(new Date());
+				
+				lote.save();
+				itens = lote.getItens();
+				
+				render("Estoque/lote.html", lote, null, itens);
+			}
+		}
+	}
+	
+	public static void editarProdutoLoteEstoque(Long id) {
+		ProdutoLoteEstoque produtoLoteEstoque = ProdutoLoteEstoque.findById(id);
 		
-		List<ProdutoEstoque> prods = ProdutoEstoque.find(params.toString(), null).fetch();
+		render("Estoque/edit.html", produtoLoteEstoque);
+	}
+	
+	public static void pesquisarProdutoPeloNome() {
+		Gson gsonBuilder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+		StringBuilder param = new StringBuilder();
+		param.append("%").append(params.get("q")).append("%");
 		
-		ValuePaginator<ProdutoEstoque> posicaoEstoque = new ValuePaginator<ProdutoEstoque>(prods);
-		posicaoEstoque.setPageSize(30);
+		List<Produto> produtos = Produto.find("ativo = ? AND descricao LIKE ?", Boolean.TRUE, param.toString()).fetch(20);
+
+		renderJSON(gsonBuilder.toJson(produtos));
+	}
+	
+	@Transactional(readOnly=false)
+	public static void atualizar(@Valid ProdutoLoteEstoque produtoLoteEstoque) {
+		Logger.debug("#### In�cio - Atualizar Estoque para o produto id: %s ####", produtoLoteEstoque.getProduto().getNome());
 		
-		renderTemplate("Estoque/show.html", posicaoEstoque);
+		if(validation.hasErrors()) {
+			validation.keep();
+			
+		}else {
+			produtoLoteEstoque.getLote().setDataAlteracao(new Date());
+			produtoLoteEstoque.getLote().setUsuarioAlteracao(session.get("usuarioAutenticado"));
+			
+			produtoLoteEstoque.save();
+		}
+		Logger.debug("#### Fim - Atualizar Estoque para o produto id: %s ####", produtoLoteEstoque.getProduto().getNome());
+		consultarLote(produtoLoteEstoque.getLote().id);
 	}
 
 	public static void findByParams(String produtoParametro, String param) {
 		Logger.debug("######## Início - Pesquisar estoque pelo parâmetro: %s########", param); 
-		List<ProdutoEstoque> estoque = new ArrayList<ProdutoEstoque>();
+		List<ProdutoLoteEstoque> estoque = new ArrayList<ProdutoLoteEstoque>();
 		StringBuilder query = new StringBuilder();
 		Object parametro = null;
 
@@ -166,11 +184,11 @@ public class Estoque extends BaseController {
 		}
 		
 		if(!validation.hasErrors())
-			estoque = ProdutoEstoque.find(query.toString(), parametro).fetch();
+			estoque = ProdutoLoteEstoque.find(query.toString(), parametro).fetch();
 		
 		Logger.debug("######## Fim - Pesquisar estoque pelo parâmetro: %s########", param);
 		
-		ValuePaginator<ProdutoEstoque> posicaoEstoque = new ValuePaginator<ProdutoEstoque>(estoque);
+		ValuePaginator<ProdutoLoteEstoque> posicaoEstoque = new ValuePaginator<ProdutoLoteEstoque>(estoque);
 		posicaoEstoque.setPageSize(30);
 		
 		render("Estoque/show.html", posicaoEstoque);
@@ -178,10 +196,11 @@ public class Estoque extends BaseController {
 	
 	@Transactional(readOnly=false)
 	public static void reservarProduto(Long idProduto, Integer qtd) {
-		ProdutoEstoque estoque = null;
+		ProdutoLoteEstoque estoque = null;
 		EstoqueService service = null;
 		Marshaller marshaller = null;
 		File xmlReservaEstoque = null;
+		InputStreamReader reader = null;
 		
 		try{
 			Logger.info("Início - Reserva de estoque para o produto: %s", idProduto);
@@ -196,13 +215,13 @@ public class Estoque extends BaseController {
 			xmlReservaEstoque = new File(System.getProperty("java.io.tmpdir")+File.separatorChar + "reservaEstoque_" + new Date().getTime() + ".xml");
 			xmlReservaEstoque.createNewFile();
 			
-			InputStreamReader reader = new InputStreamReader(new FileInputStream(xmlReservaEstoque));
+			reader = new InputStreamReader(new FileInputStream(xmlReservaEstoque));
 			
 			if(estoque==null) {
 				service.setError(1000L);
 				service.setMessage( service.getErrorMessage(1000L) );
 				
-			}else if(!estoque.getAtivo() || estoque.getQuantidade()<=0 || (qtd!=null && estoque.getQuantidade()<qtd)) {
+			}else if(estoque.getQuantidade()<=0 || (qtd!=null && estoque.getQuantidade()<qtd)) {
 				service.setError(1001L);
 				service.setMessage( service.getErrorMessage(1001L) );
 				
@@ -220,8 +239,6 @@ public class Estoque extends BaseController {
 			
 			reader.read(buffer);
 			
-			reader.close();
-			
 			renderXml(new String(buffer));
 			
 		}catch(Exception e) {
@@ -231,16 +248,23 @@ public class Estoque extends BaseController {
 			renderXml(e);
 			
 		}finally {
+			if(reader!=null)
+				try {
+					reader.close();
+					
+				}catch(IOException e) {}
+			
 			Logger.info("Fim - Reserva de estoque para o produto: %s", idProduto);
 		}
 	}
 	
 	@Transactional(readOnly=false)
 	public static void reporProdutoEstoque(Long idProduto, Integer qtd) {
-		ProdutoEstoque estoque = null;
+		ProdutoLoteEstoque estoque = null;
 		EstoqueService service = null;
 		Marshaller marshaller = null;
 		File xmlReservaEstoque = null;
+		InputStreamReader reader = null;
 		
 		try{
 			Logger.info("Início - Repor estoque para o produto: %s", idProduto);
@@ -255,15 +279,11 @@ public class Estoque extends BaseController {
 			xmlReservaEstoque = new File(System.getProperty("java.io.tmpdir")+File.separatorChar + "reporEstoque_" + new Date().getTime() + ".xml");
 			xmlReservaEstoque.createNewFile();
 			
-			InputStreamReader reader = new InputStreamReader(new FileInputStream(xmlReservaEstoque));
+			reader = new InputStreamReader(new FileInputStream(xmlReservaEstoque));
 			
 			if(estoque==null) {
 				service.setError(1000L);
 				service.setMessage( service.getErrorMessage(1000L) );
-				
-			}else if(!estoque.getAtivo()) {
-				service.setError(1001L);
-				service.setMessage( service.getErrorMessage(1001L) );
 				
 			}else {
 				estoque.setQuantidade(estoque.getQuantidade() + (qtd==null ? 1 : qtd));
@@ -279,8 +299,6 @@ public class Estoque extends BaseController {
 			
 			reader.read(buffer);
 			
-			reader.close();
-			
 			renderXml(new String(buffer));
 			
 		}catch(Exception e) {
@@ -290,6 +308,12 @@ public class Estoque extends BaseController {
 			renderXml(e);
 			
 		}finally {
+			if(reader!=null)
+				try {
+					reader.close();
+					
+				}catch(IOException e) {}
+			
 			Logger.info("Fim - Repor estoque para o produto: %s", idProduto);
 		}
 	}

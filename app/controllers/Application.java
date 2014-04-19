@@ -5,9 +5,7 @@ package controllers;
 
 import play.Logger;
 import play.cache.Cache;
-import play.libs.Codec;
 import play.libs.Images;
-import play.mvc.Controller;
 
 /**
  * @author guerrafe

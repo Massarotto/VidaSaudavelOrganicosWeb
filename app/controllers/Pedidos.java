@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
 import models.CarrinhoItem;
@@ -21,6 +22,7 @@ import models.Pedido;
 import models.Pedido.PedidoEstado;
 import models.PedidoItem;
 import models.Produto;
+import models.ProdutoLoteEstoque;
 import models.Usuario;
 
 import org.apache.commons.lang.StringUtils;
@@ -41,8 +43,8 @@ import ebay.api.paypalapi.GetExpressCheckoutDetailsResponseType;
 import form.ProdutoQuantidadeForm;
 
 /**
- * @author guerrafe
- *
+ * @author Felipe Guerra
+ * @version 1.0
  */
 public class Pedidos extends BaseController {
 	
@@ -50,7 +52,9 @@ public class Pedidos extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || Boolean.valueOf(session.get("isAdmin"))==Boolean.FALSE) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+			&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+		{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");
@@ -76,8 +80,9 @@ public class Pedidos extends BaseController {
 		
 		PedidoEstado[] status = PedidoEstado.values();
 		
-		//List<Pedido> _pedidos = Pedido.find("order by dataPedido desc, codigoEstadoPedido desc").fetch();
-		Query query = JPA.em().createQuery("from Pedido order by dataPedido desc, codigoEstadoPedido desc");
+		Query query = JPA.em().createNamedQuery("findAllOrderByDataPedidoAndCodigoEstado");
+		query.setParameter("arquivado", Boolean.FALSE);
+		
 		List<Pedido> _pedidos = query.getResultList();
 		
 		ValuePaginator<Pedido> vPedidos = new ValuePaginator<Pedido>(_pedidos);
@@ -100,7 +105,7 @@ public class Pedidos extends BaseController {
 	public static void atualizar(@Valid Pedido pedido) {
 		Logger.debug("######### Vai atualizar o pedido id: %s #########", pedido.id);
 		
-		if(pedido.getDesconto().getValorDesconto().doubleValue()>pedido.getValorPedido().doubleValue())
+		if(pedido.getValorDesconto().doubleValue()>pedido.getValorPedido().doubleValue())
 			validation.addError("pedido.desconto.valorDesconto", "message.error.value.desconto", "");
 		
 		if(pedido.getDataEntrega()!=null && pedido.getDataPedido().after(pedido.getDataEntrega()))
@@ -137,10 +142,10 @@ public class Pedidos extends BaseController {
 			Usuario usuario = Usuario.findById(Long.parseLong(session.get("clienteId")));
 			
 			pedido.setDataAlteracao(new Date());
-			pedido.getDesconto().setPedido(pedido);
 			pedido.getDesconto().setUsuario(usuario);
 			pedido.getDesconto().setDataDesconto(new Date());
 			
+			pedido.setUsuarioAlteracao(session.get("usuarioAutenticado"));
 			pedido.calcularDesconto();
 			
 			Desconto desconto = pedido.getDesconto();
@@ -197,6 +202,63 @@ public class Pedidos extends BaseController {
 		render(itens, pedido);
 	}
 	
+	/**
+	 * Funcionalidade de incluir produto para um pedido existente
+	 * @param id
+	 */
+	public static void incluirProduto(Long id) {
+		Pedido pedido = Pedido.findById(id);
+		List<Produto> produtos = Produto.find("ativo = ? order by descricao asc", Boolean.TRUE).fetch();
+		
+		render(produtos, pedido);
+	}
+	
+	@Transactional(readOnly=false)
+	public static void adicionarProdutoPedido(Long id, Long produtoId, Integer quantidade) {
+		PedidoItem item = null;
+		Pedido pedido = Pedido.findById(id);
+		
+		Logger.info("#### Vai adicionar o produto %s (quantidade: %s) no pedido %s (valor: %s) ####", produtoId, quantidade, id, pedido.getValorPedido());
+		
+		BigDecimal valorPedido = pedido.getValorPedido();
+		
+		Produto produto = Produto.findById(produtoId);
+		
+		Query query = JPA.em().createQuery("select pi from PedidoItem pi join pi.pedido ped join pi.produtos prods where ped.id =:idPedido AND prods.id =:idProduto");
+		query.setParameter("idPedido", id);
+		query.setParameter("idProduto", produto.id);
+		
+		try {
+			item = (PedidoItem) query.getSingleResult();
+		
+		}catch(NoResultException ex) {
+			item = new PedidoItem();
+			item.setExcluido(Boolean.FALSE);
+			item.setPedido(pedido);
+		}
+		item.setQuantidade(item.getQuantidade()+quantidade);
+		
+		item.addProduto(produto, quantidade);
+		
+		pedido.getItens().add(item);
+		valorPedido = valorPedido.add(BigDecimal.valueOf(produto.getValorVenda()*quantidade));
+		
+		ProdutoLoteEstoque estoque = EstoqueControl.loadEstoque(id, produtoId);
+		
+		if(estoque!=null)
+			EstoqueControl.atualizarEstoque(estoque, estoque.getQuantidade()-quantidade, session.get("usuarioAutenticado"));
+		
+		item.save();
+		pedido.setValorPedido(valorPedido);
+		pedido.setDataAlteracao(new Date());
+		pedido.setUsuarioAlteracao(session.get("usuarioAutenticado"));
+		
+		pedido.save();
+		
+		Logger.info("#### Pedido %s, novo valor: %s (produto: %s - valor: %s) ####", id, valorPedido, produto.getNome(), produto.getValorVenda()*quantidade);
+		renderText(Messages.get("form.admin.produto.cadastro.success", "inserido"));
+	}
+	
 	@Transactional(readOnly=false)
 	public static void atualizarProdutos(Long id, List<ProdutoQuantidadeForm> produtoQuantidade, Boolean excluir) {
 		Logger.debug("###### Vai alterar os produtos para o pedido id: %s ######", "");
@@ -205,7 +267,7 @@ public class Pedidos extends BaseController {
 		Pedido pedido = Pedido.findById(id);
 		
 		Logger.info("###### Pedido: %s: - Valor: %s ######", pedido.id, pedido.getValorPedido());
-		BigDecimal vlrFrete = Pedido.calcularFrete(pedido.getValorPedido());
+		BigDecimal vlrFrete = Pedido.calcularFrete(pedido.getValorPedido(), pedido.getCliente().estaNaCapital());
 		
 		for(ProdutoQuantidadeForm itemProdutoQuantidade : produtoQuantidade) {
 			laco_raiz:	
@@ -242,7 +304,7 @@ public class Pedidos extends BaseController {
 		pedido.setValorPedido(valorPedidoAlterado);
 		Logger.info("###### Novo valor do frete %s para o pedido: %s. Total: %s  ######", vlrFrete, id, valorPedidoAlterado);
 		pedido.setDataAlteracao(new Date());
-		pedido.setObservacao("Alterado por " + session.get("usuarioAutenticado"));
+		pedido.setUsuarioAlteracao(session.get("usuarioAutenticado"));
 		pedido.save();
 		
 		infoPedidoCliente(pedido.id);
@@ -257,6 +319,7 @@ public class Pedidos extends BaseController {
 		Logger.debug("###### Início - Gerar um novo pedido com os produtos do pedido %s ######", idPedido);
 		BigDecimal valorTotalCompra = new BigDecimal(0);
 		Boolean temEstoque = Boolean.TRUE;
+		ProdutoLoteEstoque estoque = null;
 		
 		Cache.safeDelete("valorTotal."+sessionId);
 		Cache.safeDelete(sessionId);
@@ -269,10 +332,10 @@ public class Pedidos extends BaseController {
 			for(PedidoItem pedidoItem : itens) {
 				Produto produto = pedidoItem.getProdutos().get(0);
 				
-				//Analisar o estoque também
-				if(produto.getProdutoEstoque()!=null) {
-					temEstoque = EstoqueControl.loadEstoque(null, produto.id).getQuantidade() >= pedidoItem.getQuantidade();
-				}
+				estoque = EstoqueControl.loadEstoque(null, produto.id);
+				
+				if(estoque!=null)
+					temEstoque = estoque.getQuantidade() >= pedidoItem.getQuantidade();
 				
 				if(produto.getAtivo() && temEstoque) {
 					CarrinhoItem item = new CarrinhoItem();
@@ -319,17 +382,14 @@ public class Pedidos extends BaseController {
 		render("Pedidos/showAll.html", vPedidos);
 	}
 
-	public static void order(String campo, Boolean asc) {
+	public static void order(String campo, Boolean asc, String criterioPedido, String valorCriterioPedido) {
 		Logger.debug("###### Início - Ordernar por %s ######", campo);
 		StringBuffer query = new StringBuffer();
 		
-		Object[] parametro = new Object[]{};
-		
-		String criterioPedido = params.get("criterioPedido", String.class);
-		String valorCriterioPedido = params.get("valorCriterioPedido", String.class);
-		
+		Object[] parametro = null;
+				
 		if(!StringUtils.isEmpty(criterioPedido) && !StringUtils.isEmpty(valorCriterioPedido))
-			parametro[0] = buildQuery(query, criterioPedido, valorCriterioPedido);
+			parametro = new Object[]{buildQuery(query, criterioPedido, valorCriterioPedido)};
 		
 		query.append("order by ").append(campo).append(" ").append(asc ? "ASC" :"DESC");
 		
@@ -368,13 +428,14 @@ public class Pedidos extends BaseController {
 				if(payPalService.foiExecutadoComSucesso(confirmacaoTransacao.getAck(), confirmacaoTransacao.getErrors())) {
 					DoExpressCheckoutPaymentResponseType efetivacaoTransacao = payPalService.efetivarPagamento(token, 
 																												confirmacaoTransacao.getGetExpressCheckoutDetailsResponseDetails().getPayerInfo().getPayerID(),
-																												pedido.getValorPedido().doubleValue());
+																												pedido.getValorTotal().doubleValue());
 					
 					if(payPalService.foiExecutadoComSucesso(efetivacaoTransacao.getAck(), efetivacaoTransacao.getErrors())) {
 						pedido.setUltimoStatusEstadoPedido(pedido.getCodigoEstadoPedido());
 						pedido.setCodigoEstadoPedido(PedidoEstado.AGUARDANDO_ENTREGA);
 						pedido.setDataAlteracao(new Date());
 						pedido.setObservacao("Pagamento confirmado!");
+						pedido.setValorPago(pedido.getValorTotal());
 						
 					}else {
 						pedido.getPagamento().setErrors(PayPalService.getInformacoesErro(efetivacaoTransacao.getErrors()));
@@ -407,6 +468,50 @@ public class Pedidos extends BaseController {
 			
 		}finally {
 			Logger.info("#### Fim - Gateway de Pagamento PayPal confirmando transação [token: %s - payerId: %s] ####", token, PayerID);
+		}
+		
+	}
+	
+	@Transactional(readOnly=false)
+	public static void finalizarPedidoPagSeguro(String token) {
+		Logger.info("#### Início - Gateway de Pagamento PagSeguro confirmando transação [token: %s ] ####", token);
+		Pagamento pagamentoFeito = null;
+		Cliente cliente = null;
+		Pedido pedido = null;
+		Boolean responderQuestionario = Boolean.FALSE;
+		
+		try {
+			pagamentoFeito = Pagamento.find("informacoes = ? AND formaPagamento = ?", token, FormaPagamento.PAGSEGURO).first();
+			
+			Logger.info("#### PagSeguro confirmando transação [token: %s] - pagamento encontrado? %s####", token, pagamentoFeito!=null);
+			
+			if(pagamentoFeito!=null) {
+				cliente = pagamentoFeito.getPedido().getCliente();
+				pedido = pagamentoFeito.getPedido();
+				
+				pedido.setUltimoStatusEstadoPedido(pedido.getCodigoEstadoPedido());
+				pedido.setCodigoEstadoPedido(PedidoEstado.AGUARDANDO_ENTREGA);
+				pedido.setDataAlteracao(new Date());
+				pedido.setObservacao("Pagamento confirmado!");
+				pedido.setValorPago(pedido.getValorTotal());
+				pedido.save();
+				
+				Logger.info("####Fim - PagSeguro confirmando transação [token: %s] - Pedido: %s. ####", token, pedido.id);
+				
+				responderQuestionario = Questionarios.haQuestionarioPendente(cliente.getUsuario().getId());
+				
+				render("Carrinho/finalizar.html", pedido.id, cliente, responderQuestionario);
+				
+			}else {
+				Home.index("Dados não encontrados para o token: " + token);
+			}
+			
+		}catch(Exception e) {
+			Logger.error(e, "Erro - PagSeguro confirmando transação [token: %s]", token);
+			throw new RuntimeException(e);
+			
+		}finally {
+			Logger.info("#### Fim - Gateway de Pagamento PagSeguro confirmando transação [token: %s] ####", token);
 		}
 		
 	}
@@ -488,17 +593,50 @@ public class Pedidos extends BaseController {
 		Logger.debug("#### Carregar os últimos %s pedidos, para o cliente id %  #####", rows, idCliente);
 		List<Pedido> pedidos = Pedido.find("cliente.id = ? order by id desc", idCliente).fetch(rows);
 		BigDecimal debito = new BigDecimal(0);
+		BigDecimal credito = new BigDecimal(0);
 		Pedido pedido = Pedido.findById(id);
 
 		//Pedidos com débitos
 		List<Pedido> pedidosAbertos = Pedido.find("cliente.id = ? AND codigoEstadoPedido = ? order by id desc", idCliente, PedidoEstado.AGUARDANDO_PAGAMENTO).fetch();
+		credito = Pedido.getDebitosCreditosTodosPedidosCliente(idCliente);
 		
 		for(Pedido _ped : pedidosAbertos) {
 			Logger.info("##### Encontrado pedido %s aberto para o cliente % - valor: %s #####", _ped.id, _ped.getCliente().getNome(), _ped.getValorComDesconto());
 			
 			debito = debito.add(_ped.getValorTotal()).setScale(BigDecimal.ROUND_HALF_UP);
 		}
-		render(pedidos, debito, pedido);
+		render(pedidos, debito, pedido, idCliente, credito);
+	}
+	
+	@Transactional(readOnly=false)
+	public static void zerarDebitosCreditosDoCliente(Long idPedido, Long idCliente) {
+		Logger.info("##### Atualizar Débitos/Créditos do cliente %s - result: %s #####", idCliente, zerarDebitosCreditos(idPedido, idCliente));
+		
+		findUltimosPedidos(idPedido, idCliente, 25);
+	}
+	
+	public static Integer zerarDebitosCreditos(Long idPedido, Long idCliente) {
+		Query query = JPA.em().createQuery("update Pedido p set valorPago = NULL where p.cliente.id =:idCliente");
+		query.setParameter("idCliente", idCliente);
+		
+		return (query.executeUpdate());
+	}
+	 
+	/**
+	 * <p>Método que carrega os pedidos do histórico, filtrando pelos pedidos fechados e aguardando pagamento
+	 * @param idCliente
+	 * @param rows - limita o número de registros
+	 * @return pedidos
+	 */
+	public static List<Pedido> getPedidosAbertosEFinalizados(Long idCliente, Integer rows) {
+		Logger.debug("#### Carregar os pedidos do histórico para o cliente %s #####", idCliente);
+		List<Pedido> result = null;
+		
+		result = Pedido.find("cliente.id = ? AND codigoEstadoPedido NOT IN (?) order by id desc", idCliente, 
+																								Pedido.PedidoEstado.AGUARDANDO_ENTREGA
+																								).fetch(rows);
+		
+		return result;
 	}
 	
 	private static Object buildQuery(StringBuffer queryAppend, String param, String value) {
@@ -518,7 +656,19 @@ public class Pedidos extends BaseController {
 				Logger.error(e, "Não foi possível converter a data: %s", value);
 			}
 			
-			queryAppend.append("dataPedido >= ? order by codigoEstadoPedido DESC");
+			queryAppend.append("DATE(dataPedido) = ? ");
+			
+		}else if("dataEntrega".equalsIgnoreCase(param)) {
+				SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+				try {
+					parametro = dateFormat.parse(value);
+					
+				}catch(Exception e) {
+					validation.addError("dataEntrega", "Digite uma data válida.", "");
+					Logger.error(e, "Não foi possível converter a data: %s", value);
+				}
+				
+				queryAppend.append("dataEntrega = ? ");
 			
 		}else if("cliente".equalsIgnoreCase(param)) {
 			parametro = "%"+value.toUpperCase().trim()+"%";

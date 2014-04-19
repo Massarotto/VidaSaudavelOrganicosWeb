@@ -10,7 +10,9 @@ import java.io.Serializable;
  *
  */
 public class PerguntaRespostaForm implements Serializable {
-	
+
+	private static final long serialVersionUID = -3582867259594920764L;
+
 	private Long id;
 	
 	private Long idPergunta;

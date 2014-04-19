@@ -12,7 +12,8 @@ public enum FormaPagamento {
 	CARTAO_CREDITO(2, "Cartão de Crédito"),
 	DINHEIRO(3, "Dinheiro/Cheque"),
 	CHEQUE(4, "Cheque"),
-	PAYPAL(5, "PayPal");
+	PAYPAL(5, "PayPal"),
+	PAGSEGURO(6, "PagSeguro");
 	
 	private FormaPagamento(Integer codigo, String descricao) {
 		this.codigo = codigo;
@@ -57,5 +58,16 @@ public enum FormaPagamento {
 		}
 		return result;
 	}
-	
+
+	public static FormaPagamento getFormaPagamento(Integer codigo) {
+		FormaPagamento result = null;
+		
+		for(FormaPagamento value : FormaPagamento.values()) {
+			if(value.getCodigo().equals(codigo)) {
+				result = value;
+				break;
+			}
+		}
+		return result;
+	}
 }

@@ -53,9 +53,6 @@ public class Pagamento extends Model {
 	@OneToOne(mappedBy="pagamento")
 	private Pedido pedido = null;
 	
-	@OneToOne(mappedBy="pagamento")
-	private CestaAssinatura assinatura;
-	
 	public Pagamento() {
 	}
 	
@@ -145,20 +142,6 @@ public class Pagamento extends Model {
 	 */
 	public void setErrors(String errors) {
 		this.errors = errors;
-	}
-
-	/**
-	 * @return the assinatura
-	 */
-	public CestaAssinatura getAssinatura() {
-		return assinatura;
-	}
-
-	/**
-	 * @param assinatura the assinatura to set
-	 */
-	public void setAssinatura(CestaAssinatura assinatura) {
-		this.assinatura = assinatura;
 	}
 
 }

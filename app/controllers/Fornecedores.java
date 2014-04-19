@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import javax.persistence.Query;
+
 import models.Fornecedor;
 import models.Telefone;
 import models.Telefone.TelefoneTipo;
@@ -17,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import play.Logger;
 import play.data.validation.Required;
 import play.data.validation.Valid;
+import play.db.jpa.JPA;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
 import play.modules.paginate.ValuePaginator;
@@ -26,7 +29,7 @@ import business.produto.layout.LayoutArquivo;
 import business.produto.layout.parse.factory.LayoutFactory;
 
 /**
- * @author guerrafe
+ * @author Felipe Guerra
  *
  */
 public class Fornecedores extends BaseController {
@@ -35,7 +38,9 @@ public class Fornecedores extends BaseController {
 	static void estaAutorizado() {
 		Logger.debug("####### Verificar se o usuário autenticado é admin... ########");
 		
-		if(!session.contains("isAdmin") || new Boolean(session.get("isAdmin"))==false) {
+		if( (StringUtils.isEmpty(session.get("isAdmin")) || Boolean.FALSE.equals(Boolean.valueOf(session.get("isAdmin")))) 
+				&& (StringUtils.isEmpty(session.get("isEmployee")) && Boolean.FALSE.equals(Boolean.valueOf(session.get("isEmployee")))) ) 
+			{
 			Logger.debug("####### Usuário não autorizado a acessar essa funcionalidade...%s ########", session.get("usuarioAutenticado"));
 			
 			Home.index("Usuário não autorizado a acessar essa funcionalidade.");
@@ -194,6 +199,21 @@ public class Fornecedores extends BaseController {
 		Logger.info("##### Fim - Enviar arquivo de parceiro [%s] #####", session.get("usuarioAutenticado"));
 		
 		upload(message);
+	}
+	
+	/**
+	 * M�todo para ativar/inativar produtos de um determinado fornecedor
+	 * @param status
+	 */
+	@Transactional(readOnly=false)
+	public static void inativarProdutosPorFornecedor(Long idFornecedor) {
+		Query query = JPA.em().createQuery("update Produto set ativo =:ativo where ativo = 1 AND fornecedor.id =:idFornecedor");
+		query.setParameter("ativo", Boolean.FALSE);
+		query.setParameter("idFornecedor", idFornecedor);
+		
+		Logger.info("############ [user: %s] Atualizou %s produtos(s) do Fornecedor %s ############", session.get("usuarioAutenticado"), query.executeUpdate(), idFornecedor);
+		
+		show();
 	}
 
 }

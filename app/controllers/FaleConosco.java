@@ -3,7 +3,14 @@
  */
 package controllers;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import models.Cliente;
+import models.Telefone;
+
 import play.Logger;
+import play.data.binding.As;
 import play.data.validation.Required;
 import exception.SystemException;
 
@@ -42,6 +49,24 @@ public class FaleConosco extends BaseController {
 			Logger.debug("#### Fim enviar o Fale Conosco: %s ####", nome);
 		}
 		index(null,null,null,null, "message_success");
+	}
+	
+	public static void mensagemTexto(Long idUsuario, List<Long> clientes) {
+		List<Telefone> telefones = new ArrayList<Telefone>();
+		
+		if(clientes!=null) {
+			for(Long idCliente : clientes) {
+				telefones.add(Cliente.getTelefoneCelular(idCliente));
+			}
+		}
+		render(telefones);
+	}
+	
+	/**
+	 * 
+	 */
+	public static void enviarMensagemTexto(Long[] clientes) {
+		
 	}
 	
 }

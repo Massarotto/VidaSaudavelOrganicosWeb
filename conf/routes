@@ -17,6 +17,7 @@ POST 	/cliente/atualizar/?					Clientes.atualizarEndereco
 GET 	/cliente/{id}							Clientes.edit
 GET		/cliente/show/all						Clientes.showAll
 *		/cliente/endereco/{cep}					Clientes.consultarCep
+GET		/cliente/endereco/cache/{idCliente}		Clientes.consultarEnderecoPeloIdCliente
 GET		/minhapagina							Clientes.mypage
 GET		/produtos/cadastrar						Produtos.cadastrar
 GET		/produtos/consultar						Produtos.show
@@ -25,6 +26,7 @@ GET		/pesquisarProdutoEstoque				Estoque.findByParams
 GET		/pesquisarPedido						Pedidos.findByParams
 GET		/pesquisarCliente						Clientes.findByParams
 GET		/produtos/{id}							Produtos.edit
+GET		/produtos/excluir/{id}					Produtos.excluir
 GET		/produtos/changestatus/{id}				Produtos.changeStatus
 GET		/produtos/ativarinativar/{status}		Produtos.changeProductsStatus
 GET		/produtos/promocao/{id}					Produtos.adicionaStatusPromocao
@@ -35,6 +37,7 @@ GET		/pedidos/produtos/{id}					Pedidos.showProdutos
 GET		/pedidos/info/{id}						Pedidos.infoPedidoCliente
 GET		/pedidos/historico/{id}/{idCliente}/{rows}	Pedidos.findUltimosPedidos
 POST	/adicionarProduto						Carrinho.adicionarProduto
+POST	/adicionarCesta							Carrinho.adicionarCesta
 GET		/secao									SecaoProdutos.index
 GET		/secao/all								SecaoProdutos.show
 GET		/secao/{id}								SecaoProdutos.edit
@@ -51,15 +54,19 @@ GET		/pedidos/edit/{id}						Pedidos.edit
 *		/ajaxProdutos/?							Pedidos.pedidoProdutos
 GET 	/logoff/{sessionId}						Login.logout
 GET		/pedidos/produtos/show/{id}				Pedidos.viewProducts
-*		/ajaxEndereco/?							Clientes.viewEndereco
-*		/newOrder/{sessionId}/{idPedido}		Pedidos.novoPedido
-GET		/frete									Administrador.editFrete
-*		/faleconosco							FaleConosco.index
-GET		/fornecedor/index						Fornecedores.index
-GET		/fornecedor/all							Fornecedores.show
-GET		/fornecedor/{id}						Fornecedores.edit
-GET		/fornecedor/upload/index				Fornecedores.upload
-GET		/fornecedor/atualizar/produtos			Produtos.atualizarProdutosFornecedores
+GET		/pedidos/incluir/produto/{id}			Pedidos.incluirProduto
+*		/pedidos/zerar/debitos/{idPedido}/{idCliente} Pedidos.zerarDebitosCreditosDoCliente
+#POST	
+*		/ajaxEndereco/?								Clientes.viewEndereco
+*		/newOrder/{sessionId}/{idPedido}			Pedidos.novoPedido
+GET		/frete										Administrador.editFrete
+*		/faleconosco								FaleConosco.index
+GET		/fornecedor/index							Fornecedores.index
+GET		/fornecedor/all								Fornecedores.show
+GET		/fornecedor/{id}							Fornecedores.edit
+GET		/fornecedor/upload/index					Fornecedores.upload
+GET		/fornecedor/produtos/inativar/{idFornecedor}	Fornecedores.inativarProdutosPorFornecedor
+GET		/fornecedor/atualizar/produtos				Produtos.atualizarProdutosFornecedores
 
 GET     /captcha                                Application.captcha
 
@@ -80,6 +87,9 @@ GET		/relatorios/produto/fornecedor			Relatorios.relatorioProdutoFornecedor
 GET		/relatorios/produto/pedido/cliente		Relatorios.relatorioProdutoPedidoCliente
 GET		/relatorios/produtos/all				Relatorios.relatorioProdutosCadastrados
 GET		/relatorios/export/csv/fornecedor		Relatorios.exportarRelatorioProdutoFornecedorCSV
+GET		/relatorios/export/excel/fornecedor		Relatorios.exportarRelatorioProdutoFornecedorExcel
+GET		/relatorios/rota/entrega				Relatorios.rotaEntregaPedido
+GET		/relatorios/export/pedidos/entrega		Relatorios.exportarRelatorioPedidosAguardandoEntrega
 GET		/produtos/order/{order}/{asc}			Produtos.order
 GET		/produtos/detail/{id}/{nome}			Produtos.detail
 GET		/produtos-ativos						Produtos.getProdutosAtivos
@@ -104,22 +114,29 @@ GET		/estoque/order/{order}/{asc}			Estoque.order
 GET		/estoque/changestatus/{id}				Estoque.changeStatus
 GET		/estoque/reservar/{idProduto}/{qtd}		Estoque.reservarProduto
 GET		/estoque/repor/{idProduto}/{qtd}		Estoque.reporProdutoEstoque
-
-GET		/assinar-cesta							Cestas.visualizar
-GET		/cesta/cadastrar						Cestas.cadastrar
-GET		/cesta/{id}								Cestas.editar
-GET		/cesta/consultar/all					Cestas.show
-GET		/cesta/cliente/{idCliente}				Cestas.consultaCestaCliente
-GET		/ajaxCesta/?							Cestas.visualizarProdutos
-GET		/cesta/gerar/pedidos					Cestas.gerarPedidosCestas
-GET		/consulta-cesta							Cestas.cestaAtiva
-GET		/cesta/consulta/assinaturas				Cestas.assinaturas
+GET		/estoque/cadastrar						Estoque.lote
+GET		/estoque/consultar/produto				Estoque.pesquisarProdutoPeloNome
+GET		/ajaxEditEstoque/?						Estoque.editarProdutoLoteEstoque
 
 GET		/servicos								Administrador.servicos
+
+#Nova funcionalidade para as Cestas Prontas
+GET		/cesta/cadastrar						Cestas.cadastrar
+GET		/cesta/consultar						Cestas.show
+GET		/cesta/detail/{id}/{nome}				Cestas.detail
 
 #PayPal Integration
 *		/pedido/paypal/finalizar				Pedidos.finalizarPedidoPayPal
 *		/pedido/paypal/cancelar					Pedidos.cancelarPedidoPayPal
+
+#PagSeguro Integration
+*		/pedido/pagseguro/finalizar/{token}		Pedidos.finalizarPedidoPagSeguro
+
+#CRM Funcionalidades
+GET		/relacionamento/cliente/cupom-desconto	RelacionamentoCliente.index
+
+#Envio Mensagem
+GET		/faleconosco/mensagem/texto				FaleConosco.mensagemTexto
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

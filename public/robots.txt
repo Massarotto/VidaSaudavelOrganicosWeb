@@ -11,4 +11,5 @@ Disallow: /frete
 Disallow: /bairrosAtendidos
 Disallow: /login
 Disallow: /cliente
+Disallow: /cesta
 Sitemap: http://www.vidasaudavelorganicos.com.br/sitemap.xml
