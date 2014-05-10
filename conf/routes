@@ -139,7 +139,7 @@ GET		/relacionamento/cliente/cupom-desconto	RelacionamentoCliente.index
 GET		/faleconosco/mensagem/texto				FaleConosco.mensagemTexto
 
 # Ignore favicon requests
-GET     /favicon.ico                            404
+#GET     /favicon.ico                            404
 GET		/images.loadingAnimation.gif			404
 
 # Map static resources from the /app/public folder to the /public path

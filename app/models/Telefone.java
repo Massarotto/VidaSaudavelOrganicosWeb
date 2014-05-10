@@ -164,6 +164,10 @@ public class Telefone extends Model implements Serializable {
 	public void setFornecedor(Fornecedor fornecedor) {
 		this.fornecedor = fornecedor;
 	}
+	
+	public String toString() {
+		return this.prefixo+this.numero;
+	}
 
 	@Transient
 	public static TelefoneTipo findById(Integer id) {

@@ -3,8 +3,11 @@ package vo;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
+import util.PedidoFornecedorVORefrigeracaoComparator;
 
 import models.Pedido;
 import controllers.Pedidos;
@@ -282,6 +285,8 @@ public class PedidoProdutoEntregaReportVO implements Serializable, Comparable<Pe
 																	pedido.getObservacao(),
 																	pedido.getFrete()==null ? BigDecimal.ZERO : pedido.getFrete().getValor(),
 																	pedido.getOutrasDespesas()) );
+				
+				Collections.sort(entity.getProdutos(), new PedidoFornecedorVORefrigeracaoComparator());
 				
 				entity.setUltimosPedidos(fillPedidosHistorico(Pedidos.getPedidosAbertosEFinalizados(pedido.getCliente().id, 4)));
 

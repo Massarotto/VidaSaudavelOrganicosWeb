@@ -70,6 +70,5 @@
 	<classpathentry kind="lib" path="lib/lucene-analyzers-3.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/CrepCep_client.jar"/>
 	<classpathentry kind="lib" path="lib/PayPalSvc_client.jar"/>
-	<classpathentry kind="lib" path="C:/Jetty/jetty-distribution-7.6.9.v20130131/lib/servlet-api-2.5.jar"/>
 	<classpathentry kind="output" path="eclipse/classes"/>
 </classpath>

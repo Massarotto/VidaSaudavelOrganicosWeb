@@ -32,6 +32,9 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 	private BigDecimal frete = BigDecimal.ZERO;
 	private BigDecimal creditoDebito = BigDecimal.ZERO;
 	
+	//produtos refrigerados
+	private Boolean ehRefrigerado = Boolean.FALSE;
+	
 	private String observacao;
 
 	public ProdutoPedidoReportVO() {
@@ -240,6 +243,9 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 					entity.setCreditoDebito(creditoDebito);
 					entity.setFrete(frete);
 					
+					//produto refrigeração
+					entity.setEhRefrigerado(produto.getEhRefrigerado());
+					
 					//ObservaÃ§Ã£o
 					entity.setObservacao(observacao);
 					
@@ -270,7 +276,6 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 				
 				entity.setValor(new BigDecimal(produto.getProdutos().get(0).getValorVenda()));
 				entity.setDesconto(desconto);
-				//entity.setFrete(Pedido.calcularFrete(valorPedido));
 				
 				//ObservaÃ§Ã£o
 				entity.setObservacao(produto.getPedido().getObservacao());
@@ -298,6 +303,9 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 					entity.setId(produto.id);
 					entity.setQuantidade(1);
 					entity.setDescricao(produto.getDescricao());
+					
+					//produto refrigeração
+					entity.setEhRefrigerado(produto.getEhRefrigerado());
 					
 					if(produto.getFornecedor()!=null)
 						entity.setFornecedor(produto.getFornecedor().getNome());
@@ -453,6 +461,20 @@ public class ProdutoPedidoReportVO implements Serializable, Comparable<ProdutoPe
 
 	public void setCreditoDebito(BigDecimal creditoDebito) {
 		this.creditoDebito = creditoDebito;
+	}
+
+	/**
+	 * @return the ehRefrigerado
+	 */
+	public Boolean getEhRefrigerado() {
+		return ehRefrigerado;
+	}
+
+	/**
+	 * @param ehRefrigerado the ehRefrigerado to set
+	 */
+	public void setEhRefrigerado(Boolean ehRefrigerado) {
+		this.ehRefrigerado = ehRefrigerado;
 	}
 
 }

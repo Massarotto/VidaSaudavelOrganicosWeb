@@ -49,6 +49,8 @@
 			</td>
 			<td>&nbsp;</td>
 			<td align="right">
+				<a href="@{Estoque.show()}" class="fontBrown">&{'form.button.back'}</a>
+				<span>|</span>
 				<a href="javascript:resetForm('formCadastroEstoque')" class="fontBrown">&{'form.admin.button.clear'}</a>
 				<span>|</span>
 				<a href="javascript:cadastrar()" class="fontBrown">&{'form.button.cadastro'}</a>
@@ -79,9 +81,10 @@
 			<td align="center" width="10%">&{'form.global.price'}</td>
 			<td align="center" width="18%">&{'form.product.dataValidade'}</td>
 			<td align="center" width="7%">&{'form.label.quantidade'}</td>
+			<td align="center" width="7%">&nbsp;</td>
 		</tr>
 		<tr>
-			<td colspan="6">
+			<td colspan="7">
 				<div style="position:relative; height: 340px; overflow: auto;">
 					<table width="100%" border="0" cellpadding="2">
 						#{list items:itens, as:'estoque'}
@@ -106,6 +109,9 @@
 							<td align="left">
 								<span>${estoque?.quantidade}</span>
 							</td>
+							<td align="center">
+								<a href="@{Estoque.excluirProdutoLote(estoque.id)}">&{'form.excluir'}</a>
+							</td>
 						</tr>
 						#{/list}
 					</table>
@@ -114,7 +120,7 @@
 			</td>
 		</tr>
 		<tr class="tr1">
-			<td colspan="2" align="center">#{paginate.summary items:itens /}</td>
+			<td colspan="3" align="center">#{paginate.summary items:itens /}</td>
 			<td colspan="4" align="center">#{paginate.controls items:itens /}</td>
 		</tr>
 	</table>

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import models.Cliente;
 import models.CupomDesconto;
 import models.Pedido;
+import models.Usuario;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.mail.EmailAttachment;
@@ -186,6 +187,27 @@ public class Mail extends Mailer {
 		}
 	}
 	
+	public static void emailContatoCliente(String subject, String from, 
+											String message, String email, 
+											Cliente cliente, Usuario usuarioLogado) throws SystemException {
+		try {
+			setFrom(from);
+			setSubject(subject);
+			addBcc(usuarioLogado.getEmail());
+			addRecipient(email);
+			setReplyTo(from);
+			
+			Future<Boolean> sent = send(message, cliente);
+			
+			Logger.debug("Atingiu o timeout? %s",  sent.get(60, TimeUnit.SECONDS) );
+		
+		}catch(Exception e) {
+			Logger.error(e, "Erro ao enviar e-mail de contato com o cliente.");
+			throw new SystemException(e);
+		}
+	}
+	
+	@SuppressWarnings("all")
 	public static void estoqueControl(String subject, 
 									String from,  
 									String staticContent,

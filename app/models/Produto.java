@@ -200,12 +200,20 @@ public class Produto extends Model implements Comparable<Produto>, ProdutoCarrin
 	private List<CestaProduto> listCestaProdutos = null;
 	
 	@XmlTransient
+	@OneToMany(fetch=FetchType.LAZY, mappedBy="produto")
+	private List<ProdutoLoteEstoque> lotesEstoque = null;
+	
+	@XmlTransient
 	@Transient
 	private BigDecimal valorMargemLucro = BigDecimal.ZERO;
 	
 	@XmlElement(name="PodeEnviarPorCorreio", required=false)
 	@Column(name="FLAG_ENVIO_CORREIO", nullable=true)
 	private Boolean podeEnviarPorCorreio;
+	
+	@XmlTransient
+	@Column(name="FLAG_REFRIGERACAO", nullable=true)
+	private Boolean ehRefrigerado;
 	
 	/**
 	 * @return the valorMargemLucro
@@ -551,6 +559,38 @@ public class Produto extends Model implements Comparable<Produto>, ProdutoCarrin
 	 */
 	public void setPodeEnviarPorCorreio(Boolean podeEnviarPorCorreio) {
 		this.podeEnviarPorCorreio = podeEnviarPorCorreio;
+	}
+
+	/**
+	 * Flag que indica se o produto exige refrigeração em seu transporte e armazenação
+	 * @return the ehRefrigerado
+	 */
+	public Boolean getEhRefrigerado() {
+		return ehRefrigerado;
+	}
+
+	/**
+	 * @param ehRefrigerado the ehRefrigerado to set
+	 */
+	public void setEhRefrigerado(Boolean ehRefrigerado) {
+		this.ehRefrigerado = ehRefrigerado;
+	}
+
+	/**
+	 * @return the lotesEstoque
+	 */
+	public List<ProdutoLoteEstoque> getLotesEstoque() {
+		if(this.lotesEstoque==null)
+			this.lotesEstoque = new ArrayList<ProdutoLoteEstoque>();
+			
+		return lotesEstoque;
+	}
+
+	/**
+	 * @param lotesEstoque the lotesEstoque to set
+	 */
+	public void setLotesEstoque(List<ProdutoLoteEstoque> lotesEstoque) {
+		this.lotesEstoque = lotesEstoque;
 	}
 
 }

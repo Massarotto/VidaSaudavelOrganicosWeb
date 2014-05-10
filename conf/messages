@@ -150,6 +150,7 @@ form.login.leave=Sair
 form.login.title.newCustomer=NOVO CLIENTE
 form.login.title.sendMail=ENVIAR SENHA
 form.email=E-mail
+form.sms=SMS
 
 form.login.logon.failed=Usuário ou senha não encontrado
 form.login.forget.password=<a href='/lembrarSenha' class='a2'>Esqueci minha senha</a>
@@ -175,6 +176,7 @@ form.product.dataValidade=Data de Validade
 form.product.envioCorreio=Pode enviar por Correio?
 form.product.imagemDetalhe=Imagem meramente ilustrativa.
 form.product.envioProdutoCorreio=Despachamos por Correio
+form.product.refrigeracao=Exige Refrigeração?
 
 form.label.valorUnitario=Valor Unitário
 form.label.quantidade=Quantidade
@@ -298,8 +300,9 @@ form.estoque.report=Relatório de Posição de Estoque
 form.lote.title=Lote
 message.required.lote.quantidade=Por favor, preencha a quantidade
 message.error.lote.codigo=Já existe um lote cadastrado com esse código
+message.error.produto.codigo=Já existe um produto cadastrado para esse lote
 
-message.questionario.error=Ã‰ necessário cadastrar ao menos uma %s 
+message.questionario.error=É necessário cadastrar ao menos uma %s 
 
 form.order.termoCompromisso=Li e aceito o <a href='/ajaxTermoCompromisso?height=500&width=650' onclick='javascript:checkTermoCompromisso()' title='Termo de Compromisso' class='thickbox'>Termo de Compromisso</a>
 application.url.termoCompromisso=http://www.static.vidasaudavelorganicos.com.br/html/termo_compromisso.html

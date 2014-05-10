@@ -201,12 +201,12 @@ public class ProdutoControl implements Serializable {
 				Mail.sendProdutosNaoEncontrados("Relatório de Produtos não Encontrados", Mail.EMAIL_ADMIN, 
 												report.getAbsolutePath(), 
 												message, 
-												"alexandre@vidasaudavelorganicos.com.br");
+												"felipe@vidasaudavelorganicos.com.br");
 			}else {
 				Mail.sendProdutosNaoEncontrados("Relatório de Produtos não Encontrados", Mail.EMAIL_ADMIN, 
 						null, 
 						message, 
-						"alexandre@vidasaudavelorganicos.com.br");
+						"felipe@vidasaudavelorganicos.com.br");
 			}
 			
 		}catch(Exception e) {

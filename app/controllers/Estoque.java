@@ -87,12 +87,25 @@ public class Estoque extends BaseController {
 	}
 	
 	@Transactional(readOnly=false)
+	public static void excluirProdutoLote(Long id) {
+		ProdutoLoteEstoque produtoLoteEstoque = ProdutoLoteEstoque.findById(id);
+		Long idLote = produtoLoteEstoque.getLote().id;
+		ProdutoLoteEstoque.delete("id = ?", id);
+		
+		consultarLote(idLote);
+	}
+	
+	@Transactional(readOnly=false)
 	public static void cadastarLote(@Valid Lote lote, 
 								@Valid ProdutoLoteEstoque produtoLote, 
 								@Valid(message="message.required.product.nome") String nomeProduto, 
 								@Valid(message="message.required.product.codigo") String codigoProduto) {
-		Produto produto = null;
+		Produto produto = Produto.find("codigoProduto = ? AND nome = ?", codigoProduto, nomeProduto).first();
 		List<ProdutoLoteEstoque> itens = null;
+		ProdutoLoteEstoque estoque = ProdutoLoteEstoque.find("produto.id = ?", produto.id).first(); 
+		
+		if(estoque!=null && estoque.getLote().getCodigo().equalsIgnoreCase(lote.getCodigo()))
+			validation.addError("lote.codigo", "message.error.produto.codigo", "");
 		
 		if(lote.id==null && Lote.find("codigo = ?", lote.getCodigo().trim()).first()!=null)
 			validation.addError("lote.codigo", "message.error.lote.codigo", "");
@@ -100,11 +113,9 @@ public class Estoque extends BaseController {
 		if(validation.hasErrors()) {
 			validation.keep();
 		
-			lote(lote, null);
+			lote(null, null);
 			
 		}else {
-			produto = Produto.find("codigoProduto = ? AND nome = ?", codigoProduto, nomeProduto).first();
-			
 			if(produto!=null) {
 				produtoLote.setProduto(produto);
 

@@ -49,12 +49,6 @@
 				<input type="text" class="textBox1" name="produto.valorVenda" id="produto.valorVenda" size="8" value="${produto.valorVenda}" />*
 			</td>
 		</tr>
-		<tr>
-			<td align="right" width="35%">&{'form.product.dataValidade'}</td>
-			<td align="left">
-				<input type="text" class="datePicker" name="dataValidade" id="dataValidade" size="15" value="${produto.dataValidade}" />
-			</td>
-		</tr>
 		#{if (!secoes.isEmpty())}
 		<tr>
 			<td align="right">&{'form.admin.secao.description'}</td>
@@ -95,6 +89,15 @@
 			<td align="right">&{'form.product.envioCorreio'}</td>
 			<td>
 				#{select 'produto.podeEnviarPorCorreio', id:"produto.podeEnviarPorCorreio", value:produto.podeEnviarPorCorreio, class:"select1 fontGreen1"}
+					#{option 'true'}Sim#{/option}
+					#{option 'false'}N&atilde;o#{/option}						
+				#{/select}
+			</td>
+		</tr>
+		<tr>
+			<td align="right">&{'form.product.refrigeracao'}</td>
+			<td>
+				#{select 'produto.ehRefrigerado', id:"produto.ehRefrigerado", value:produto.ehRefrigerado, class:"select1 fontGreen1"}
 					#{option 'true'}Sim#{/option}
 					#{option 'false'}N&atilde;o#{/option}						
 				#{/select}

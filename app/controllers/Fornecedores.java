@@ -140,6 +140,7 @@ public class Fornecedores extends BaseController {
 		String caminhoArquivos = null;
 		String message = null;
 		Long maxLengthArchive = null;
+		ProdutoControl control = null;
 		
 		if(validation.hasErrors()) {
 			validation.keep();
@@ -179,17 +180,19 @@ public class Fornecedores extends BaseController {
 					path.mkdir();
 					
 					FileUtils.copyFileToDirectory(imagem, path);
-				
+					control = new ProdutoControl();
+					
 					if(atualizarProdutos.equals(1)) {
-						new ProdutoControl().atualizarProdutos(idFornecedor);
+						control.atualizarProdutos(idFornecedor);
 						message = "Arquivo enviado e produtos do site atualizados.";
 						
 					}else if(atualizarProdutos.equals(2)) {
-						ProdutoControl control = new ProdutoControl(LayoutFactory.getLayout(LayoutArquivo.PRODUTO_CSV));
+						control = new ProdutoControl(LayoutFactory.getLayout(LayoutArquivo.PRODUTO_CSV));
 						control.atualizarProdutos();
 						
 						message = "Arquivo enviado e dados dos produtos atualizados.";
 					}
+					control.generateLuceneIndex();
 					
 				}else {
 					validation.addError("imagem", "form.parceiros.path.notConfigured", "");
